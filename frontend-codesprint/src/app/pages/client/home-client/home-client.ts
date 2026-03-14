@@ -7,7 +7,7 @@ import {
   heroShoppingBag, heroClock, heroSparkles, heroBolt,
   heroCheckCircle, heroXCircle
 } from '@ng-icons/heroicons/outline';
-import { NavbarComponent } from '../../components/navbar/navbar';
+import { NavbarComponent } from '../../../components/navbar/navbar';
 
 interface Category {
   id: string;

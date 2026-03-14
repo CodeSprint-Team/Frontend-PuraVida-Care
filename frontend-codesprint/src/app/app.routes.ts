@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
-import { Landing } from './landing/landing';
-import { ProfileEdit } from './profile-edit/profile-edit';
-import { Profile } from './profile/profile';
-import { HomeComponent } from './client/home-client/home-client';
+import { Landing } from './pages/landing/landing';
+import { ProfileEdit } from './pages/profile-edit/profile-edit';
+import { Profile } from './pages/profile/profile';
+import { HomeComponent } from './pages/client/home-client/home-client';
 
 export const routes: Routes = [
 
