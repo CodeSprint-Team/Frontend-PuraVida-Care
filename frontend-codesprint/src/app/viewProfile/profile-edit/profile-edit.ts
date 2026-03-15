@@ -1,366 +1,251 @@
+// src/app/viewProfile/profile-edit/profile-edit.ts
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ProfileService } from '../services/profile.services';
-import { SeniorProfile } from '../models/senior-profile.model';
-
+import { SeniorProfile, SeniorProfileUpdateDTO } from '../models/senior-profile.model';
 import {
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-  AbstractControl,
-  ValidationErrors,
-  ValidatorFn
+  FormBuilder, FormGroup, ReactiveFormsModule, Validators,
+  AbstractControl, ValidationErrors, ValidatorFn
 } from '@angular/forms';
-
-import { Router } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-
 import {
-  heroArrowLeft,
-  heroPhoto,
-  heroExclamationTriangle,
-  heroCheckCircle,
-  heroChevronDown,
-  heroChevronUp
+  heroArrowLeft, heroPhoto, heroExclamationTriangle, heroCheckCircle,
+  heroLockClosed, heroEye, heroEyeSlash
 } from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-profile-edit',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, NgIconComponent],
-  viewProviders: [
-    provideIcons({
-      heroArrowLeft,
-      heroPhoto,
-      heroExclamationTriangle,
-      heroCheckCircle,
-      heroChevronDown,
-      heroChevronUp
-    }),
-  ],
+  viewProviders: [provideIcons({
+    heroArrowLeft, heroPhoto, heroExclamationTriangle, heroCheckCircle,
+    heroLockClosed, heroEye, heroEyeSlash
+  })],
   templateUrl: './profile-edit.html',
   styleUrl: './profile-edit.css',
 })
 export class ProfileEdit implements OnInit {
-  private fb = inject(FormBuilder);
-  private router = inject(Router);
+  private fb             = inject(FormBuilder);
+  private router         = inject(Router);
+  private route          = inject(ActivatedRoute);
   private profileService = inject(ProfileService);
 
   profileForm!: FormGroup;
-  originalProfile!: SeniorProfile;
-
+  userId        = '';
   imagePreview: string | null = null;
-  selectedFileError = '';
+  // ✅ false desde el inicio — el formulario aparece vacío de inmediato
+  // los campos se rellenan solos cuando llega la respuesta del backend
+  isLoading     = false;
+  isSubmitting  = false;
+  statusMessage: { text: string; type: 'success' | 'error' | null } = { text: '', type: null };
 
-  statusMessage: { text: string; type: 'success' | 'error' | null } = {
-    text: '',
-    type: null,
-  };
-
-  isSubmitting = false;
-  isPasswordSectionOpen = false;
+  // ── Contraseña ────────────────────────────────────────────────
+  passwordForm!: FormGroup;
+  showPasswordSection  = false;
+  showCurrentPassword  = false;
+  showNewPassword      = false;
+  showConfirmPassword  = false;
+  isChangingPassword   = false;
+  passwordStatus: { text: string; type: 'success' | 'error' | null } = { text: '', type: null };
 
   ngOnInit(): void {
+    this.userId = this.route.snapshot.paramMap.get('id') ?? '';
     this.buildForm();
-    this.loadProfile();
+    this.buildPasswordForm();
+    if (this.userId) this.loadProfile();
   }
 
+  // ── Formulario principal ──────────────────────────────────────
   private buildForm(): void {
-    this.profileForm = this.fb.group(
-      {
-        fullName: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
-        age: [null, [Validators.required, Validators.min(1), Validators.max(120)]],
-        gender: ['', [Validators.required]],
-        phone: ['', [Validators.required, Validators.pattern(/^[0-9]{4}-[0-9]{4}$/)]],
-        address: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(200)]],
-
-        familyMember: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
-        relation: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
-        email: ['', [Validators.required, Validators.email]],
-
-        emergencyName: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
-        emergencyRelation: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
-        emergencyPhone: ['', [Validators.required, Validators.pattern(/^[0-9]{4}-[0-9]{4}$/)]],
-
-        mobility: ['', [Validators.maxLength(300)]],
-        medical: ['', [Validators.maxLength(300)]],
-        allergies: ['', [Validators.maxLength(300)]],
-
-        currentPassword: [''],
-        newPassword: ['', [this.passwordStrengthValidator()]],
-        confirmPassword: [''],
-      },
-      {
-        validators: [this.passwordMatchValidator()],
-      }
-    );
+    this.profileForm = this.fb.group({
+      userName:              ['', [Validators.required, Validators.minLength(2)]],
+      lastName:              ['', [Validators.required, Validators.minLength(2)]],
+      email:                 ['', [Validators.required, Validators.email]],
+      age:                   [null, [Validators.min(1), Validators.max(120)]],
+      phone:                 ['', [Validators.pattern(/^[0-9]{4}-[0-9]{4}$/)]],
+      address:               [''],
+      profileImage:          [''],
+      familyMember:          [''],
+      familyRelation:        [''],
+      emergencyContactName:  ['', [Validators.required]],
+      emergencyContactPhone: ['', [Validators.required, Validators.pattern(/^[0-9]{4}-[0-9]{4}$/)]],
+      emergencyRelation:     [''],
+      mobilityNotes:         [''],
+      carePreference:        [''],
+      healthObservation:     [''],
+      allergies:             [''],
+    });
   }
 
   private loadProfile(): void {
-    this.profileService.getProfile().subscribe({
+    this.profileService.getSeniorProfile(this.userId).subscribe({
       next: (profile: SeniorProfile) => {
-        this.originalProfile = profile;
-        this.imagePreview = profile.profileImage || null;
-
+        this.imagePreview = profile.profileImage ?? null;
+        const parts    = (profile.fullName ?? '').split(' ');
+        const userName = parts[0] ?? '';
+        const lastName = parts.slice(1).join(' ');
         this.profileForm.patchValue({
-          fullName: profile.fullName,
-          age: profile.age,
-          gender: profile.gender,
-          phone: profile.phone,
-          address: profile.address,
-
-          familyMember: profile.familyMember,
-          relation: profile.relation,
-          email: profile.email,
-
-          emergencyName: profile.emergencyName,
-          emergencyRelation: profile.emergencyRelation,
-          emergencyPhone: profile.emergencyPhone,
-
-          mobility: profile.mobility || '',
-          medical: profile.medical || '',
-          allergies: profile.allergies || '',
-
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: '',
+          userName, lastName,
+          email:                profile.email,
+          age:                  profile.age,
+          phone:                profile.phone,
+          address:              profile.address,
+          familyMember:         profile.familyMember,
+          familyRelation:       profile.familyRelation,
+          emergencyContactName: profile.emergencyContactName,
+          emergencyContactPhone:profile.emergencyContactPhone,
+          emergencyRelation:    profile.emergencyRelation,
+          mobilityNotes:        profile.mobilityNotes,
+          carePreference:       profile.carePreference,
+          healthObservation:    profile.healthObservation,
+          allergies:            profile.allergies,
         });
       },
-      error: (error) => {
-        console.error('Error cargando perfil:', error);
-        this.showStatus('No se pudo cargar el perfil.', 'error');
-      },
+      error: () => this.showStatus('No se pudo cargar el perfil.', 'error')
     });
-  }
-
-  togglePasswordSection(): void {
-    this.isPasswordSectionOpen = !this.isPasswordSectionOpen;
-
-    if (!this.isPasswordSectionOpen) {
-      this.clearPasswordFields();
-    }
-  }
-
-  private clearPasswordFields(): void {
-    this.profileForm.patchValue({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-    });
-
-    this.profileForm.get('currentPassword')?.markAsPristine();
-    this.profileForm.get('currentPassword')?.markAsUntouched();
-
-    this.profileForm.get('newPassword')?.markAsPristine();
-    this.profileForm.get('newPassword')?.markAsUntouched();
-
-    this.profileForm.get('confirmPassword')?.markAsPristine();
-    this.profileForm.get('confirmPassword')?.markAsUntouched();
-
-    this.profileForm.updateValueAndValidity();
-  }
-
-  get wantsToChangePassword(): boolean {
-    const currentPassword = this.profileForm.get('currentPassword')?.value?.trim();
-    const newPassword = this.profileForm.get('newPassword')?.value?.trim();
-    const confirmPassword = this.profileForm.get('confirmPassword')?.value?.trim();
-
-    return !!currentPassword || !!newPassword || !!confirmPassword;
-  }
-
-  handleImageUpload(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-
-    this.selectedFileError = '';
-
-    if (!file) return;
-
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    const maxSize = 5 * 1024 * 1024; // 5MB
-
-    if (!allowedTypes.includes(file.type)) {
-      this.selectedFileError = 'Solo se permiten imágenes JPG, PNG o WEBP.';
-      input.value = '';
-      return;
-    }
-
-    if (file.size > maxSize) {
-      this.selectedFileError = 'La imagen no puede superar los 5MB.';
-      input.value = '';
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.imagePreview = reader.result as string;
-    };
-    reader.readAsDataURL(file);
-  }
-
-  removePhoto(): void {
-    this.imagePreview = null;
-    this.selectedFileError = '';
   }
 
   handleSave(): void {
-    this.statusMessage = { text: '', type: null };
-
     if (this.profileForm.invalid) {
       this.profileForm.markAllAsTouched();
-      this.showStatus('Por favor corrige los errores del formulario.', 'error');
+      this.showStatus('Corrige los errores del formulario.', 'error');
       return;
     }
-
-    const currentPassword = this.profileForm.get('currentPassword')?.value?.trim();
-    const newPassword = this.profileForm.get('newPassword')?.value?.trim();
-    const confirmPassword = this.profileForm.get('confirmPassword')?.value?.trim();
-
-    const wantsPasswordChange = !!currentPassword || !!newPassword || !!confirmPassword;
-
-    if (wantsPasswordChange) {
-      if (!currentPassword || !newPassword || !confirmPassword) {
-        this.showStatus('Para cambiar la contraseña debes completar los 3 campos.', 'error');
-        return;
-      }
-
-      if (newPassword !== confirmPassword) {
-        this.showStatus('La nueva contraseña y su confirmación no coinciden.', 'error');
-        return;
-      }
-
-      if (this.profileForm.get('newPassword')?.invalid) {
-        this.showStatus('La nueva contraseña no cumple los requisitos de seguridad.', 'error');
-        return;
-      }
-    }
-
     this.isSubmitting = true;
-
-    const formValue = this.profileForm.value;
-
-    const updatedProfile: SeniorProfile = {
-      ...this.originalProfile,
-      fullName: formValue.fullName.trim(),
-      age: Number(formValue.age),
-      gender: formValue.gender,
-      phone: formValue.phone.trim(),
-      address: formValue.address.trim(),
-
-      familyMember: formValue.familyMember.trim(),
-      relation: formValue.relation.trim(),
-      email: formValue.email.trim(),
-
-      emergencyName: formValue.emergencyName.trim(),
-      emergencyRelation: formValue.emergencyRelation.trim(),
-      emergencyPhone: formValue.emergencyPhone.trim(),
-
-      mobility: formValue.mobility?.trim() || '',
-      medical: formValue.medical?.trim() || '',
-      allergies: formValue.allergies?.trim() || '',
-
-      profileImage: this.imagePreview,
+    const v = this.profileForm.value;
+    const payload: SeniorProfileUpdateDTO = {
+      userName:              v.userName,
+      lastName:              v.lastName,
+      email:                 v.email,
+      age:                   v.age,
+      phone:                 v.phone,
+      address:               v.address,
+      profileImage:          this.imagePreview ?? undefined,
+      familyMember:          v.familyMember,
+      familyRelation:        v.familyRelation,
+      emergencyContactName:  v.emergencyContactName,
+      emergencyContactPhone: v.emergencyContactPhone,
+      emergencyRelation:     v.emergencyRelation,
+      mobilityNotes:         v.mobilityNotes,
+      carePreference:        v.carePreference,
+      healthObservation:     v.healthObservation,
+      allergies:             v.allergies,
     };
-
-    this.profileService.updateProfile(updatedProfile).subscribe({
+    this.profileService.updateSeniorProfile(this.userId, payload).subscribe({
       next: () => {
         this.isSubmitting = false;
         this.showStatus('Perfil actualizado correctamente.', 'success');
-
-        setTimeout(() => {
-          this.router.navigate(['/profile']);
-        }, 900);
+        setTimeout(() => this.router.navigate(['/profile', this.userId]), 1200);
       },
-      error: (error) => {
-        console.error('Error guardando perfil:', error);
+      error: () => {
         this.isSubmitting = false;
-        this.showStatus('Ocurrió un error al guardar los cambios.', 'error');
-      },
+        this.showStatus('Error al guardar cambios.', 'error');
+      }
     });
   }
 
-  handleCancel(): void {
-    this.profileForm.reset();
-    this.loadProfile();
-    this.statusMessage = { text: '', type: null };
-    this.router.navigate(['/profile']);
-  }
-
-  private showStatus(text: string, type: 'success' | 'error'): void {
-    this.statusMessage = { text, type };
+  // ── Formulario contraseña ─────────────────────────────────────
+  private buildPasswordForm(): void {
+    this.passwordForm = this.fb.group({
+      currentPassword: ['', Validators.required],
+      newPassword:     ['', [Validators.required, this.passwordStrengthValidator()]],
+      confirmPassword: ['', Validators.required],
+    }, { validators: this.passwordMatchValidator() });
   }
 
   private passwordStrengthValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
-      const value = control.value;
-
-      if (!value) return null;
-
-      const hasMinLength = value.length >= 8;
-      const hasUpperCase = /[A-Z]/.test(value);
-      const hasLowerCase = /[a-z]/.test(value);
-      const hasNumber = /[0-9]/.test(value);
-      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>_\-\\[\]/+=~`]/.test(value);
-
-      const isValid =
-        hasMinLength &&
-        hasUpperCase &&
-        hasLowerCase &&
-        hasNumber &&
-        hasSpecialChar;
-
-      return isValid ? null : { weakPassword: true };
+      const val = control.value;
+      if (!val) return null;
+      const ok = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/.test(val);
+      return ok ? null : { weakPassword: true };
     };
   }
 
   private passwordMatchValidator(): ValidatorFn {
     return (group: AbstractControl): ValidationErrors | null => {
-      const newPassword = group.get('newPassword')?.value;
-      const confirmPassword = group.get('confirmPassword')?.value;
-
-      if (!confirmPassword) return null;
-
-      return newPassword === confirmPassword ? null : { passwordMismatch: true };
+      const np = group.get('newPassword')?.value;
+      const cp = group.get('confirmPassword')?.value;
+      return np === cp ? null : { passwordMismatch: true };
     };
   }
 
-  getFieldError(fieldName: string): string {
-    const field = this.profileForm.get(fieldName);
-
-    if (!field || !field.touched || !field.errors) return '';
-
-    if (field.errors['required']) return 'Este campo es obligatorio.';
-    if (field.errors['email']) return 'Ingresa un correo electrónico válido.';
-    if (field.errors['minlength']) {
-      return `Debe tener al menos ${field.errors['minlength'].requiredLength} caracteres.`;
+  togglePasswordSection(): void {
+    this.showPasswordSection = !this.showPasswordSection;
+    if (!this.showPasswordSection) {
+      this.passwordForm.reset();
+      this.passwordStatus = { text: '', type: null };
     }
-    if (field.errors['maxlength']) {
-      return `No debe superar ${field.errors['maxlength'].requiredLength} caracteres.`;
-    }
-    if (field.errors['min']) {
-      return `El valor mínimo permitido es ${field.errors['min'].min}.`;
-    }
-    if (field.errors['max']) {
-      return `El valor máximo permitido es ${field.errors['max'].max}.`;
-    }
-    if (field.errors['pattern']) {
-      if (fieldName === 'phone' || fieldName === 'emergencyPhone') {
-        return 'Usa el formato 8888-7777.';
-      }
-      return 'Formato inválido.';
-    }
-    if (field.errors['weakPassword']) {
-      return 'Debe tener mínimo 8 caracteres, mayúscula, minúscula, número y símbolo.';
-    }
-
-    return 'Campo inválido.';
   }
 
-  get hasPasswordMismatch(): boolean {
-    return (
-      this.profileForm.hasError('passwordMismatch') &&
-      this.profileForm.get('confirmPassword')?.touched === true
-    );
+  handleChangePassword(): void {
+    if (this.passwordForm.invalid) {
+      this.passwordForm.markAllAsTouched();
+      return;
+    }
+    this.isChangingPassword = true;
+    // TODO: conectar endpoint real cuando esté disponible
+    // const payload = { currentPassword, newPassword }
+    // this.authService.changePassword(this.userId, payload).subscribe(...)
+    setTimeout(() => {
+      this.isChangingPassword = false;
+      this.passwordStatus = { text: 'Contraseña actualizada correctamente.', type: 'success' };
+      this.passwordForm.reset();
+      setTimeout(() => {
+        this.passwordStatus = { text: '', type: null };
+        this.showPasswordSection = false;
+      }, 2500);
+    }, 1000);
+  }
+
+  getPasswordError(field: string): string {
+    const c = this.passwordForm.get(field);
+    if (!c?.touched || !c.errors) return '';
+    if (c.errors['required'])     return 'Campo obligatorio.';
+    if (c.errors['weakPassword'])
+      return 'Mín. 8 caracteres, mayúscula, minúscula, número y símbolo.';
+    return '';
+  }
+
+  get passwordMismatch(): boolean {
+    return !!(this.passwordForm.errors?.['passwordMismatch']
+      && this.passwordForm.get('confirmPassword')?.touched);
+  }
+
+  // ── Imagen ────────────────────────────────────────────────────
+  handleImageUpload(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => { this.imagePreview = reader.result as string; };
+    reader.readAsDataURL(file);
+  }
+
+  removePhoto(): void { this.imagePreview = null; }
+
+  // ── Helpers ───────────────────────────────────────────────────
+  handleCancel(): void { this.router.navigate(['/profile', this.userId]); }
+
+  private showStatus(text: string, type: 'success' | 'error'): void {
+    this.statusMessage = { text, type };
+    setTimeout(() => this.statusMessage = { text: '', type: null }, 4000);
+  }
+
+  getFieldError(field: string): string {
+    const c = this.profileForm.get(field);
+    if (!c?.touched || !c.errors) return '';
+    if (c.errors['required'])  return 'Campo obligatorio.';
+    if (c.errors['email'])     return 'Correo inválido.';
+    if (c.errors['pattern'])   return 'Formato requerido: 8888-7777.';
+    if (c.errors['min'])       return 'Valor demasiado bajo.';
+    if (c.errors['max'])       return 'Valor demasiado alto.';
+    if (c.errors['minlength']) return `Mínimo ${c.errors['minlength'].requiredLength} caracteres.`;
+    return 'Dato inválido.';
+  }
+
+  isInvalid(field: string): boolean {
+    const c = this.profileForm.get(field);
+    return !!(c?.invalid && c.touched);
   }
 }

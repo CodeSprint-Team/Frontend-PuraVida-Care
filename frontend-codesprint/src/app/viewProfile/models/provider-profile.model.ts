@@ -1,35 +1,53 @@
-export interface ProviderService {
-  id: string;
+export interface CareServiceDTO {
+  id: number;
   name: string;
   description: string;
   price: string;
-  duration: string;
+  priceMode: string;
+  category: string | null;
+  publicationState: string;
 }
 
-export interface ProviderReview {
-  id?: string;
+export interface ReviewDTO {
+  id: number;
   author: string;
+  avatar: string | null;
   rating: number;
-  date: string;
   comment: string;
-  avatar: string;
+  date: string;
 }
 
 export interface ProviderProfile {
-  id: string;
+  id: number;
   fullName: string;
-  phone: string;
   email: string;
-  profileImage: string | null;
-  address?: string;
-  rating: number;
-  reviews: number;
-  verified: boolean;
-  zone: string;
-  yearsExperience: number;
-  bio: string;
-  insuranceActive: boolean;
-  services: ProviderService[];
-  reviewsList: ProviderReview[];
-  memberSince?: string;
+  providerType: string | null;
+  experienceDescription: string;
+  experienceYears: number;
+  averageRating: number;
+  providerState: string;
+  bio?: string;
+  zone?: string;
+  phone?: string;
+  profileImage?: string;
+  verified?: boolean;
+  insuranceActive?: boolean;
+  services?: CareServiceDTO[];
+  totalReviews?: number;
+  reviewsList?: ReviewDTO[];
+}
+
+export interface ProviderProfileUpdateDTO {
+  userName: string;
+  lastName: string;
+  email: string;
+  experienceDescription: string;
+  experienceYears?: number;
+  providerState?: string;
+  bio?: string;
+  zone?: string;
+  phone?: string;
+  profileImage?: string;
+  verified?: boolean;
+  insuranceActive?: boolean;
 }

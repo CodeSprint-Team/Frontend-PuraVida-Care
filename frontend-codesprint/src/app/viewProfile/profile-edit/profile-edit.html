@@ -2,565 +2,473 @@
   <main class="lg:ml-64 pb-24 lg:pb-8">
     <div class="container mx-auto px-6 py-8 max-w-4xl">
 
-      <!-- Header -->
-      <div class="flex items-center justify-between mb-8">
-        <div class="flex items-center gap-4">
-          <button
-            type="button"
-            (click)="handleCancel()"
-            class="w-11 h-11 rounded-xl bg-white shadow-sm border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition"
-          >
-            <ng-icon name="heroArrowLeft" class="text-xl text-gray-700"></ng-icon>
-          </button>
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- SKELETON                                                   -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <ng-container *ngIf="isLoading">
 
-          <div>
-            <h1 class="text-3xl font-bold text-gray-900">Editar perfil</h1>
-            <p class="text-gray-600">Actualiza la información del adulto mayor</p>
+        <div class="flex items-center justify-between mb-8">
+          <div class="flex items-center gap-4">
+            <div class="w-11 h-11 rounded-xl bg-gray-200 animate-pulse"></div>
+            <div class="space-y-2">
+              <div class="h-7 w-40 bg-gray-200 rounded-xl animate-pulse"></div>
+              <div class="h-4 w-56 bg-gray-100 rounded-xl animate-pulse"></div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Mensaje de estado -->
-      <div
-        *ngIf="statusMessage.type"
-        class="mb-6 rounded-2xl p-4 flex items-start gap-3 border"
-        [ngClass]="{
-          'bg-green-50 border-green-200 text-green-800': statusMessage.type === 'success',
-          'bg-red-50 border-red-200 text-red-800': statusMessage.type === 'error'
-        }"
-      >
-        <ng-icon
-          [name]="statusMessage.type === 'success' ? 'heroCheckCircle' : 'heroExclamationTriangle'"
-          class="text-2xl flex-shrink-0 mt-0.5"
-        ></ng-icon>
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div class="h-5 w-28 bg-gray-200 rounded-xl animate-pulse mb-4"></div>
+          <div class="flex items-center gap-6">
+            <div class="w-24 h-24 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+            <div class="h-11 w-28 bg-gray-200 rounded-xl animate-pulse"></div>
+          </div>
+        </div>
 
-        <p class="text-sm font-medium">{{ statusMessage.text }}</p>
-      </div>
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div class="h-5 w-44 bg-gray-200 rounded-xl animate-pulse mb-6"></div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="h-12 bg-gray-100 rounded-xl animate-pulse"></div>
+            <div class="h-12 bg-gray-100 rounded-xl animate-pulse"></div>
+            <div class="h-12 bg-gray-100 rounded-xl animate-pulse"></div>
+            <div class="h-12 bg-gray-100 rounded-xl animate-pulse"></div>
+            <div class="h-12 bg-gray-100 rounded-xl animate-pulse"></div>
+            <div class="md:col-span-2 h-24 bg-gray-100 rounded-xl animate-pulse"></div>
+          </div>
+        </div>
 
-      <!-- Formulario -->
-      <form
-        [formGroup]="profileForm"
-        (ngSubmit)="handleSave()"
-        class="space-y-6"
-      >
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div class="h-5 w-40 bg-gray-200 rounded-xl animate-pulse mb-6"></div>
+          <div class="grid grid-cols-2 gap-5">
+            <div class="h-12 bg-gray-100 rounded-xl animate-pulse"></div>
+            <div class="h-12 bg-gray-100 rounded-xl animate-pulse"></div>
+          </div>
+        </div>
 
-        <!-- Foto de perfil -->
-        <div class="bg-white rounded-2xl shadow-sm p-6">
-          <h2 class="text-lg font-bold text-gray-900 mb-4">Foto de perfil</h2>
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div class="h-5 w-48 bg-gray-200 rounded-xl animate-pulse mb-6"></div>
+          <div class="grid grid-cols-3 gap-5">
+            <div class="h-12 bg-gray-100 rounded-xl animate-pulse"></div>
+            <div class="h-12 bg-gray-100 rounded-xl animate-pulse"></div>
+            <div class="h-12 bg-gray-100 rounded-xl animate-pulse"></div>
+          </div>
+        </div>
 
-          <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-            <div class="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-teal-100 to-teal-200 border border-teal-100 flex items-center justify-center flex-shrink-0">
-              <img
-                *ngIf="imagePreview"
-                [src]="imagePreview"
-                alt="Vista previa de la foto"
-                class="w-full h-full object-cover"
-              />
-              <ng-icon
-                *ngIf="!imagePreview"
-                name="heroPhoto"
-                class="text-5xl text-teal-700"
-              ></ng-icon>
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div class="h-5 w-36 bg-gray-200 rounded-xl animate-pulse mb-6"></div>
+          <div class="space-y-4">
+            <div class="h-24 bg-gray-100 rounded-xl animate-pulse"></div>
+            <div class="h-24 bg-gray-100 rounded-xl animate-pulse"></div>
+            <div class="h-24 bg-gray-100 rounded-xl animate-pulse"></div>
+            <div class="h-24 bg-gray-100 rounded-xl animate-pulse"></div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div class="h-14 bg-gray-100 rounded-xl animate-pulse"></div>
+        </div>
+
+        <div class="flex gap-4 justify-end pb-4">
+          <div class="h-11 w-24 bg-gray-200 rounded-xl animate-pulse"></div>
+          <div class="h-11 w-36 bg-gray-200 rounded-xl animate-pulse"></div>
+        </div>
+
+      </ng-container>
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- CONTENIDO REAL                                             -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <ng-container *ngIf="!isLoading">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+          <div class="flex items-center gap-4">
+            <button type="button" (click)="handleCancel()"
+              class="w-11 h-11 rounded-xl bg-white shadow-sm border border-gray-200
+                     flex items-center justify-center hover:bg-gray-50 transition">
+              <ng-icon name="heroArrowLeft" class="text-xl text-gray-700"></ng-icon>
+            </button>
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900">Editar perfil</h1>
+              <p class="text-gray-600">Actualiza la información del adulto mayor</p>
             </div>
+          </div>
+        </div>
 
-            <div class="flex-1">
+        <!-- Mensaje de estado -->
+        <div *ngIf="statusMessage.type"
+             class="mb-6 rounded-2xl p-4 flex items-start gap-3 border"
+             [ngClass]="{
+               'bg-green-50 border-green-200 text-green-800': statusMessage.type === 'success',
+               'bg-red-50   border-red-200   text-red-800':   statusMessage.type === 'error'
+             }">
+          <ng-icon
+            [name]="statusMessage.type === 'success' ? 'heroCheckCircle' : 'heroExclamationTriangle'"
+            class="text-2xl flex-shrink-0 mt-0.5">
+          </ng-icon>
+          <p class="text-sm font-medium">{{ statusMessage.text }}</p>
+        </div>
+
+        <form [formGroup]="profileForm" (ngSubmit)="handleSave()" class="space-y-6">
+
+          <!-- Foto -->
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Foto de perfil</h2>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+              <div class="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-teal-100
+                          to-teal-200 border border-teal-100 flex items-center justify-center flex-shrink-0">
+                <img *ngIf="imagePreview" [src]="imagePreview" alt="Vista previa"
+                     class="w-full h-full object-cover" />
+                <ng-icon *ngIf="!imagePreview" name="heroPhoto"
+                         class="text-5xl text-teal-700"></ng-icon>
+              </div>
               <div class="flex flex-wrap gap-3">
-                <label
-                  for="profileImage"
-                  class="cursor-pointer bg-teal-600 text-white px-5 py-3 rounded-xl hover:bg-teal-700 transition font-medium"
-                >
+                <label for="profileImage"
+                  class="cursor-pointer bg-teal-600 text-white px-5 py-3 rounded-xl
+                         hover:bg-teal-700 transition font-medium text-sm">
                   Subir foto
                 </label>
-
-                <input
-                  id="profileImage"
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  class="hidden"
-                  (change)="handleImageUpload($event)"
-                />
-
-                <button
-                  *ngIf="imagePreview"
-                  type="button"
-                  (click)="removePhoto()"
-                  class="bg-gray-100 text-gray-700 px-5 py-3 rounded-xl hover:bg-gray-200 transition font-medium"
-                >
+                <input id="profileImage" type="file" accept="image/png,image/jpeg,image/webp"
+                       class="hidden" (change)="handleImageUpload($event)" />
+                <button *ngIf="imagePreview" type="button" (click)="removePhoto()"
+                  class="bg-gray-100 text-gray-700 px-5 py-3 rounded-xl
+                         hover:bg-gray-200 transition font-medium text-sm">
                   Quitar foto
                 </button>
               </div>
-
-              <p class="text-sm text-gray-500 mt-3">
-                Formatos permitidos: JPG, PNG o WEBP. Tamaño máximo: 5MB.
-              </p>
-
-              <p *ngIf="selectedFileError" class="text-sm text-red-600 mt-2 font-medium">
-                {{ selectedFileError }}
-              </p>
             </div>
           </div>
-        </div>
 
-        <!-- Información personal -->
-        <div class="bg-white rounded-2xl shadow-sm p-6">
-          <h2 class="text-lg font-bold text-gray-900 mb-6">Información personal</h2>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-            <!-- Nombre completo -->
-            <div class="md:col-span-2">
-              <label for="fullName" class="block text-sm font-medium text-gray-700 mb-2">
-                Nombre completo
-              </label>
-              <input
-                id="fullName"
-                type="text"
-                formControlName="fullName"
-                class="w-full rounded-xl border px-4 py-3 outline-none transition"
-                [ngClass]="{
-                  'border-red-300 focus:border-red-500': getFieldError('fullName'),
-                  'border-gray-300 focus:border-teal-500': !getFieldError('fullName')
-                }"
-                placeholder="Ingresa el nombre completo"
-              />
-              <p *ngIf="getFieldError('fullName')" class="text-sm text-red-600 mt-2">
-                {{ getFieldError('fullName') }}
-              </p>
+          <!-- Info personal -->
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-6">Información personal</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+                <input formControlName="userName" [class.border-red-400]="isInvalid('userName')"
+                  class="w-full rounded-xl border px-4 py-3 outline-none transition
+                         border-gray-300 focus:border-teal-500" placeholder="Juan" />
+                <p *ngIf="getFieldError('userName')" class="text-red-500 text-xs mt-1">
+                  {{ getFieldError('userName') }}
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Apellido</label>
+                <input formControlName="lastName" [class.border-red-400]="isInvalid('lastName')"
+                  class="w-full rounded-xl border px-4 py-3 outline-none transition
+                         border-gray-300 focus:border-teal-500" placeholder="Pérez" />
+                <p *ngIf="getFieldError('lastName')" class="text-red-500 text-xs mt-1">
+                  {{ getFieldError('lastName') }}
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Correo electrónico
+                </label>
+                <input formControlName="email" type="email"
+                  [class.border-red-400]="isInvalid('email')"
+                  class="w-full rounded-xl border px-4 py-3 outline-none transition
+                         border-gray-300 focus:border-teal-500" />
+                <p *ngIf="getFieldError('email')" class="text-red-500 text-xs mt-1">
+                  {{ getFieldError('email') }}
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Edad</label>
+                <input formControlName="age" type="number"
+                  [class.border-red-400]="isInvalid('age')"
+                  class="w-full rounded-xl border px-4 py-3 outline-none transition
+                         border-gray-300 focus:border-teal-500" placeholder="75" />
+                <p *ngIf="getFieldError('age')" class="text-red-500 text-xs mt-1">
+                  {{ getFieldError('age') }}
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+                <input formControlName="phone" [class.border-red-400]="isInvalid('phone')"
+                  class="w-full rounded-xl border px-4 py-3 outline-none transition
+                         border-gray-300 focus:border-teal-500" placeholder="8888-7777" />
+                <p *ngIf="getFieldError('phone')" class="text-red-500 text-xs mt-1">
+                  {{ getFieldError('phone') }}
+                </p>
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
+                <textarea formControlName="address" rows="3"
+                  class="w-full rounded-xl border px-4 py-3 outline-none transition resize-none
+                         border-gray-300 focus:border-teal-500"
+                  placeholder="Av. Central 123, San José">
+                </textarea>
+              </div>
             </div>
-
-            <!-- Edad -->
-            <div>
-              <label for="age" class="block text-sm font-medium text-gray-700 mb-2">
-                Edad
-              </label>
-              <input
-                id="age"
-                type="number"
-                formControlName="age"
-                class="w-full rounded-xl border px-4 py-3 outline-none transition"
-                [ngClass]="{
-                  'border-red-300 focus:border-red-500': getFieldError('age'),
-                  'border-gray-300 focus:border-teal-500': !getFieldError('age')
-                }"
-                placeholder="Ej: 78"
-              />
-              <p *ngIf="getFieldError('age')" class="text-sm text-red-600 mt-2">
-                {{ getFieldError('age') }}
-              </p>
-            </div>
-
-            <!-- Género -->
-            <div>
-              <label for="gender" class="block text-sm font-medium text-gray-700 mb-2">
-                Género
-              </label>
-              <select
-                id="gender"
-                formControlName="gender"
-                class="w-full rounded-xl border px-4 py-3 outline-none transition bg-white"
-                [ngClass]="{
-                  'border-red-300 focus:border-red-500': getFieldError('gender'),
-                  'border-gray-300 focus:border-teal-500': !getFieldError('gender')
-                }"
-              >
-                <option value="">Selecciona una opción</option>
-                <option value="Masculino">Masculino</option>
-                <option value="Femenino">Femenino</option>
-                <option value="Otro">Otro</option>
-              </select>
-              <p *ngIf="getFieldError('gender')" class="text-sm text-red-600 mt-2">
-                {{ getFieldError('gender') }}
-              </p>
-            </div>
-
-            <!-- Teléfono -->
-            <div>
-              <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
-                Teléfono
-              </label>
-              <input
-                id="phone"
-                type="text"
-                formControlName="phone"
-                class="w-full rounded-xl border px-4 py-3 outline-none transition"
-                [ngClass]="{
-                  'border-red-300 focus:border-red-500': getFieldError('phone'),
-                  'border-gray-300 focus:border-teal-500': !getFieldError('phone')
-                }"
-                placeholder="8888-7777"
-              />
-              <p *ngIf="getFieldError('phone')" class="text-sm text-red-600 mt-2">
-                {{ getFieldError('phone') }}
-              </p>
-            </div>
-
-            <!-- Correo -->
-            <div>
-              <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
-                Correo electrónico
-              </label>
-              <input
-                id="email"
-                type="email"
-                formControlName="email"
-                class="w-full rounded-xl border px-4 py-3 outline-none transition"
-                [ngClass]="{
-                  'border-red-300 focus:border-red-500': getFieldError('email'),
-                  'border-gray-300 focus:border-teal-500': !getFieldError('email')
-                }"
-                placeholder="correo@ejemplo.com"
-              />
-              <p *ngIf="getFieldError('email')" class="text-sm text-red-600 mt-2">
-                {{ getFieldError('email') }}
-              </p>
-            </div>
-
-            <!-- Dirección -->
-            <div class="md:col-span-2">
-              <label for="address" class="block text-sm font-medium text-gray-700 mb-2">
-                Dirección
-              </label>
-              <textarea
-                id="address"
-                rows="3"
-                formControlName="address"
-                class="w-full rounded-xl border px-4 py-3 outline-none transition resize-none"
-                [ngClass]="{
-                  'border-red-300 focus:border-red-500': getFieldError('address'),
-                  'border-gray-300 focus:border-teal-500': !getFieldError('address')
-                }"
-                placeholder="Ingresa la dirección completa"
-              ></textarea>
-              <p *ngIf="getFieldError('address')" class="text-sm text-red-600 mt-2">
-                {{ getFieldError('address') }}
-              </p>
-            </div>
-
           </div>
-        </div>
 
-        <!-- Familiar responsable -->
-        <div class="bg-white rounded-2xl shadow-sm p-6">
-          <h2 class="text-lg font-bold text-gray-900 mb-6">Familiar responsable</h2>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-            <!-- Nombre familiar -->
-            <div>
-              <label for="familyMember" class="block text-sm font-medium text-gray-700 mb-2">
-                Nombre del familiar
-              </label>
-              <input
-                id="familyMember"
-                type="text"
-                formControlName="familyMember"
-                class="w-full rounded-xl border px-4 py-3 outline-none transition"
-                [ngClass]="{
-                  'border-red-300 focus:border-red-500': getFieldError('familyMember'),
-                  'border-gray-300 focus:border-teal-500': !getFieldError('familyMember')
-                }"
-                placeholder="Nombre del familiar responsable"
-              />
-              <p *ngIf="getFieldError('familyMember')" class="text-sm text-red-600 mt-2">
-                {{ getFieldError('familyMember') }}
-              </p>
+          <!-- Familiar -->
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-6">Familiar responsable</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Nombre del familiar
+                </label>
+                <input formControlName="familyMember"
+                  class="w-full rounded-xl border px-4 py-3 outline-none transition
+                         border-gray-300 focus:border-teal-500" placeholder="Ana Pérez" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Parentesco</label>
+                <input formControlName="familyRelation"
+                  class="w-full rounded-xl border px-4 py-3 outline-none transition
+                         border-gray-300 focus:border-teal-500"
+                  placeholder="Hija, Hijo, Sobrino..." />
+              </div>
             </div>
-
-            <!-- Relación -->
-            <div>
-              <label for="relation" class="block text-sm font-medium text-gray-700 mb-2">
-                Relación
-              </label>
-              <input
-                id="relation"
-                type="text"
-                formControlName="relation"
-                class="w-full rounded-xl border px-4 py-3 outline-none transition"
-                [ngClass]="{
-                  'border-red-300 focus:border-red-500': getFieldError('relation'),
-                  'border-gray-300 focus:border-teal-500': !getFieldError('relation')
-                }"
-                placeholder="Ej: Hija, Hijo, Nieta"
-              />
-              <p *ngIf="getFieldError('relation')" class="text-sm text-red-600 mt-2">
-                {{ getFieldError('relation') }}
-              </p>
-            </div>
-
           </div>
-        </div>
 
-        <!-- Contacto de emergencia -->
-        <div class="bg-white rounded-2xl shadow-sm p-6">
-          <h2 class="text-lg font-bold text-gray-900 mb-6">Contacto de emergencia</h2>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-
-            <!-- Nombre -->
-            <div>
-              <label for="emergencyName" class="block text-sm font-medium text-gray-700 mb-2">
-                Nombre
-              </label>
-              <input
-                id="emergencyName"
-                type="text"
-                formControlName="emergencyName"
-                class="w-full rounded-xl border px-4 py-3 outline-none transition"
-                [ngClass]="{
-                  'border-red-300 focus:border-red-500': getFieldError('emergencyName'),
-                  'border-gray-300 focus:border-teal-500': !getFieldError('emergencyName')
-                }"
-                placeholder="Nombre del contacto"
-              />
-              <p *ngIf="getFieldError('emergencyName')" class="text-sm text-red-600 mt-2">
-                {{ getFieldError('emergencyName') }}
-              </p>
+          <!-- Emergencia -->
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-6">Contacto de emergencia</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Nombre <span class="text-red-500">*</span>
+                </label>
+                <input formControlName="emergencyContactName"
+                  [class.border-red-400]="isInvalid('emergencyContactName')"
+                  class="w-full rounded-xl border px-4 py-3 outline-none transition
+                         border-gray-300 focus:border-teal-500" />
+                <p *ngIf="getFieldError('emergencyContactName')"
+                   class="text-red-500 text-xs mt-1">
+                  {{ getFieldError('emergencyContactName') }}
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Relación</label>
+                <input formControlName="emergencyRelation"
+                  class="w-full rounded-xl border px-4 py-3 outline-none transition
+                         border-gray-300 focus:border-teal-500" placeholder="Hija, Hijo..." />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Teléfono <span class="text-red-500">*</span>
+                </label>
+                <input formControlName="emergencyContactPhone"
+                  [class.border-red-400]="isInvalid('emergencyContactPhone')"
+                  class="w-full rounded-xl border px-4 py-3 outline-none transition
+                         border-gray-300 focus:border-teal-500" placeholder="8888-7777" />
+                <p *ngIf="getFieldError('emergencyContactPhone')"
+                   class="text-red-500 text-xs mt-1">
+                  {{ getFieldError('emergencyContactPhone') }}
+                </p>
+              </div>
             </div>
-
-            <!-- Relación -->
-            <div>
-              <label for="emergencyRelation" class="block text-sm font-medium text-gray-700 mb-2">
-                Relación
-              </label>
-              <input
-                id="emergencyRelation"
-                type="text"
-                formControlName="emergencyRelation"
-                class="w-full rounded-xl border px-4 py-3 outline-none transition"
-                [ngClass]="{
-                  'border-red-300 focus:border-red-500': getFieldError('emergencyRelation'),
-                  'border-gray-300 focus:border-teal-500': !getFieldError('emergencyRelation')
-                }"
-                placeholder="Ej: Hijo, Vecino, Cuidador"
-              />
-              <p *ngIf="getFieldError('emergencyRelation')" class="text-sm text-red-600 mt-2">
-                {{ getFieldError('emergencyRelation') }}
-              </p>
-            </div>
-
-            <!-- Teléfono -->
-            <div>
-              <label for="emergencyPhone" class="block text-sm font-medium text-gray-700 mb-2">
-                Teléfono
-              </label>
-              <input
-                id="emergencyPhone"
-                type="text"
-                formControlName="emergencyPhone"
-                class="w-full rounded-xl border px-4 py-3 outline-none transition"
-                [ngClass]="{
-                  'border-red-300 focus:border-red-500': getFieldError('emergencyPhone'),
-                  'border-gray-300 focus:border-teal-500': !getFieldError('emergencyPhone')
-                }"
-                placeholder="8888-7777"
-              />
-              <p *ngIf="getFieldError('emergencyPhone')" class="text-sm text-red-600 mt-2">
-                {{ getFieldError('emergencyPhone') }}
-              </p>
-            </div>
-
           </div>
-        </div>
 
-        <!-- Notas médicas -->
-        <div class="bg-white rounded-2xl shadow-sm p-6">
-          <h2 class="text-lg font-bold text-gray-900 mb-6">Notas importantes</h2>
-
-          <div class="space-y-5">
-
-            <!-- Movilidad -->
-            <div>
-              <label for="mobility" class="block text-sm font-medium text-gray-700 mb-2">
-                Movilidad
-              </label>
-              <textarea
-                id="mobility"
-                rows="3"
-                formControlName="mobility"
-                class="w-full rounded-xl border px-4 py-3 outline-none transition resize-none"
-                [ngClass]="{
-                  'border-red-300 focus:border-red-500': getFieldError('mobility'),
-                  'border-gray-300 focus:border-teal-500': !getFieldError('mobility')
-                }"
-                placeholder="Ej: Usa bastón, requiere ayuda para subir escaleras..."
-              ></textarea>
-              <p *ngIf="getFieldError('mobility')" class="text-sm text-red-600 mt-2">
-                {{ getFieldError('mobility') }}
-              </p>
+          <!-- Notas -->
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-6">Notas importantes</h2>
+            <div class="space-y-5">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Movilidad</label>
+                <textarea formControlName="mobilityNotes" rows="3"
+                  class="w-full rounded-xl border px-4 py-3 outline-none transition resize-none
+                         border-gray-300 focus:border-teal-500"
+                  placeholder="Ej: Camina con bastón, necesita apoyo en escaleras.">
+                </textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Preferencia de cuidado
+                </label>
+                <textarea formControlName="carePreference" rows="3"
+                  class="w-full rounded-xl border px-4 py-3 outline-none transition resize-none
+                         border-gray-300 focus:border-teal-500"
+                  placeholder="Ej: Prefiere atención en horario matutino.">
+                </textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Condiciones médicas
+                </label>
+                <textarea formControlName="healthObservation" rows="3"
+                  class="w-full rounded-xl border px-4 py-3 outline-none transition resize-none
+                         border-gray-300 focus:border-teal-500"
+                  placeholder="Ej: Hipertensión arterial, diabetes tipo 2.">
+                </textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Alergias</label>
+                <textarea formControlName="allergies" rows="3"
+                  class="w-full rounded-xl border px-4 py-3 outline-none transition resize-none
+                         border-gray-300 focus:border-teal-500"
+                  placeholder="Ej: Penicilina, mariscos.">
+                </textarea>
+              </div>
             </div>
-
-            <!-- Condiciones médicas -->
-            <div>
-              <label for="medical" class="block text-sm font-medium text-gray-700 mb-2">
-                Condiciones médicas
-              </label>
-              <textarea
-                id="medical"
-                rows="3"
-                formControlName="medical"
-                class="w-full rounded-xl border px-4 py-3 outline-none transition resize-none"
-                [ngClass]="{
-                  'border-red-300 focus:border-red-500': getFieldError('medical'),
-                  'border-gray-300 focus:border-teal-500': !getFieldError('medical')
-                }"
-                placeholder="Ej: Hipertensión, diabetes, medicamentos importantes..."
-              ></textarea>
-              <p *ngIf="getFieldError('medical')" class="text-sm text-red-600 mt-2">
-                {{ getFieldError('medical') }}
-              </p>
-            </div>
-
-            <!-- Alergias -->
-            <div>
-              <label for="allergies" class="block text-sm font-medium text-gray-700 mb-2">
-                Alergias
-              </label>
-              <textarea
-                id="allergies"
-                rows="3"
-                formControlName="allergies"
-                class="w-full rounded-xl border px-4 py-3 outline-none transition resize-none"
-                [ngClass]="{
-                  'border-red-300 focus:border-red-500': getFieldError('allergies'),
-                  'border-gray-300 focus:border-teal-500': !getFieldError('allergies')
-                }"
-                placeholder="Ej: Penicilina, mariscos, látex..."
-              ></textarea>
-              <p *ngIf="getFieldError('allergies')" class="text-sm text-red-600 mt-2">
-                {{ getFieldError('allergies') }}
-              </p>
-            </div>
-
           </div>
-        </div>
 
-        <!-- Cambio de contraseña -->
-        <div class="bg-white rounded-2xl shadow-sm p-6">
-          <button
-            type="button"
-            (click)="togglePasswordSection()"
-            class="w-full flex items-center justify-between"
-          >
-            <div class="text-left">
-              <h2 class="text-lg font-bold text-gray-900">Cambiar contraseña</h2>
-              <p class="text-sm text-gray-500 mt-1">
-                Opcional. Solo completa esta sección si deseas actualizar tu contraseña.
-              </p>
+          <!-- Botones guardar -->
+          <div class="flex flex-col sm:flex-row gap-4 justify-end">
+            <button type="button" (click)="handleCancel()"
+              class="px-8 py-3 rounded-xl border border-gray-300 bg-white text-gray-700
+                     font-medium hover:bg-gray-50 transition text-sm">
+              Cancelar
+            </button>
+            <button type="submit" [disabled]="isSubmitting"
+              class="px-8 py-3 rounded-xl bg-teal-600 text-white font-medium
+                     hover:bg-teal-700 transition text-sm disabled:opacity-50
+                     disabled:cursor-not-allowed flex items-center gap-2">
+              <span *ngIf="isSubmitting"
+                    class="w-4 h-4 border-2 border-white border-t-transparent
+                           rounded-full animate-spin"></span>
+              {{ isSubmitting ? 'Guardando...' : 'Guardar cambios' }}
+            </button>
+          </div>
+
+        </form>
+
+        <!-- ── Cambiar contraseña ─────────────────────────────────── -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 mt-6 mb-4">
+
+          <button type="button" (click)="togglePasswordSection()"
+            class="w-full flex items-center justify-between group">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center
+                          justify-center group-hover:bg-teal-50 transition">
+                <ng-icon name="heroLockClosed"
+                         class="text-xl text-gray-600 group-hover:text-teal-600 transition">
+                </ng-icon>
+              </div>
+              <div class="text-left">
+                <h3 class="font-bold text-gray-900">Cambiar contraseña</h3>
+                <p class="text-sm text-gray-500">Actualiza tu contraseña de acceso</p>
+              </div>
             </div>
-
-            <ng-icon
-              [name]="isPasswordSectionOpen ? 'heroChevronUp' : 'heroChevronDown'"
-              class="text-2xl text-gray-600"
-            ></ng-icon>
+            <span class="text-gray-400 text-lg transition-transform duration-200"
+                  [class.rotate-180]="showPasswordSection">⌄</span>
           </button>
 
-          <div *ngIf="isPasswordSectionOpen" class="mt-6 border-t border-gray-100 pt-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div *ngIf="showPasswordSection"
+               class="mt-6 border-t border-gray-100 pt-6"
+               [formGroup]="passwordForm">
+
+            <!-- Estado contraseña -->
+            <div *ngIf="passwordStatus.type"
+                 class="mb-5 rounded-xl p-4 flex items-start gap-3 border"
+                 [ngClass]="{
+                   'bg-green-50 border-green-200 text-green-800': passwordStatus.type === 'success',
+                   'bg-red-50   border-red-200   text-red-800':   passwordStatus.type === 'error'
+                 }">
+              <ng-icon
+                [name]="passwordStatus.type === 'success' ? 'heroCheckCircle' : 'heroExclamationTriangle'"
+                class="text-xl flex-shrink-0 mt-0.5">
+              </ng-icon>
+              <p class="text-sm font-medium">{{ passwordStatus.text }}</p>
+            </div>
+
+            <div class="space-y-4">
 
               <!-- Contraseña actual -->
-              <div class="md:col-span-2">
-                <label for="currentPassword" class="block text-sm font-medium text-gray-700 mb-2">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
                   Contraseña actual
                 </label>
-                <input
-                  id="currentPassword"
-                  type="password"
-                  formControlName="currentPassword"
-                  class="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-teal-500 transition"
-                  placeholder="Ingresa tu contraseña actual"
-                />
+                <div class="relative">
+                  <input formControlName="currentPassword"
+                    [type]="showCurrentPassword ? 'text' : 'password'"
+                    class="w-full rounded-xl border px-4 py-3 pr-12 outline-none transition
+                           border-gray-300 focus:border-teal-500"
+                    placeholder="••••••••" />
+                  <button type="button" (click)="showCurrentPassword = !showCurrentPassword"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400
+                           hover:text-gray-600 transition">
+                    <ng-icon [name]="showCurrentPassword ? 'heroEyeSlash' : 'heroEye'"
+                             class="text-xl"></ng-icon>
+                  </button>
+                </div>
+                <p *ngIf="getPasswordError('currentPassword')"
+                   class="text-red-500 text-xs mt-1">
+                  {{ getPasswordError('currentPassword') }}
+                </p>
               </div>
 
               <!-- Nueva contraseña -->
               <div>
-                <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
                   Nueva contraseña
                 </label>
-                <input
-                  id="newPassword"
-                  type="password"
-                  formControlName="newPassword"
-                  class="w-full rounded-xl border px-4 py-3 outline-none transition"
-                  [ngClass]="{
-                    'border-red-300 focus:border-red-500': getFieldError('newPassword'),
-                    'border-gray-300 focus:border-teal-500': !getFieldError('newPassword')
-                  }"
-                  placeholder="Nueva contraseña"
-                />
-                <p *ngIf="getFieldError('newPassword')" class="text-sm text-red-600 mt-2">
-                  {{ getFieldError('newPassword') }}
+                <div class="relative">
+                  <input formControlName="newPassword"
+                    [type]="showNewPassword ? 'text' : 'password'"
+                    class="w-full rounded-xl border px-4 py-3 pr-12 outline-none transition
+                           border-gray-300 focus:border-teal-500"
+                    placeholder="••••••••" />
+                  <button type="button" (click)="showNewPassword = !showNewPassword"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400
+                           hover:text-gray-600 transition">
+                    <ng-icon [name]="showNewPassword ? 'heroEyeSlash' : 'heroEye'"
+                             class="text-xl"></ng-icon>
+                  </button>
+                </div>
+                <p *ngIf="getPasswordError('newPassword')"
+                   class="text-red-500 text-xs mt-1">
+                  {{ getPasswordError('newPassword') }}
+                </p>
+                <p class="text-xs text-gray-400 mt-1">
+                  Mínimo 8 caracteres, una mayúscula, un número y un símbolo (!@#$%^&*)
                 </p>
               </div>
 
               <!-- Confirmar contraseña -->
               <div>
-                <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
                   Confirmar nueva contraseña
                 </label>
-                <input
-                  id="confirmPassword"
-                  type="password"
-                  formControlName="confirmPassword"
-                  class="w-full rounded-xl border px-4 py-3 outline-none transition"
-                  [ngClass]="{
-                    'border-red-300 focus:border-red-500': hasPasswordMismatch,
-                    'border-gray-300 focus:border-teal-500': !hasPasswordMismatch
-                  }"
-                  placeholder="Confirma la nueva contraseña"
-                />
-                <p *ngIf="hasPasswordMismatch" class="text-sm text-red-600 mt-2">
-                  La nueva contraseña y su confirmación no coinciden.
+                <div class="relative">
+                  <input formControlName="confirmPassword"
+                    [type]="showConfirmPassword ? 'text' : 'password'"
+                    class="w-full rounded-xl border px-4 py-3 pr-12 outline-none transition"
+                    [ngClass]="passwordMismatch
+                      ? 'border-red-400 focus:border-red-500'
+                      : 'border-gray-300 focus:border-teal-500'"
+                    placeholder="••••••••" />
+                  <button type="button" (click)="showConfirmPassword = !showConfirmPassword"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400
+                           hover:text-gray-600 transition">
+                    <ng-icon [name]="showConfirmPassword ? 'heroEyeSlash' : 'heroEye'"
+                             class="text-xl"></ng-icon>
+                  </button>
+                </div>
+                <p *ngIf="passwordMismatch" class="text-red-500 text-xs mt-1">
+                  Las contraseñas no coinciden.
                 </p>
               </div>
 
             </div>
 
-            <!-- Requisitos -->
-            <div class="mt-5 rounded-xl bg-gray-50 border border-gray-200 p-4">
-              <p class="text-sm font-medium text-gray-800 mb-2">Requisitos de la nueva contraseña:</p>
-              <ul class="text-sm text-gray-600 space-y-1 list-disc list-inside">
-                <li>Mínimo 8 caracteres</li>
-                <li>Al menos una letra mayúscula</li>
-                <li>Al menos una letra minúscula</li>
-                <li>Al menos un número</li>
-                <li>Al menos un símbolo especial</li>
-              </ul>
+            <!-- Botones contraseña -->
+            <div class="flex gap-3 mt-6">
+              <button type="button" (click)="togglePasswordSection()"
+                class="px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700
+                       text-sm font-medium hover:bg-gray-50 transition">
+                Cancelar
+              </button>
+              <button type="button" (click)="handleChangePassword()"
+                [disabled]="isChangingPassword"
+                class="px-5 py-2.5 rounded-xl bg-teal-600 text-white text-sm font-medium
+                       hover:bg-teal-700 transition disabled:opacity-50
+                       disabled:cursor-not-allowed flex items-center gap-2">
+                <span *ngIf="isChangingPassword"
+                      class="w-4 h-4 border-2 border-white border-t-transparent
+                             rounded-full animate-spin"></span>
+                {{ isChangingPassword ? 'Guardando...' : 'Cambiar contraseña' }}
+              </button>
             </div>
 
-            <!-- Mensaje si empezó a llenar -->
-            <div
-              *ngIf="wantsToChangePassword"
-              class="mt-4 rounded-xl bg-amber-50 border border-amber-200 p-4"
-            >
-              <p class="text-sm text-amber-800 font-medium">
-                Si deseas cambiar la contraseña, debes completar los 3 campos:
-                contraseña actual, nueva contraseña y confirmación.
-              </p>
-            </div>
           </div>
         </div>
 
-        <!-- Botones -->
-        <div class="flex flex-col sm:flex-row gap-4 justify-end">
-          <button
-            type="button"
-            (click)="handleCancel()"
-            class="px-6 py-3 rounded-xl bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition"
-            [disabled]="isSubmitting"
-          >
-            Cancelar
-          </button>
-
-          <button
-            type="submit"
-            class="px-6 py-3 rounded-xl bg-teal-600 text-white font-medium hover:bg-teal-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
-            [disabled]="isSubmitting"
-          >
-            {{ isSubmitting ? 'Guardando...' : 'Guardar cambios' }}
-          </button>
-        </div>
-
-      </form>
+      </ng-container>
     </div>
   </main>
 </div>

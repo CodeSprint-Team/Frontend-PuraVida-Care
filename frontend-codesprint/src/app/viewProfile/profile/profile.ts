@@ -1,88 +1,77 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+// src/app/viewProfile/profile/profile.ts
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../../components/navbar/navbar';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { ProfileService } from '../services/profile.services';
-import { SeniorProfile } from '../models/senior-profile.model';
-
+import { SeniorProfile, FavoriteProviderDTO } from '../models/senior-profile.model';
 import {
-  heroPencilSquare,
-  heroUser,
-  heroPhone,
-  heroEnvelope,
-  heroMapPin,
-  heroShieldCheck,
-  heroInformationCircle,
-  heroDocumentText,
-  heroHeart,
-  heroStar,
-  heroUsers,
-  heroPhoto
+  heroPencilSquare, heroUser, heroPhone, heroEnvelope,
+  heroMapPin, heroShieldCheck, heroInformationCircle,
+  heroDocumentText, heroHeart, heroStar, heroUsers, heroPhoto, heroTrash
 } from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
   imports: [CommonModule, NavbarComponent, NgIconComponent],
-  viewProviders: [
-    provideIcons({
-      heroPencilSquare,
-      heroUser,
-      heroPhone,
-      heroEnvelope,
-      heroMapPin,
-      heroShieldCheck,
-      heroInformationCircle,
-      heroDocumentText,
-      heroHeart,
-      heroStar,
-      heroUsers,
-      heroPhoto
-    }),
-  ],
+  viewProviders: [provideIcons({
+    heroPencilSquare, heroUser, heroPhone, heroEnvelope,
+    heroMapPin, heroShieldCheck, heroInformationCircle,
+    heroDocumentText, heroHeart, heroStar, heroUsers, heroPhoto, heroTrash
+  })],
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })
-export class Profile implements OnInit {
-  private router = inject(Router);
+export class ProfileComponent implements OnInit {
+  private router         = inject(Router);
+  private route          = inject(ActivatedRoute);
   private profileService = inject(ProfileService);
+  private cdr            = inject(ChangeDetectorRef);
 
   profileData: SeniorProfile | null = null;
-  isLoading = true;
+  errorMessage = '';
+  userId       = '';
 
   ngOnInit(): void {
+    this.userId = this.route.snapshot.paramMap.get('id') ?? '1';
     this.loadProfile();
   }
 
   loadProfile(): void {
-    this.isLoading = true;
-
-    this.profileService.getProfile().subscribe({
-      next: (profile: SeniorProfile) => {
+    this.errorMessage = '';
+    this.profileService.getSeniorProfile(this.userId).subscribe({
+      next: (profile) => {
         this.profileData = profile;
-        this.isLoading = false;
+        this.cdr.detectChanges();
       },
-      error: (error) => {
-        console.error('Error cargando perfil:', error);
-        this.isLoading = false;
-      },
+      error: (err) => {
+        console.error('Error cargando perfil:', err);
+        this.errorMessage = 'No se pudo cargar el perfil. Intenta nuevamente.';
+        this.cdr.detectChanges();
+      }
     });
   }
 
+  removeFavorite(provider: FavoriteProviderDTO): void {
+    if (!this.profileData) return;
+    this.profileService.removeFavoriteProvider(this.profileData.id, provider.providerProfileId)
+      .subscribe({
+        next: (updated) => {
+          this.profileData = updated;
+          this.cdr.detectChanges();
+        },
+        error: (err) => console.error('Error eliminando favorito:', err)
+      });
+  }
+
+  getStars(rating: number): number[] {
+    return Array.from({ length: 5 }, (_, i) => i + 1);
+  }
+
   navigateToEdit(): void {
-    this.router.navigate(['/profile-edit']);
-  }
-
-  viewProvider(id: number): void {
-    this.router.navigate(['/proveedor', id]);
-  }
-
-  getYearsInPlatform(): number {
-    if (!this.profileData?.memberSince) return 0;
-
-    const startYear = new Date(this.profileData.memberSince).getFullYear();
-    return new Date().getFullYear() - startYear;
+    this.router.navigate(['/profile-edit', this.userId]);
   }
 
   hasProfileImage(): boolean {

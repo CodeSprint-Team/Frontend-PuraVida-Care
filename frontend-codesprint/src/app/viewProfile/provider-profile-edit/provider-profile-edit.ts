@@ -1,297 +1,203 @@
+// src/app/viewProfile/provider-profile-edit/provider-profile-edit.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  FormArray,
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-
 import { ProfileService } from '../services/profile.services';
-import { ProviderProfile } from '../models/provider-profile.model';
-
+import { ProviderProfile, ProviderProfileUpdateDTO } from '../models/provider-profile.model';
 import {
-  heroArrowLeft,
-  heroPhoto,
-  heroCheckCircle,
-  heroExclamationTriangle,
-  heroPlus,
-  heroTrash,
-  heroBriefcase,
-  heroMapPin,
-  heroPhone,
-  heroEnvelope,
-  heroPencilSquare
+  heroArrowLeft, heroPhoto, heroCheckCircle, heroExclamationTriangle,
+  heroPlus, heroTrash, heroBriefcase, heroMapPin,
+  heroPhone, heroEnvelope, heroPencilSquare
 } from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-provider-profile-edit',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, NgIconComponent],
-  viewProviders: [
-    provideIcons({
-      heroArrowLeft,
-      heroPhoto,
-      heroCheckCircle,
-      heroExclamationTriangle,
-      heroPlus,
-      heroTrash,
-      heroBriefcase,
-      heroMapPin,
-      heroPhone,
-      heroEnvelope,
-      heroPencilSquare
-    }),
-  ],
+  viewProviders: [provideIcons({
+    heroArrowLeft, heroPhoto, heroCheckCircle, heroExclamationTriangle,
+    heroPlus, heroTrash, heroBriefcase, heroMapPin,
+    heroPhone, heroEnvelope, heroPencilSquare
+  })],
   templateUrl: './provider-profile-edit.html',
   styleUrls: ['./provider-profile-edit.css'],
 })
 export class ProviderProfileEditComponent implements OnInit {
-  private fb = inject(FormBuilder);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
+  private fb             = inject(FormBuilder);
+  private route          = inject(ActivatedRoute);
+  private router         = inject(Router);
   private profileService = inject(ProfileService);
 
-  providerId = '';
-  providerData!: ProviderProfile;
-
+  providerId   = '';
+  providerData: ProviderProfile | null = null;
   providerForm!: FormGroup;
 
-  isLoading = true;
+  // ✅ Empieza en false → el formulario se muestra de inmediato
+  // Los campos se rellenan solos cuando llega la respuesta del backend
+  isLoading    = false;
   isSubmitting = false;
-
   imagePreview: string | null = null;
   selectedFileError = '';
-
-  statusMessage: { text: string; type: 'success' | 'error' | null } = {
-    text: '',
-    type: null
-  };
+  statusMessage: { text: string; type: 'success' | 'error' | null } = { text: '', type: null };
 
   ngOnInit(): void {
-    this.providerId = this.route.snapshot.paramMap.get('id') || '1';
+    this.providerId = this.route.snapshot.paramMap.get('id') ?? '1';
     this.initForm();
     this.loadProvider();
   }
 
+  // ── Formulario ────────────────────────────────────────────────
   initForm(): void {
     this.providerForm = this.fb.group({
-      fullName: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.required, Validators.minLength(8)]],
-      zone: ['', [Validators.required, Validators.minLength(3)]],
-      bio: ['', [Validators.required, Validators.minLength(20)]],
-      yearsExperience: [1, [Validators.required, Validators.min(0)]],
-      insuranceActive: [false],
-      profileImage: [''],
-      services: this.fb.array([])
+      userName:             ['', [Validators.required, Validators.minLength(2)]],
+      lastName:             ['', [Validators.required, Validators.minLength(2)]],
+      email:                ['', [Validators.required, Validators.email]],
+      phone:                ['', [Validators.pattern(/^[0-9]{4}-[0-9]{4}$/)]],
+      zone:                 [''],
+      bio:                  [''],
+      experienceYears:      [0, [Validators.required, Validators.min(0)]],
+      experienceDescription:['', [Validators.required, Validators.minLength(10)]],
+      insuranceActive:      [false],
+      profileImage:         [''],
     });
   }
 
+  // ── Carga datos y rellena el form cuando llegan ───────────────
   loadProvider(): void {
-    this.isLoading = true;
-
     this.profileService.getProviderProfile(this.providerId).subscribe({
-      next: (provider) => {
+      next: (provider: ProviderProfile) => {
         this.providerData = provider;
-        this.imagePreview = provider.profileImage || null;
+        this.imagePreview = provider.profileImage ?? null;
+
+        const parts    = (provider.fullName ?? '').split(' ');
+        const userName = parts[0] ?? '';
+        const lastName = parts.slice(1).join(' ');
 
         this.providerForm.patchValue({
-          fullName: provider.fullName,
-          email: provider.email,
-          phone: provider.phone,
-          zone: provider.zone,
-          bio: provider.bio,
-          yearsExperience: provider.yearsExperience,
-          insuranceActive: provider.insuranceActive,
-          profileImage: provider.profileImage
+          userName,
+          lastName,
+          email:                provider.email,
+          phone:                provider.phone,
+          zone:                 provider.zone,
+          bio:                  provider.bio,
+          experienceYears:      provider.experienceYears,
+          experienceDescription:provider.experienceDescription,
+          insuranceActive:      provider.insuranceActive ?? false,
+          profileImage:         provider.profileImage ?? '',
         });
-
-        this.setServices(provider.services || []);
-        this.isLoading = false;
       },
-      error: (error) => {
-        console.error('Error cargando proveedor:', error);
-        this.statusMessage = {
-          text: 'No se pudo cargar el perfil del proveedor.',
-          type: 'error'
-        };
-        this.isLoading = false;
+      error: (err: unknown) => {
+        console.error('Error cargando proveedor:', err);
+        this.showStatus('No se pudo cargar el perfil del proveedor.', 'error');
       }
     });
   }
 
-  get servicesArray(): FormArray {
-    return this.providerForm.get('services') as FormArray;
-  }
+  // ── Guardar ───────────────────────────────────────────────────
+  handleSave(): void {
+    this.statusMessage = { text: '', type: null };
 
-  createServiceGroup(service?: any): FormGroup {
-    return this.fb.group({
-      id: [service?.id || this.generateServiceId()],
-      name: [service?.name || '', [Validators.required, Validators.minLength(3)]],
-      description: [service?.description || '', [Validators.required, Validators.minLength(10)]],
-      price: [service?.price || '', [Validators.required]],
-      duration: [service?.duration || '', [Validators.required]]
-    });
-  }
-
-  setServices(services: any[]): void {
-    this.servicesArray.clear();
-
-    if (services?.length) {
-      services.forEach(service => {
-        this.servicesArray.push(this.createServiceGroup(service));
-      });
-    } else {
-      this.addService();
-    }
-  }
-
-  addService(): void {
-    this.servicesArray.push(this.createServiceGroup());
-  }
-
-  removeService(index: number): void {
-    if (this.servicesArray.length > 1) {
-      this.servicesArray.removeAt(index);
-    }
-  }
-
-  generateServiceId(): string {
-    return `service-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-  }
-
-  handleImageUpload(event: Event): void {
-    const input = event.target as HTMLInputElement;
-
-    if (!input.files || input.files.length === 0) return;
-
-    const file = input.files[0];
-    this.selectedFileError = '';
-
-    const allowedTypes = ['image/png', 'image/jpeg', 'image/webp'];
-    const maxSize = 5 * 1024 * 1024; // 5MB
-
-    if (!allowedTypes.includes(file.type)) {
-      this.selectedFileError = 'Formato no permitido. Usa JPG, PNG o WEBP.';
+    if (this.providerForm.invalid) {
+      this.providerForm.markAllAsTouched();
+      this.showStatus('Por favor corrige los campos marcados antes de guardar.', 'error');
       return;
     }
 
+    this.isSubmitting = true;
+    const v = this.providerForm.getRawValue();
+
+    const payload: ProviderProfileUpdateDTO = {
+      userName:             v.userName,
+      lastName:             v.lastName,
+      email:                v.email,
+      phone:                v.phone,
+      zone:                 v.zone,
+      bio:                  v.bio,
+      experienceYears:      Number(v.experienceYears),
+      experienceDescription:v.experienceDescription,
+      insuranceActive:      v.insuranceActive,
+      profileImage:         this.imagePreview ?? undefined,
+      providerState:        this.providerData?.providerState,
+    };
+
+    this.profileService.updateProviderProfile(this.providerId, payload).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.showStatus('Perfil actualizado correctamente.', 'success');
+        setTimeout(() => this.router.navigate(['/provider-profile', this.providerId]), 900);
+      },
+      error: (err: unknown) => {
+        console.error('Error actualizando proveedor:', err);
+        this.isSubmitting = false;
+        this.showStatus('Ocurrió un error al guardar los cambios.', 'error');
+      }
+    });
+  }
+
+  // ── Imagen ────────────────────────────────────────────────────
+  handleImageUpload(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    const allowed = ['image/png', 'image/jpeg', 'image/webp'];
+    const maxSize = 5 * 1024 * 1024;
+
+    if (!allowed.includes(file.type)) {
+      this.selectedFileError = 'Formato no permitido. Usa JPG, PNG o WEBP.';
+      return;
+    }
     if (file.size > maxSize) {
       this.selectedFileError = 'La imagen supera el tamaño máximo de 5MB.';
       return;
     }
 
+    this.selectedFileError = '';
     const reader = new FileReader();
     reader.onload = () => {
       this.imagePreview = reader.result as string;
-      this.providerForm.patchValue({
-        profileImage: this.imagePreview
-      });
+      this.providerForm.patchValue({ profileImage: this.imagePreview });
     };
     reader.readAsDataURL(file);
   }
 
   removePhoto(): void {
     this.imagePreview = null;
-    this.providerForm.patchValue({
-      profileImage: ''
-    });
+    this.providerForm.patchValue({ profileImage: '' });
     this.selectedFileError = '';
   }
 
-  handleSave(): void {
-    this.statusMessage = { text: '', type: null };
-
-    if (this.providerForm.invalid) {
-      this.providerForm.markAllAsTouched();
-      this.statusMessage = {
-        text: 'Por favor corrige los campos marcados antes de guardar.',
-        type: 'error'
-      };
-      return;
-    }
-
-    this.isSubmitting = true;
-
-    const formValue = this.providerForm.getRawValue();
-
-    const updatedProvider: ProviderProfile = {
-      ...this.providerData,
-      fullName: formValue.fullName,
-      email: formValue.email,
-      phone: formValue.phone,
-      zone: formValue.zone,
-      bio: formValue.bio,
-      yearsExperience: Number(formValue.yearsExperience),
-      insuranceActive: formValue.insuranceActive,
-      profileImage: formValue.profileImage || '',
-      services: formValue.services
-    };
-
-    this.profileService.updateProviderProfile(this.providerId, updatedProvider).subscribe({
-      next: () => {
-        this.isSubmitting = false;
-        this.statusMessage = {
-          text: 'Perfil del proveedor actualizado correctamente.',
-          type: 'success'
-        };
-
-        setTimeout(() => {
-          this.router.navigate(['/provider-profile', this.providerId]);
-        }, 800);
-      },
-      error: (error) => {
-        console.error('Error actualizando proveedor:', error);
-        this.isSubmitting = false;
-        this.statusMessage = {
-          text: 'Ocurrió un error al guardar los cambios.',
-          type: 'error'
-        };
-      }
-    });
+  // ── Navegación ────────────────────────────────────────────────
+  handleCancel(): void {
+    this.router.navigate(['/provider-profile', this.providerId]);
   }
 
-  handleCancel(): void {
-    this.statusMessage = { text: '', type: null };
-    this.router.navigate(['/provider-profile', this.providerId]);
+  // ── Helpers ───────────────────────────────────────────────────
+  private showStatus(text: string, type: 'success' | 'error'): void {
+    this.statusMessage = { text, type };
+    setTimeout(() => this.statusMessage = { text: '', type: null }, 4000);
   }
 
   getFieldError(fieldName: string): string | null {
     const field = this.providerForm.get(fieldName);
-
-    if (!field || !field.touched || !field.errors) return null;
-
-    if (field.errors['required']) return 'Este campo es obligatorio.';
-    if (field.errors['email']) return 'Ingresa un correo válido.';
-    if (field.errors['minlength']) {
-      return `Debe tener al menos ${field.errors['minlength'].requiredLength} caracteres.`;
-    }
-    if (field.errors['min']) {
-      return `El valor mínimo permitido es ${field.errors['min'].min}.`;
-    }
-
+    if (!field?.touched || !field.errors) return null;
+    if (field.errors['required'])  return 'Este campo es obligatorio.';
+    if (field.errors['email'])     return 'Ingresa un correo válido.';
+    if (field.errors['pattern'])   return 'Formato requerido: 8888-7777.';
+    if (field.errors['minlength'])
+      return `Mínimo ${field.errors['minlength'].requiredLength} caracteres.`;
+    if (field.errors['min'])
+      return `El valor mínimo es ${field.errors['min'].min}.`;
     return 'Campo inválido.';
   }
 
-  getServiceFieldError(index: number, fieldName: string): string | null {
-    const serviceGroup = this.servicesArray.at(index) as FormGroup;
-    const field = serviceGroup.get(fieldName);
-
-    if (!field || !field.touched || !field.errors) return null;
-
-    if (field.errors['required']) return 'Este campo es obligatorio.';
-    if (field.errors['minlength']) {
-      return `Debe tener al menos ${field.errors['minlength'].requiredLength} caracteres.`;
-    }
-
-    return 'Campo inválido.';
+  isInvalid(field: string): boolean {
+    const c = this.providerForm.get(field);
+    return !!(c?.invalid && c.touched);
   }
 
-  trackByIndex(index: number): number {
-    return index;
+  get reviews() {
+    return this.providerData?.reviewsList ?? [];
   }
 }

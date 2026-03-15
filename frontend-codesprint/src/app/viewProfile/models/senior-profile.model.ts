@@ -1,17 +1,61 @@
-import { BaseProfile } from './profile.model';
+// src/app/profile/models/senior-profile.model.ts
 
-export interface SeniorProfile extends BaseProfile {
-  age: number;
-  gender: string;
+export interface FavoriteProviderDTO {
+  favoriteId: number;
+  providerProfileId: number;
+  fullName: string;
+  providerType: string | null;
+  averageRating: number;
+  providerState: string;
+}
 
-  familyMember: string;
-  relation: string;
+export interface SeniorProfile {
+  id: number;
 
-  emergencyName: string;
-  emergencyRelation: string;
-  emergencyPhone: string;
+  // User
+  fullName: string;
+  email: string;
 
-  mobility?: string;
-  medical?: string;
+  // Personal
+  age?: number;
+  address?: string;
+  phone?: string;
+  profileImage?: string;
+
+  // Familiar responsable
+  familyMember?: string;
+  familyRelation?: string;
+
+  // Emergencia
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  emergencyRelation?: string;
+
+  // Notas médicas
+  mobilityNotes?: string;
+  carePreference?: string;
+  healthObservation?: string;
+  allergies?: string;
+
+  // Proveedores favoritos
+  favoriteProviders?: FavoriteProviderDTO[];
+}
+
+export interface SeniorProfileUpdateDTO {
+  userName: string;
+  lastName: string;
+  email: string;
+  age?: number;
+  address?: string;
+  phone?: string;
+  profileImage?: string;
+  familyMember?: string;
+  familyRelation?: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  emergencyRelation?: string;
+  mobilityNotes?: string;
+  carePreference?: string;
+  healthObservation?: string;
   allergies?: string;
 }
