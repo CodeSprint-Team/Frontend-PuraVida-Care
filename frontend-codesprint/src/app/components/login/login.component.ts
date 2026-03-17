@@ -5,7 +5,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-login',
-  standalone: true,
+  standalone: true,  // ← DEBE SER TRUE
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
@@ -24,7 +24,6 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  // Getter para fácil acceso a los campos
   get f() {
     return this.loginForm.controls;
   }
@@ -38,7 +37,6 @@ export class LoginComponent implements OnInit {
 
     this.loading = true;
 
-    // Simulación de login (después conectaremos con el backend)
     setTimeout(() => {
       this.loading = false;
       alert('Login exitoso (simulación)');
@@ -46,7 +44,6 @@ export class LoginComponent implements OnInit {
   }
 
   loginWithGoogle(): void {
-    // Aquí irá la lógica de Google cuando conectemos con el backend
     console.log('Login con Google');
     window.location.href = 'http://localhost:8081/api/v1/auth/google/url';
   }
