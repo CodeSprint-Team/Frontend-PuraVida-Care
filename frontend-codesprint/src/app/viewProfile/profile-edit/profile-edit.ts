@@ -1,4 +1,3 @@
-// src/app/viewProfile/profile-edit/profile-edit.ts
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -34,13 +33,13 @@ export class ProfileEdit implements OnInit {
   profileForm!: FormGroup;
   userId        = '';
   imagePreview: string | null = null;
-  // ✅ false desde el inicio — el formulario aparece vacío de inmediato
-  // los campos se rellenan solos cuando llega la respuesta del backend
   isLoading     = false;
   isSubmitting  = false;
   statusMessage: { text: string; type: 'success' | 'error' | null } = { text: '', type: null };
 
-  // ── Contraseña ────────────────────────────────────────────────
+  useFamilyAsEmergency = false;
+  familyPhone          = '';
+
   passwordForm!: FormGroup;
   showPasswordSection  = false;
   showCurrentPassword  = false;
@@ -101,9 +100,45 @@ export class ProfileEdit implements OnInit {
           healthObservation:    profile.healthObservation,
           allergies:            profile.allergies,
         });
+
+        // Guardar el teléfono real del familiar
+        this.familyPhone = profile.familyPhone ?? '';
+
+        // Detectar si los datos de emergencia coinciden con el familiar
+        // para pre-marcar el checkbox si corresponde
+        if (
+          profile.familyMember &&
+          profile.emergencyContactName === profile.familyMember
+        ) {
+          this.useFamilyAsEmergency = true;
+        }
       },
       error: () => this.showStatus('No se pudo cargar el perfil.', 'error')
     });
+  }
+
+  // ── Checkbox: copiar datos del familiar al contacto emergencia ─
+  onUseFamilyAsEmergencyChange(checked: boolean): void {
+    this.useFamilyAsEmergency = checked;
+
+    if (checked) {
+      const familyMember   = this.profileForm.get('familyMember')?.value   ?? '';
+      const familyRelation = this.profileForm.get('familyRelation')?.value ?? '';
+      const phone = this.familyPhone || (this.profileForm.get('phone')?.value ?? '');
+      this.profileForm.patchValue({
+        emergencyContactName:  familyMember,
+        emergencyRelation:     familyRelation,
+        emergencyContactPhone: phone,
+      });
+
+      this.profileForm.get('emergencyContactName')?.disable();
+      this.profileForm.get('emergencyRelation')?.disable();
+      this.profileForm.get('emergencyContactPhone')?.disable();
+    } else {
+      this.profileForm.get('emergencyContactName')?.enable();
+      this.profileForm.get('emergencyRelation')?.enable();
+      this.profileForm.get('emergencyContactPhone')?.enable();
+    }
   }
 
   handleSave(): void {
@@ -113,7 +148,9 @@ export class ProfileEdit implements OnInit {
       return;
     }
     this.isSubmitting = true;
-    const v = this.profileForm.value;
+
+    const v = this.profileForm.getRawValue();
+
     const payload: SeniorProfileUpdateDTO = {
       userName:              v.userName,
       lastName:              v.lastName,
@@ -132,6 +169,7 @@ export class ProfileEdit implements OnInit {
       healthObservation:     v.healthObservation,
       allergies:             v.allergies,
     };
+
     this.profileService.updateSeniorProfile(this.userId, payload).subscribe({
       next: () => {
         this.isSubmitting = false;
@@ -145,7 +183,16 @@ export class ProfileEdit implements OnInit {
     });
   }
 
-  // ── Formulario contraseña ─────────────────────────────────────
+  handleImageUpload(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => { this.imagePreview = reader.result as string; };
+    reader.readAsDataURL(file);
+  }
+
+  removePhoto(): void { this.imagePreview = null; }
+
   private buildPasswordForm(): void {
     this.passwordForm = this.fb.group({
       currentPassword: ['', Validators.required],
@@ -155,18 +202,17 @@ export class ProfileEdit implements OnInit {
   }
 
   private passwordStrengthValidator(): ValidatorFn {
-    return (control: AbstractControl): ValidationErrors | null => {
-      const val = control.value;
-      if (!val) return null;
-      const ok = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/.test(val);
+    return (c: AbstractControl): ValidationErrors | null => {
+      if (!c.value) return null;
+      const ok = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/.test(c.value);
       return ok ? null : { weakPassword: true };
     };
   }
 
   private passwordMatchValidator(): ValidatorFn {
-    return (group: AbstractControl): ValidationErrors | null => {
-      const np = group.get('newPassword')?.value;
-      const cp = group.get('confirmPassword')?.value;
+    return (g: AbstractControl): ValidationErrors | null => {
+      const np = g.get('newPassword')?.value;
+      const cp = g.get('confirmPassword')?.value;
       return np === cp ? null : { passwordMismatch: true };
     };
   }
@@ -185,9 +231,6 @@ export class ProfileEdit implements OnInit {
       return;
     }
     this.isChangingPassword = true;
-    // TODO: conectar endpoint real cuando esté disponible
-    // const payload = { currentPassword, newPassword }
-    // this.authService.changePassword(this.userId, payload).subscribe(...)
     setTimeout(() => {
       this.isChangingPassword = false;
       this.passwordStatus = { text: 'Contraseña actualizada correctamente.', type: 'success' };
@@ -213,18 +256,6 @@ export class ProfileEdit implements OnInit {
       && this.passwordForm.get('confirmPassword')?.touched);
   }
 
-  // ── Imagen ────────────────────────────────────────────────────
-  handleImageUpload(event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => { this.imagePreview = reader.result as string; };
-    reader.readAsDataURL(file);
-  }
-
-  removePhoto(): void { this.imagePreview = null; }
-
-  // ── Helpers ───────────────────────────────────────────────────
   handleCancel(): void { this.router.navigate(['/profile', this.userId]); }
 
   private showStatus(text: string, type: 'success' | 'error'): void {

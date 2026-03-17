@@ -16,15 +16,12 @@
             </div>
           </div>
         </div>
-
         <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          <div class="h-5 w-28 bg-gray-200 rounded-xl animate-pulse mb-4"></div>
           <div class="flex items-center gap-6">
             <div class="w-24 h-24 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
             <div class="h-11 w-28 bg-gray-200 rounded-xl animate-pulse"></div>
           </div>
         </div>
-
         <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
           <div class="h-5 w-44 bg-gray-200 rounded-xl animate-pulse mb-6"></div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -36,7 +33,6 @@
             <div class="md:col-span-2 h-24 bg-gray-100 rounded-xl animate-pulse"></div>
           </div>
         </div>
-
         <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
           <div class="h-5 w-40 bg-gray-200 rounded-xl animate-pulse mb-6"></div>
           <div class="grid grid-cols-2 gap-5">
@@ -44,16 +40,15 @@
             <div class="h-12 bg-gray-100 rounded-xl animate-pulse"></div>
           </div>
         </div>
-
         <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          <div class="h-5 w-48 bg-gray-200 rounded-xl animate-pulse mb-6"></div>
+          <div class="h-5 w-48 bg-gray-200 rounded-xl animate-pulse mb-4"></div>
+          <div class="h-14 bg-gray-100 rounded-xl animate-pulse mb-5"></div>
           <div class="grid grid-cols-3 gap-5">
             <div class="h-12 bg-gray-100 rounded-xl animate-pulse"></div>
             <div class="h-12 bg-gray-100 rounded-xl animate-pulse"></div>
             <div class="h-12 bg-gray-100 rounded-xl animate-pulse"></div>
           </div>
         </div>
-
         <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
           <div class="h-5 w-36 bg-gray-200 rounded-xl animate-pulse mb-6"></div>
           <div class="space-y-4">
@@ -63,11 +58,9 @@
             <div class="h-24 bg-gray-100 rounded-xl animate-pulse"></div>
           </div>
         </div>
-
         <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
           <div class="h-14 bg-gray-100 rounded-xl animate-pulse"></div>
         </div>
-
         <div class="flex gap-4 justify-end pb-4">
           <div class="h-11 w-24 bg-gray-200 rounded-xl animate-pulse"></div>
           <div class="h-11 w-36 bg-gray-200 rounded-xl animate-pulse"></div>
@@ -143,6 +136,7 @@
           <div class="bg-white rounded-2xl shadow-sm p-6">
             <h2 class="text-lg font-bold text-gray-900 mb-6">Información personal</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
                 <input formControlName="userName" [class.border-red-400]="isInvalid('userName')"
@@ -152,6 +146,7 @@
                   {{ getFieldError('userName') }}
                 </p>
               </div>
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Apellido</label>
                 <input formControlName="lastName" [class.border-red-400]="isInvalid('lastName')"
@@ -161,6 +156,7 @@
                   {{ getFieldError('lastName') }}
                 </p>
               </div>
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   Correo electrónico
@@ -173,6 +169,7 @@
                   {{ getFieldError('email') }}
                 </p>
               </div>
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Edad</label>
                 <input formControlName="age" type="number"
@@ -183,6 +180,7 @@
                   {{ getFieldError('age') }}
                 </p>
               </div>
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
                 <input formControlName="phone" [class.border-red-400]="isInvalid('phone')"
@@ -192,6 +190,7 @@
                   {{ getFieldError('phone') }}
                 </p>
               </div>
+
               <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
                 <textarea formControlName="address" rows="3"
@@ -200,10 +199,11 @@
                   placeholder="Av. Central 123, San José">
                 </textarea>
               </div>
+
             </div>
           </div>
 
-          <!-- Familiar -->
+          <!-- Familiar responsable -->
           <div class="bg-white rounded-2xl shadow-sm p-6">
             <h2 class="text-lg font-bold text-gray-900 mb-6">Familiar responsable</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -225,16 +225,31 @@
             </div>
           </div>
 
-          <!-- Emergencia -->
+          <!-- Contacto de emergencia -->
           <div class="bg-white rounded-2xl shadow-sm p-6">
-            <h2 class="text-lg font-bold text-gray-900 mb-6">Contacto de emergencia</h2>
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Contacto de emergencia</h2>
+
+            <!-- ✅ Checkbox para copiar datos del familiar -->
+            <label class="flex items-center gap-3 mb-5 cursor-pointer
+                          bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 w-fit">
+              <input type="checkbox"
+                     [checked]="useFamilyAsEmergency"
+                     (change)="onUseFamilyAsEmergencyChange($any($event.target).checked)"
+                     class="w-4 h-4 accent-teal-600 cursor-pointer" />
+              <span class="text-sm font-medium text-teal-800">
+                Usar los datos del familiar responsable como contacto de emergencia
+              </span>
+            </label>
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   Nombre <span class="text-red-500">*</span>
                 </label>
                 <input formControlName="emergencyContactName"
                   [class.border-red-400]="isInvalid('emergencyContactName')"
+                  [class.bg-gray-100]="useFamilyAsEmergency"
                   class="w-full rounded-xl border px-4 py-3 outline-none transition
                          border-gray-300 focus:border-teal-500" />
                 <p *ngIf="getFieldError('emergencyContactName')"
@@ -242,32 +257,47 @@
                   {{ getFieldError('emergencyContactName') }}
                 </p>
               </div>
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Relación</label>
                 <input formControlName="emergencyRelation"
+                  [class.bg-gray-100]="useFamilyAsEmergency"
                   class="w-full rounded-xl border px-4 py-3 outline-none transition
-                         border-gray-300 focus:border-teal-500" placeholder="Hija, Hijo..." />
+                         border-gray-300 focus:border-teal-500"
+                  placeholder="Hija, Hijo..." />
               </div>
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   Teléfono <span class="text-red-500">*</span>
                 </label>
                 <input formControlName="emergencyContactPhone"
                   [class.border-red-400]="isInvalid('emergencyContactPhone')"
+                  [class.bg-gray-100]="useFamilyAsEmergency"
                   class="w-full rounded-xl border px-4 py-3 outline-none transition
-                         border-gray-300 focus:border-teal-500" placeholder="8888-7777" />
+                         border-gray-300 focus:border-teal-500"
+                  placeholder="8888-7777" />
                 <p *ngIf="getFieldError('emergencyContactPhone')"
                    class="text-red-500 text-xs mt-1">
                   {{ getFieldError('emergencyContactPhone') }}
                 </p>
               </div>
+
             </div>
+
+            <!-- Aviso cuando está marcado -->
+            <p *ngIf="useFamilyAsEmergency"
+               class="text-xs text-teal-600 mt-3 font-medium">
+              ℹ️ Los campos se actualizan automáticamente con los datos del familiar responsable.
+              Desmarca la opción si deseas ingresar un contacto diferente.
+            </p>
           </div>
 
-          <!-- Notas -->
+          <!-- Notas importantes -->
           <div class="bg-white rounded-2xl shadow-sm p-6">
             <h2 class="text-lg font-bold text-gray-900 mb-6">Notas importantes</h2>
             <div class="space-y-5">
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Movilidad</label>
                 <textarea formControlName="mobilityNotes" rows="3"
@@ -276,6 +306,7 @@
                   placeholder="Ej: Camina con bastón, necesita apoyo en escaleras.">
                 </textarea>
               </div>
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   Preferencia de cuidado
@@ -286,6 +317,7 @@
                   placeholder="Ej: Prefiere atención en horario matutino.">
                 </textarea>
               </div>
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   Condiciones médicas
@@ -296,6 +328,7 @@
                   placeholder="Ej: Hipertensión arterial, diabetes tipo 2.">
                 </textarea>
               </div>
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Alergias</label>
                 <textarea formControlName="allergies" rows="3"
@@ -304,6 +337,7 @@
                   placeholder="Ej: Penicilina, mariscos.">
                 </textarea>
               </div>
+
             </div>
           </div>
 
@@ -327,7 +361,7 @@
 
         </form>
 
-        <!-- ── Cambiar contraseña ─────────────────────────────────── -->
+        <!-- Cambiar contraseña -->
         <div class="bg-white rounded-2xl shadow-sm p-6 mt-6 mb-4">
 
           <button type="button" (click)="togglePasswordSection()"
@@ -352,7 +386,6 @@
                class="mt-6 border-t border-gray-100 pt-6"
                [formGroup]="passwordForm">
 
-            <!-- Estado contraseña -->
             <div *ngIf="passwordStatus.type"
                  class="mb-5 rounded-xl p-4 flex items-start gap-3 border"
                  [ngClass]="{
@@ -368,7 +401,6 @@
 
             <div class="space-y-4">
 
-              <!-- Contraseña actual -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   Contraseña actual
@@ -392,7 +424,6 @@
                 </p>
               </div>
 
-              <!-- Nueva contraseña -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   Nueva contraseña
@@ -419,7 +450,6 @@
                 </p>
               </div>
 
-              <!-- Confirmar contraseña -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   Confirmar nueva contraseña
@@ -446,11 +476,10 @@
 
             </div>
 
-            <!-- Botones contraseña -->
             <div class="flex gap-3 mt-6">
               <button type="button" (click)="togglePasswordSection()"
-                class="px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700
-                       text-sm font-medium hover:bg-gray-50 transition">
+                class="px-5 py-2.5 rounded-xl border border-gray-300 bg-white
+                       text-gray-700 text-sm font-medium hover:bg-gray-50 transition">
                 Cancelar
               </button>
               <button type="button" (click)="handleChangePassword()"

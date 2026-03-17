@@ -59,6 +59,7 @@ export class FamilyProfileEdit implements OnInit {
   private buildForm(): void {
     this.profileForm = this.fb.group({
       fullName:         ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
+      email:            ['', [Validators.required, Validators.email]],   // ✅ email agregado
       phone:            ['', [Validators.required, Validators.pattern(/^[0-9]{4}-[0-9]{4}$/)]],
       relationToSenior: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
       emergencyName:    ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
@@ -74,15 +75,15 @@ export class FamilyProfileEdit implements OnInit {
         this.originalProfile = data;
         this.imagePreview    = data.profileImage || null;
 
-        // Mapear campos del backend → campos del form
         this.profileForm.patchValue({
           fullName:          data.fullName,
+          email:             data.email                                        ?? '',  // ✅
           phone:             data.phone,
-          relationToSenior:  data.relationToSenior                          ?? '',
-          emergencyName:     data.emergencyContactName ?? data.emergencyName ?? '',
+          relationToSenior:  data.relationToSenior                             ?? '',
+          emergencyName:     data.emergencyContactName ?? data.emergencyName   ?? '',
           emergencyRelation: data.emergencyContactRelation ?? data.emergencyRelation ?? '',
           emergencyPhone:    data.emergencyContactPhone ?? data.emergencyPhone ?? '',
-          importantNotes:    data.importantNotes ?? data.notes               ?? '',
+          importantNotes:    data.importantNotes ?? data.notes                 ?? '',
         });
       },
       error: (err) => console.error('Error cargando perfil familiar:', err)
@@ -100,8 +101,8 @@ export class FamilyProfileEdit implements OnInit {
     const updatedProfile: Partial<FamilyProfile> = {
       ...this.originalProfile,
       fullName:          v.fullName.trim(),
+      email:             v.email.trim(),       // ✅ email incluido en el save
       phone:             v.phone.trim(),
-      email:             this.originalProfile.email,
       profileImage:      this.imagePreview,
       relationToSenior:  v.relationToSenior.trim(),
       emergencyName:     v.emergencyName.trim(),
@@ -191,7 +192,6 @@ export class FamilyProfileEdit implements OnInit {
       return;
     }
     this.isChangingPassword = true;
-    // TODO: conectar endpoint real cuando esté disponible
     setTimeout(() => {
       this.isChangingPassword = false;
       this.passwordStatus = { text: 'Contraseña actualizada correctamente.', type: 'success' };
@@ -217,11 +217,11 @@ export class FamilyProfileEdit implements OnInit {
       && this.passwordForm.get('confirmPassword')?.touched);
   }
 
-  // ── Errores del form ──────────────────────────────────────────
   getFieldError(fieldName: string): string {
     const field = this.profileForm.get(fieldName);
     if (!field?.touched || !field.errors) return '';
     if (field.errors['required'])  return 'Este campo es obligatorio.';
+    if (field.errors['email'])     return 'Correo electrónico inválido.';
     if (field.errors['minlength'])
       return `Debe tener al menos ${field.errors['minlength'].requiredLength} caracteres.`;
     if (field.errors['maxlength'])

@@ -1,7 +1,6 @@
-// src/app/viewProfile/services/profile.services.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { SeniorProfile, SeniorProfileUpdateDTO } from '../models/senior-profile.model';
 import { ProviderProfile, ProviderProfileUpdateDTO } from '../models/provider-profile.model';
 import { FamilyProfile } from '../models/family-profile.model';
@@ -11,7 +10,6 @@ export class ProfileService {
   private http    = inject(HttpClient);
   private baseUrl = 'http://localhost:8081/api/v1/profiles';
 
-  // ── Senior ────────────────────────────────────────────────────
   getSeniorProfile(id: string | number): Observable<SeniorProfile> {
     return this.http.get<SeniorProfile>(`${this.baseUrl}/senior/${id}`);
   }
@@ -32,7 +30,6 @@ export class ProfileService {
     );
   }
 
-  // ── Provider ──────────────────────────────────────────────────
   getProviderProfile(id: string | number): Observable<ProviderProfile> {
     return this.http.get<ProviderProfile>(`${this.baseUrl}/provider/${id}`);
   }
@@ -41,32 +38,53 @@ export class ProfileService {
     return this.http.put<ProviderProfile>(`${this.baseUrl}/provider/${id}`, data);
   }
 
-  // ── Client / Family ───────────────────────────────────────────
+  private mapClientResponse(raw: any): FamilyProfile {
+    return {
+      id:               String(raw.id),
+      fullName:         raw.fullName          ?? '',
+      email:            raw.email             ?? '',
+      phone:            raw.phone             ?? '',
+      profileImage:     raw.profileImage      ?? null,
+      memberSince:      raw.memberSince       ?? '',
+      address:          raw.address           ?? '',
+      relationToSenior: raw.relationToSenior  ?? '',
+      importantNotes:   raw.importantNotes    ?? raw.notes ?? '',
+      emergencyName:     raw.emergencyContactName     ?? '',
+      emergencyRelation: raw.emergencyContactRelation ?? '',
+      emergencyPhone:    raw.emergencyContactPhone    ?? '',
+      emergencyContactName:     raw.emergencyContactName     ?? '',
+      emergencyContactRelation: raw.emergencyContactRelation ?? '',
+      emergencyContactPhone:    raw.emergencyContactPhone    ?? '',
+    };
+  }
+
   getFamilyProfile(id: string | number): Observable<FamilyProfile> {
-    return this.http.get<FamilyProfile>(`${this.baseUrl}/client/${id}`);
+    return this.http.get<any>(`${this.baseUrl}/client/${id}`)
+      .pipe(map(raw => this.mapClientResponse(raw)));
   }
 
   updateFamilyProfile(id: string | number, data: Partial<FamilyProfile>): Observable<FamilyProfile> {
-    // Separar fullName → username + lastname que espera el backend
-    const parts    = (data.fullName ?? '').trim().split(' ');
-    const username = parts[0] ?? '';
-    const lastname = parts.slice(1).join(' ');
+    const fullName = (data.fullName ?? '').trim();
+    const spaceIdx = fullName.indexOf(' ');
 
-    // Mapeo exacto a ClientProfileUpdateDTO del backend
+    const username = spaceIdx > -1 ? fullName.substring(0, spaceIdx) : fullName;
+    const lastname = spaceIdx > -1 ? fullName.substring(spaceIdx + 1) : fullName;
+
     const payload = {
       username,
       lastname,
-      email:                    data.email                             ?? '',
-      phone:                    data.phone                             ?? '',
+      email:                    data.email             ?? '',
+      phone:                    data.phone             ?? '',
       notes:                    '',
-      profileImage:             data.profileImage                      ?? null,
-      relationToSenior:         data.relationToSenior                  ?? '',
-      emergencyContactName:     data.emergencyName                     ?? '',
-      emergencyContactRelation: data.emergencyRelation                 ?? '',
-      emergencyContactPhone:    data.emergencyPhone                    ?? '',
-      importantNotes:           data.importantNotes                    ?? '',
+      profileImage:             data.profileImage      ?? null,
+      relationToSenior:         data.relationToSenior  ?? '',
+      emergencyContactName:     data.emergencyName     ?? '',
+      emergencyContactRelation: data.emergencyRelation ?? '',
+      emergencyContactPhone:    data.emergencyPhone    ?? '',
+      importantNotes:           data.importantNotes    ?? '',
     };
 
-    return this.http.put<FamilyProfile>(`${this.baseUrl}/client/${id}`, payload);
+    return this.http.put<any>(`${this.baseUrl}/client/${id}`, payload)
+      .pipe(map(raw => this.mapClientResponse(raw)));
   }
 }

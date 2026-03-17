@@ -1,5 +1,3 @@
-// src/app/profile/models/senior-profile.model.ts
-
 export interface FavoriteProviderDTO {
   favoriteId: number;
   providerProfileId: number;
@@ -25,6 +23,7 @@ export interface SeniorProfile {
   // Familiar responsable
   familyMember?: string;
   familyRelation?: string;
+  familyPhone?: string;
 
   // Emergencia
   emergencyContactName: string;
@@ -51,6 +50,7 @@ export interface SeniorProfileUpdateDTO {
   profileImage?: string;
   familyMember?: string;
   familyRelation?: string;
+  familyPhone?: string;
   emergencyContactName: string;
   emergencyContactPhone: string;
   emergencyRelation?: string;
