@@ -3,6 +3,10 @@ import { Landing } from './landing/landing';
 import { ProfileEdit } from './profile-edit/profile-edit';
 import { Profile } from './profile/profile';
 import { HomeComponent } from './client/home-client/home-client';
+import { AdminDashboard } from './pages/admin-dashboard/admin-dashboard';
+import { ProviderDashboard } from './pages/provider-dashboard/provider-dashboard';
+import { ProviderRequests } from './pages/provider-requests/provider-requests';
+
 
 export const routes: Routes = [
 
@@ -30,6 +34,20 @@ export const routes: Routes = [
   {
     path: 'profile-edit',
     component: ProfileEdit
-  }
+  },
+  { path: 'admin-dashboard',
+    component: AdminDashboard
+  },
+
+  { path: 'provider-dashboard',
+    component: ProviderDashboard
+  },
+
+  { path: 'admin-dashboard/providers',
+    component: AdminDashboard
+  },
+  { path: 'admin/provider-requests',
+    component: ProviderRequests
+  },
 
 ];
