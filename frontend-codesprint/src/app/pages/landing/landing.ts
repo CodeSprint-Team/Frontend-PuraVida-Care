@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule,],
+  imports: [CommonModule],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
@@ -20,6 +20,6 @@ export class Landing {
   ];
 
   irALogin() {
-    this.router.navigate(['/login']);
+    this.router.navigate(['/Home']);
   }
 }
