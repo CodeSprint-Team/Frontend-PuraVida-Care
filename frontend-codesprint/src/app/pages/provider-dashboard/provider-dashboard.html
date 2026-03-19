@@ -1,0 +1,21 @@
+<div class="flex">
+    <app-navbar [role]="role"></app-navbar>
+
+  <div class="flex-1 lg:ml-64 p-8 bg-gray-50 min-h-screen">
+    <h1 class="text-2xl font-bold mb-2">Dashboard Proveedor</h1>
+    <p class="text-gray-600 mb-4">Gestiona tus Servicios y Solicitudes</p>
+
+    <div class="bg-[#e7f7ed] border border-[#9fe3b3] p-[18px] rounded-xl mt-5">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-[#0a8f4b]">✓ Cuenta Verificada</span>
+      </div>
+      <p class="mt-1 text-sm">Tu cuenta está verificada y puedes recibir solicitudes de clientes.</p>
+    </div>
+
+    <app-stats-cards [role]="role"></app-stats-cards>
+
+    <div class="mt-8">
+      <app-quick-actions [role]="role"></app-quick-actions>
+    </div>
+  </div>
+</div>

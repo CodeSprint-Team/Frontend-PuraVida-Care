@@ -2,7 +2,7 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { NavbarComponent } from '../../components/navbar/navbar';
+import { NavbarComponent } from '../../../components/navbar/navbar';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { ProfileService } from '../services/profile.services';
 import { SeniorProfile, FavoriteProviderDTO } from '../models/senior-profile.model';

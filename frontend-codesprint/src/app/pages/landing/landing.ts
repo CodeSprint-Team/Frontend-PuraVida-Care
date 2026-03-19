@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { HomeComponent } from '../client/home-client/home-client';
+
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, HomeComponent],
+  imports: [CommonModule],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })

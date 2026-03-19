@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProfileService } from '../services/profile.services';
 import { FamilyProfile } from '../models/family-profile.model';
-import { NavbarComponent } from '../../components/navbar/navbar';
+import { NavbarComponent } from '../../../components/navbar/navbar';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   heroPencilSquare, heroUser, heroPhone, heroEnvelope, heroUsers,

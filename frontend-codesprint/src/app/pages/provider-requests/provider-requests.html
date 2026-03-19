@@ -1,0 +1,158 @@
+<div class="flex">
+  <app-navbar [role]="role"></app-navbar>
+
+  <div class="flex-1 p-8 bg-gray-50 min-h-screen">
+
+    <!-- Header -->
+    <button (click)="goBack()" class="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-6">
+      <ng-icon name="heroArrowLeft" size="18"></ng-icon>
+      Volver al dashboard
+    </button>
+
+    <h1 class="text-2xl font-bold mb-1">Aprobar Proveedores</h1>
+    <p class="text-gray-500 mb-6">Revisa y aprueba las solicitudes de nuevos proveedores</p>
+
+    <!-- Layout dos columnas -->
+    <div class="flex gap-6">
+
+      <!-- Lista izquierda -->
+      <div class="w-80 flex-shrink-0">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between p-4 border-b">
+            <span class="font-semibold">Solicitudes pendientes</span>
+            <span class="bg-orange-100 text-orange-600 text-xs font-bold px-2 py-1 rounded-full">
+              {{ providers.length }}
+            </span>
+          </div>
+
+          <div *ngIf="providers.length === 0" class="p-6 text-center text-gray-400">
+            No hay solicitudes pendientes
+          </div>
+
+          <div
+            *ngFor="let provider of providers"
+            (click)="selectProvider(provider)"
+            class="flex items-center gap-3 p-4 border-b cursor-pointer hover:bg-gray-50 transition"
+            [ngClass]="{ 'bg-emerald-50 border-l-4 border-l-emerald-500': selectedProvider?.providerProfileId === provider.providerProfileId }"
+          >
+            <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+              <ng-icon name="heroUser" size="20" class="text-emerald-600"></ng-icon>
+            </div>
+            <div>
+              <p class="font-medium text-sm">{{ provider.fullName }}</p>
+              <p class="text-xs text-gray-500">{{ provider.providerType }}</p>
+              <p class="text-xs text-gray-400 flex items-center gap-1 mt-1">
+                <ng-icon name="heroClock" size="12"></ng-icon>
+                Pendiente
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detalle derecha -->
+      <div class="flex-1 bg-white rounded-xl shadow-sm p-6">
+
+        <!-- Sin selección -->
+        <div *ngIf="!selectedProvider" class="h-full flex flex-col items-center justify-center text-gray-400">
+          <ng-icon name="heroUser" size="48" class="mb-4"></ng-icon>
+          <p class="font-medium">Selecciona un proveedor</p>
+          <p class="text-sm">Selecciona una solicitud de la lista para ver los detalles</p>
+        </div>
+
+        <!-- Con selección -->
+        <div *ngIf="selectedProvider">
+
+          <!-- Avatar y nombre -->
+          <div class="flex items-center gap-4 mb-6">
+            <div class="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center">
+              <ng-icon name="heroUser" size="32" class="text-emerald-600"></ng-icon>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold">{{ selectedProvider.fullName }}</h2>
+              <p class="text-gray-500">{{ selectedProvider.providerType }}</p>
+            </div>
+          </div>
+
+          <!-- Info -->
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="flex items-center gap-2 text-sm text-gray-600">
+              <ng-icon name="heroEnvelope" size="16" class="text-gray-400"></ng-icon>
+              {{ selectedProvider.email }}
+            </div>
+            <div class="flex items-center gap-2 text-sm text-gray-600">
+              <ng-icon name="heroPhone" size="16" class="text-gray-400"></ng-icon>
+              {{ selectedProvider.phone || 'No especificado' }}
+            </div>
+            <div class="flex items-center gap-2 text-sm text-gray-600">
+              <ng-icon name="heroMapPin" size="16" class="text-gray-400"></ng-icon>
+              {{ selectedProvider.zone || 'No especificado' }}
+            </div>
+            <div class="flex items-center gap-2 text-sm text-gray-600">
+              <ng-icon name="heroBriefcase" size="16" class="text-gray-400"></ng-icon>
+              {{ selectedProvider.experienceYears }} años de experiencia
+            </div>
+          </div>
+
+          <!-- Descripción -->
+          <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <p class="text-sm font-medium text-gray-700 mb-1">Descripción</p>
+            <p class="text-sm text-gray-600">{{ selectedProvider.experienceDescription }}</p>
+          </div>
+
+          <!-- Botones -->
+          <div class="flex gap-3">
+            <button
+              (click)="approve()"
+              class="flex items-center gap-2 bg-emerald-500 text-white px-6 py-2 rounded-lg hover:bg-emerald-600 transition"
+            >
+              <ng-icon name="heroCheckCircle" size="18"></ng-icon>
+              Aprobar
+            </button>
+            <button
+              (click)="openRejectModal()"
+              class="flex items-center gap-2 bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition"
+            >
+              <ng-icon name="heroXCircle" size="18"></ng-icon>
+              Rechazar
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal rechazo -->
+<div *ngIf="showRejectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+    <h3 class="text-lg font-semibold mb-4">Rechazar proveedor</h3>
+    <p class="text-gray-600 mb-4">
+      ¿Estás seguro que deseas rechazar a <strong>{{ selectedProvider?.fullName }}</strong>?
+    </p>
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Razón de rechazo</label>
+      <textarea
+        [(ngModel)]="rejectionReason"
+        rows="3"
+        class="w-full border rounded-lg p-2 text-sm"
+        placeholder="Explica el motivo del rechazo..."
+      ></textarea>
+    </div>
+    <div class="flex gap-3 justify-end">
+      <button
+        (click)="showRejectModal = false"
+        class="px-4 py-2 rounded-lg border hover:bg-gray-50 transition"
+      >
+        Cancelar
+      </button>
+      <button
+        (click)="confirmReject()"
+        class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+      >
+        Rechazar
+      </button>
+    </div>
+  </div>
+</div>
