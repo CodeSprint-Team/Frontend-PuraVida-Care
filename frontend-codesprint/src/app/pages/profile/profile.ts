@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router'; // Necesario para navegar
-import { NavbarComponent } from '../components/navbar/navbar'; // Ajusta la ruta a tu Navbar
+import { NavbarComponent } from '../../components/navbar/navbar'; // Ajusta la ruta a tu Navbar
 import { CommonModule } from '@angular/common';
 
 
