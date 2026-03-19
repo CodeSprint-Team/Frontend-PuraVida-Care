@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-
 import { Landing } from './pages/landing/landing';
 import { ProfileEdit } from './pages/viewProfile/profile-edit/profile-edit';
 import { ProfileComponent } from './pages/viewProfile/profile/profile';
@@ -82,4 +81,3 @@ export const routes: Routes = [
 
 
 ];
-
