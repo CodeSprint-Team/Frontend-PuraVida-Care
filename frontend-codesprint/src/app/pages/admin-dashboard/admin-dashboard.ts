@@ -10,6 +10,7 @@ import { AdminService, ProviderPending } from '../../services/admin';
   selector: 'app-admin-dashboard',
   standalone: true,
   imports: [CommonModule, FormsModule, NavbarComponent, StatsCards, QuickActions],
+
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.css'
 })

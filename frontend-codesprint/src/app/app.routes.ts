@@ -76,5 +76,10 @@ export const routes: Routes = [
     component: ProviderRequests
   },
 
+    path: 'profile-edit',
+    component: ProfileEdit
+  },
+
+
 ];
 
