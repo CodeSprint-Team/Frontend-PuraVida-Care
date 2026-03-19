@@ -20,6 +20,6 @@ export class Landing {
   ];
 
   irALogin() {
-    this.router.navigate(['/Home']);
+    this.router.navigate(['login']);
   }
 }

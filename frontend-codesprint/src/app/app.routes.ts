@@ -11,6 +11,7 @@ import {VerificacionBiometricaComponent} from './pages/biometric-verification/bi
 import { AdminDashboard } from './pages/admin-dashboard/admin-dashboard';
 import { ProviderDashboard } from './pages/provider-dashboard/provider-dashboard';
 import { ProviderRequests } from './pages/provider-requests/provider-requests';
+import { LoginComponent } from './pages/login/login.component';
 
 
 
@@ -20,6 +21,10 @@ export const routes: Routes = [
     path: '',
     redirectTo: 'landing',
     pathMatch: 'full'
+  },
+  {
+    path: 'login',
+    component: LoginComponent
   },
   {
     path: 'landing',
@@ -74,10 +79,4 @@ export const routes: Routes = [
   { path: 'admin/provider-requests',
     component: ProviderRequests
   },
-
-    path: 'profile-edit',
-    component: ProfileEdit
-  },
-
-
 ];
