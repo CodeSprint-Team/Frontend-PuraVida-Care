@@ -14,7 +14,9 @@ import {
   heroInbox,
   heroUser,
   heroChatBubbleLeft,
-  heroCurrencyDollar
+  heroCurrencyDollar,
+  heroClipboardDocumentList,
+  heroWrenchScrewdriver,
 } from '@ng-icons/heroicons/outline';
 
 @Component({
@@ -34,7 +36,9 @@ import {
       heroInbox,
       heroUser,
       heroChatBubbleLeft,
-      heroCurrencyDollar
+      heroCurrencyDollar,
+      heroClipboardDocumentList,
+      heroWrenchScrewdriver,
     })
   ],
   templateUrl: './quick-actions.html'
@@ -67,7 +71,11 @@ export class QuickActions {
       { title: 'Aprobar proveedores', description: `${this.pendingCount} pendientes`, icon: 'heroCheckBadge', color: 'orange', route: '/admin/provider-requests' },
       { title: 'Gestionar categorías', description: 'Crear y editar categorías', icon: 'heroFolderOpen', color: 'purple', route: '/admin-dashboard' },
       { title: 'Configurar comisión', description: 'Ajustar porcentaje', icon: 'heroCurrencyDollar', color: 'blue', route: '/admin-dashboard' },
-      { title: 'Ver reportes', description: 'Métricas y estadísticas', icon: 'heroChartBar', color: 'green', route: '/admin-dashboard' }
+      { title: 'Ver reportes', description: 'Métricas y estadísticas', icon: 'heroChartBar', color: 'green', route: '/admin-dashboard' },
+      { title: 'Gestionar Usuarios',description: 'Activar o desactivar usuarios', route: '/admin/users', icon: 'heroUsers', color: 'blue' },
+      { title: 'Gestionar Servicios', description: 'Aprobar o rechazar servicios', route: '/admin/services', icon: 'heroClipboardDocumentList', color: 'green' }
+
+
     ];
     return this.role === 'admin' ? admin : this.providerActions;
   }

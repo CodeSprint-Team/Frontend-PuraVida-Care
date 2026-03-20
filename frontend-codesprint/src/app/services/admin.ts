@@ -20,6 +20,22 @@ export interface ReviewProviderDTO {
   rejectionReason?: string;
 }
 
+// ── interfaces para usuarios
+export interface UserStatus {
+  userId: number;
+  fullName: string;
+  email: string;
+  userState: string;
+  provider: string;
+  photoUrl: string | null;
+  role: string;
+}
+
+export interface ReviewUserDTO {
+  action: 'activate' | 'deactivate';
+  reason?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -34,5 +50,14 @@ export class AdminService {
 
   reviewProvider(id: number, dto: ReviewProviderDTO): Observable<ProviderPending> {
     return this.http.put<ProviderPending>(`${this.apiUrl}/providers/${id}/review`, dto);
+  }
+
+  // ── métodos para usuarios
+  getAllUsers(): Observable<UserStatus[]> {
+    return this.http.get<UserStatus[]>(`${this.apiUrl}/users`);
+  }
+
+  reviewUser(id: number, dto: ReviewUserDTO): Observable<UserStatus> {
+    return this.http.put<UserStatus>(`${this.apiUrl}/users/${id}/review`, dto);
   }
 }
