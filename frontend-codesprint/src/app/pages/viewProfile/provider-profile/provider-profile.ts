@@ -9,7 +9,7 @@ import { ProviderProfile } from '../models/provider-profile.model';
 import {
   heroArrowLeft, heroCheckBadge, heroMapPin, heroShieldCheck,
   heroPhone, heroEnvelope, heroClock, heroPencilSquare,
-  heroStar, heroBriefcase, heroUserCircle
+  heroStar, heroBriefcase, heroUserCircle, heroClipboardDocumentList
 } from '@ng-icons/heroicons/outline';
 
 @Component({
@@ -19,7 +19,7 @@ import {
   viewProviders: [provideIcons({
     heroArrowLeft, heroCheckBadge, heroMapPin, heroShieldCheck,
     heroPhone, heroEnvelope, heroClock, heroPencilSquare,
-    heroStar, heroBriefcase, heroUserCircle
+    heroStar, heroBriefcase, heroUserCircle, heroClipboardDocumentList
   })],
   templateUrl: './provider-profile.html',
   styleUrls: ['./provider-profile.css'],
@@ -31,7 +31,6 @@ export class ProviderProfileComponent implements OnInit {
   private cdr            = inject(ChangeDetectorRef);
 
   provider: ProviderProfile | null = null;
-
   isLoading    = false;
   errorMessage = '';
   userId       = '';
@@ -66,6 +65,10 @@ export class ProviderProfileComponent implements OnInit {
 
   hireProvider(): void {
     this.router.navigate(['/seleccionar-servicio', this.userId]);
+  }
+
+  goToSolicitudes(): void {
+    this.router.navigate(['/proveedor/solicitudes', this.userId]);
   }
 
   hasProfileImage(): boolean {

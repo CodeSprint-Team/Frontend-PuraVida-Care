@@ -1,0 +1,222 @@
+<div class="min-h-screen bg-gray-50">
+  <app-navbar></app-navbar>
+
+  <main class="lg:ml-64 pb-24">
+    <div class="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-3xl">
+
+      <!-- Botón volver -->
+      <button (click)="goBack()"
+        class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition text-sm">
+        <ng-icon name="heroArrowLeft" class="text-lg"></ng-icon>
+        Volver a solicitudes
+      </button>
+
+      <!-- ── Skeleton ─────────────────────────────────────────────── -->
+      <ng-container *ngIf="!booking && !errorMessage">
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 animate-pulse">
+          <div class="h-7 w-48 bg-gray-200 rounded-xl mb-4"></div>
+          <div class="h-4 w-64 bg-gray-100 rounded-xl"></div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 animate-pulse space-y-4">
+          <div class="h-5 w-40 bg-gray-200 rounded-xl"></div>
+          <div class="h-12 bg-gray-100 rounded-xl"></div>
+          <div class="h-12 bg-gray-100 rounded-xl"></div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm p-6 animate-pulse">
+          <div class="h-12 w-36 bg-gray-200 rounded-xl"></div>
+        </div>
+      </ng-container>
+
+      <!-- ── Error ─────────────────────────────────────────────────── -->
+      <div *ngIf="errorMessage"
+           class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+        <p class="text-red-700 font-medium">{{ errorMessage }}</p>
+        <button (click)="loadDetail()"
+                class="mt-3 text-sm text-teal-600 hover:underline">
+          Reintentar
+        </button>
+      </div>
+
+      <!-- ── Contenido ─────────────────────────────────────────────── -->
+      <ng-container *ngIf="booking">
+
+        <!-- Mensaje de acción -->
+        <div *ngIf="actionStatus.type"
+             class="mb-6 rounded-2xl p-4 flex items-start gap-3 border"
+             [ngClass]="{
+               'bg-green-50 border-green-200 text-green-800': actionStatus.type === 'success',
+               'bg-red-50   border-red-200   text-red-800':   actionStatus.type === 'error'
+             }">
+          <ng-icon
+            [name]="actionStatus.type === 'success' ? 'heroCheckCircle' : 'heroExclamationTriangle'"
+            class="text-xl flex-shrink-0 mt-0.5">
+          </ng-icon>
+          <p class="text-sm font-medium">{{ actionStatus.text }}</p>
+        </div>
+
+        <!-- Header de la solicitud -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 border border-gray-100">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
+                {{ booking.serviceName }}
+              </h1>
+              <p *ngIf="booking.serviceCategory"
+                 class="text-gray-500 text-sm">
+                {{ booking.serviceCategory }}
+              </p>
+            </div>
+            <span class="px-4 py-2 rounded-xl text-sm font-semibold flex-shrink-0"
+                  [ngClass]="getStatusClasses(booking.bookingStatus)">
+              {{ getStatusLabel(booking.bookingStatus) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Info del cliente -->
+        <section class="bg-white rounded-2xl shadow-sm p-6 mb-6 border border-gray-100">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
+              <ng-icon name="heroUser" class="text-teal-600 text-xl"></ng-icon>
+            </div>
+            <h2 class="font-bold text-gray-900">Información del cliente</h2>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+              <p class="text-xs text-gray-500 mb-1">Familiar / Responsable</p>
+              <p class="font-semibold text-gray-900">{{ booking.clientName }}</p>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+              <p class="text-xs text-gray-500 mb-1">Adulto mayor</p>
+              <p class="font-semibold text-gray-900">{{ booking.seniorName }}</p>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+              <p class="text-xs text-gray-500 mb-1">Teléfono de contacto</p>
+              <p class="font-semibold text-gray-900">{{ booking.clientPhone }}</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Detalles de la reserva -->
+        <section class="bg-white rounded-2xl shadow-sm p-6 mb-6 border border-gray-100">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+              <ng-icon name="heroCalendarDays" class="text-blue-600 text-xl"></ng-icon>
+            </div>
+            <h2 class="font-bold text-gray-900">Detalles de la reserva</h2>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 sm:col-span-2">
+              <p class="text-xs text-gray-500 mb-1">Fecha y hora programada</p>
+              <p class="font-semibold text-gray-900 capitalize">
+                {{ formatDateTime(booking.scheduledAt) }}
+              </p>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+              <p class="text-xs text-gray-500 mb-1">Precio acordado</p>
+              <p class="font-semibold text-gray-900">
+                {{ formatPrice(booking.agreedPrice, booking.agreedPriceMode) }}
+              </p>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+              <p class="text-xs text-gray-500 mb-1">Solicitado el</p>
+              <p class="font-semibold text-gray-900">
+                {{ formatDateTime(booking.requestDate) }}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Razón de rechazo (si aplica) -->
+        <section *ngIf="booking.bookingStatus === 'rejected' && booking.rejectionReason"
+                 class="bg-red-50 rounded-2xl p-6 mb-6 border border-red-200">
+          <div class="flex items-center gap-3 mb-3">
+            <ng-icon name="heroXCircle" class="text-red-500 text-xl"></ng-icon>
+            <h2 class="font-bold text-red-800">Razón de rechazo</h2>
+          </div>
+          <p class="text-red-700 text-sm">{{ booking.rejectionReason }}</p>
+        </section>
+
+        <!-- Acciones (solo para solicitudes pendientes) -->
+        <div *ngIf="booking.bookingStatus === 'pending'"
+             class="flex flex-col sm:flex-row gap-4">
+
+          <button (click)="accept()" [disabled]="isSubmitting"
+            class="flex-1 flex items-center justify-center gap-2 px-6 py-4
+                   bg-teal-600 text-white rounded-2xl font-semibold
+                   hover:bg-teal-700 transition disabled:opacity-50
+                   disabled:cursor-not-allowed">
+            <span *ngIf="isSubmitting"
+                  class="w-4 h-4 border-2 border-white border-t-transparent
+                         rounded-full animate-spin"></span>
+            <ng-icon *ngIf="!isSubmitting" name="heroCheckCircle"
+                     class="text-xl"></ng-icon>
+            {{ isSubmitting ? 'Procesando...' : 'Aceptar solicitud' }}
+          </button>
+
+          <button (click)="openRejectModal()" [disabled]="isSubmitting"
+            class="flex-1 flex items-center justify-center gap-2 px-6 py-4
+                   border-2 border-red-300 text-red-600 rounded-2xl font-semibold
+                   hover:bg-red-50 transition disabled:opacity-50
+                   disabled:cursor-not-allowed">
+            <ng-icon name="heroXCircle" class="text-xl"></ng-icon>
+            Rechazar solicitud
+          </button>
+
+        </div>
+
+      </ng-container>
+    </div>
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- MODAL DE RECHAZO                                           -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div *ngIf="showRejectModal"
+     class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+  <div class="bg-white rounded-3xl shadow-xl p-6 sm:p-8 w-full max-w-md">
+
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center">
+        <ng-icon name="heroXCircle" class="text-red-500 text-2xl"></ng-icon>
+      </div>
+      <div>
+        <h3 class="font-bold text-gray-900 text-lg">Rechazar solicitud</h3>
+        <p class="text-sm text-gray-500">Esta acción no se puede deshacer</p>
+      </div>
+    </div>
+
+    <div class="mb-6">
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        Razón del rechazo
+        <span class="text-gray-400 font-normal">(opcional)</span>
+      </label>
+      <textarea
+        [(ngModel)]="rejectionReason"
+        rows="4"
+        class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm
+               outline-none focus:border-red-400 resize-none transition"
+        placeholder="Ej: No tengo disponibilidad en esa fecha...">
+      </textarea>
+    </div>
+
+    <div class="flex gap-3">
+      <button (click)="closeRejectModal()"
+        class="flex-1 px-5 py-3 rounded-xl border border-gray-300 bg-white
+               text-gray-700 font-medium hover:bg-gray-50 transition text-sm">
+        Cancelar
+      </button>
+      <button (click)="confirmReject()" [disabled]="isSubmitting"
+        class="flex-1 px-5 py-3 rounded-xl bg-red-500 text-white font-medium
+               hover:bg-red-600 transition disabled:opacity-50 text-sm
+               flex items-center justify-center gap-2">
+        <span *ngIf="isSubmitting"
+              class="w-4 h-4 border-2 border-white border-t-transparent
+                     rounded-full animate-spin"></span>
+        {{ isSubmitting ? 'Rechazando...' : 'Confirmar rechazo' }}
+      </button>
+    </div>
+
+  </div>
+</div>

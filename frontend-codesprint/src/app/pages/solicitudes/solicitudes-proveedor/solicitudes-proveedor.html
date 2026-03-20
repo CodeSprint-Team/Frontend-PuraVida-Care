@@ -1,0 +1,156 @@
+<div class="min-h-screen bg-gray-50">
+  <app-navbar [role]="'provider'"></app-navbar>
+
+  <main class="lg:ml-64 pb-24">
+    <div class="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-5xl">
+
+      <!-- Botón volver -->
+      <button (click)="goBack()"
+        class="flex items-center gap-2 text-gray-600 hover:text-gray-900
+               mb-6 transition text-sm">
+        <ng-icon name="heroArrowLeft" class="text-lg"></ng-icon>
+        Volver al perfil
+      </button>
+
+      <!-- Header -->
+      <div class="mb-8">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+          Solicitudes recibidas
+        </h1>
+        <p class="text-gray-600 text-sm">
+          Gestiona las solicitudes de tus clientes
+        </p>
+      </div>
+
+      <!-- ── Skeleton — solo mientras !loaded ──────────────────────── -->
+      <ng-container *ngIf="!loaded && !errorMessage">
+        <div class="grid grid-cols-3 gap-4 mb-6">
+          <div class="h-24 bg-white rounded-2xl animate-pulse shadow-sm"></div>
+          <div class="h-24 bg-white rounded-2xl animate-pulse shadow-sm"></div>
+          <div class="h-24 bg-white rounded-2xl animate-pulse shadow-sm"></div>
+        </div>
+        <div class="h-16 bg-white rounded-2xl animate-pulse shadow-sm mb-4"></div>
+        <div class="space-y-4">
+          <div class="h-32 bg-white rounded-2xl animate-pulse shadow-sm"></div>
+          <div class="h-32 bg-white rounded-2xl animate-pulse shadow-sm"></div>
+          <div class="h-32 bg-white rounded-2xl animate-pulse shadow-sm"></div>
+        </div>
+      </ng-container>
+
+      <!-- ── Error ─────────────────────────────────────────────────── -->
+      <div *ngIf="errorMessage"
+           class="bg-red-50 border border-red-200 rounded-2xl p-5 mb-6 text-center">
+        <p class="text-red-700 font-medium text-sm">{{ errorMessage }}</p>
+        <button (click)="loadBookings()"
+                class="mt-3 text-sm text-teal-600 hover:underline">
+          Reintentar
+        </button>
+      </div>
+
+      <!-- ── Contenido — cuando ya cargó ──────────────────────────── -->
+      <ng-container *ngIf="loaded && !errorMessage">
+
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-4 sm:gap-6 mb-6">
+          <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-gray-100">
+            <p class="text-xs sm:text-sm text-gray-500 mb-1">Pendientes</p>
+            <p class="text-2xl sm:text-3xl font-bold text-orange-500">{{ pendingCount }}</p>
+          </div>
+          <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-gray-100">
+            <p class="text-xs sm:text-sm text-gray-500 mb-1">Aceptadas</p>
+            <p class="text-2xl sm:text-3xl font-bold text-green-600">{{ acceptedCount }}</p>
+          </div>
+          <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-gray-100">
+            <p class="text-xs sm:text-sm text-gray-500 mb-1">Rechazadas</p>
+            <p class="text-2xl sm:text-3xl font-bold text-gray-500">{{ rejectedCount }}</p>
+          </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="bg-white rounded-2xl shadow-sm p-3 sm:p-4 mb-6 border border-gray-100">
+          <div class="flex items-center gap-3">
+            <ng-icon name="heroFunnel" class="text-gray-500 flex-shrink-0"></ng-icon>
+            <div class="flex gap-2 flex-wrap">
+              <button *ngFor="let f of [
+                {value:'all',      label:'Todas'},
+                {value:'pending',  label:'Pendientes'},
+                {value:'accepted', label:'Aceptadas'},
+                {value:'rejected', label:'Rechazadas'}
+              ]"
+                (click)="applyFilter(f.value)"
+                class="px-4 py-2 rounded-xl text-xs sm:text-sm transition"
+                [ngClass]="filterStatus === f.value
+                  ? 'bg-teal-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'">
+                {{ f.label }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista vacía -->
+        <div *ngIf="filtered.length === 0"
+             class="bg-white rounded-2xl shadow-sm p-12 text-center border border-gray-100">
+          <ng-icon name="heroClock" class="text-6xl text-gray-300 mx-auto mb-4"></ng-icon>
+          <h3 class="text-lg font-semibold text-gray-700 mb-1">Sin solicitudes</h3>
+          <p class="text-sm text-gray-500">
+            No hay solicitudes
+            <span *ngIf="filterStatus !== 'all'">
+              con estado "{{ getStatusLabel(filterStatus) }}"
+            </span>
+          </p>
+        </div>
+
+        <!-- Cards de solicitudes -->
+        <div class="space-y-4">
+          <div *ngFor="let booking of filtered"
+               (click)="goToDetail(booking.id)"
+               class="bg-white rounded-2xl shadow-sm p-5 sm:p-6 border border-gray-100
+                      hover:shadow-md transition cursor-pointer">
+
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+
+              <div class="flex items-start gap-4 flex-1 min-w-0">
+                <div class="w-11 h-11 bg-teal-50 rounded-xl flex items-center
+                            justify-center flex-shrink-0">
+                  <ng-icon name="heroUser" class="text-teal-600 text-xl"></ng-icon>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-semibold text-gray-900 truncate text-base mb-0.5">
+                    {{ booking.clientName }}
+                  </h3>
+                  <p class="text-gray-600 text-sm truncate mb-2">
+                    {{ booking.serviceName }}
+                    <span *ngIf="booking.serviceCategory"
+                          class="text-gray-400"> · {{ booking.serviceCategory }}</span>
+                  </p>
+                  <div class="flex flex-wrap items-center gap-3 text-xs text-gray-500">
+                    <div class="flex items-center gap-1">
+                      <ng-icon name="heroClock" class="text-sm"></ng-icon>
+                      <span>{{ formatDate(booking.scheduledAt) }}</span>
+                    </div>
+                    <span class="font-medium text-gray-700">
+                      {{ formatPrice(booking.agreedPrice, booking.agreedPriceMode) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <span class="px-4 py-2 rounded-xl text-xs font-semibold w-fit"
+                    [ngClass]="getStatusClasses(booking.bookingStatus)">
+                {{ getStatusLabel(booking.bookingStatus) }}
+              </span>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-gray-100">
+              <p class="text-xs text-gray-400">
+                Solicitado el {{ formatRequestDate(booking.requestDate) }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
+    </div>
+  </main>
+</div>

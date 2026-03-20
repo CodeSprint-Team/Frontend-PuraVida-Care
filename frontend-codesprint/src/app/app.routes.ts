@@ -12,6 +12,8 @@ import { AdminDashboard } from './pages/admin-dashboard/admin-dashboard';
 import { ProviderDashboard } from './pages/provider-dashboard/provider-dashboard';
 import { ProviderRequests } from './pages/provider-requests/provider-requests';
 import { LoginComponent } from './pages/login/login.component';
+import { SolicitudDetalleComponent } from './pages/solicitudes/solicitud-detalle/solicitud-detalle';
+import { SolicitudesProveedorComponent } from './pages/solicitudes/solicitudes-proveedor/solicitudes-proveedor';
 
 
 
@@ -78,5 +80,13 @@ export const routes: Routes = [
   },
   { path: 'admin/provider-requests',
     component: ProviderRequests
+  },
+  {
+    path: 'proveedor/solicitudes/:id',
+    component: SolicitudesProveedorComponent
+  },
+  {
+    path: 'proveedor/solicitud/:id',
+    component: SolicitudDetalleComponent
   },
 ];
