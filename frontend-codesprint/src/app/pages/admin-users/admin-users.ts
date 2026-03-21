@@ -1,17 +1,17 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ManagementNavbar } from '../../components/management-navbar/management-navbar';
 import { AdminService, UserStatus } from '../../services/admin';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { heroUser, heroArrowLeft} from '@ng-icons/heroicons/outline';
 import Swal from 'sweetalert2';
 import { Router } from '@angular/router';
+import {NavbarComponent} from "../../components/navbar/navbar";
 
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, FormsModule, ManagementNavbar, NgIconComponent],
+    imports: [CommonModule, FormsModule, NgIconComponent, NavbarComponent],
   viewProviders: [provideIcons({ heroUser, heroArrowLeft, })],
   templateUrl: './admin-users.html',
 })

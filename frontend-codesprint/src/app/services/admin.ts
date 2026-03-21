@@ -20,7 +20,8 @@ export interface ReviewProviderDTO {
   rejectionReason?: string;
 }
 
-// ── interfaces para usuarios
+// ── Usuarios
+
 export interface UserStatus {
   userId: number;
   fullName: string;
@@ -36,6 +37,29 @@ export interface ReviewUserDTO {
   reason?: string;
 }
 
+// ── Moderación de servicios
+
+export interface CareServicePending {
+  careServiceId: number;
+  providerProfileId: number;
+  providerName: string;
+  providerEmail: string;
+  title: string;
+  serviceDescription: string;
+  basePrice: number;
+  priceMode: string;
+  serviceCategory: string;
+  publicationState: 'pending' | 'published' | 'rejected';
+  rejectionReason?: string;
+}
+
+export interface ReviewCareServiceDTO {
+  action: 'approve' | 'reject';
+  rejectionReason?: string;
+}
+
+// ── Service
+
 @Injectable({
   providedIn: 'root'
 })
@@ -43,6 +67,8 @@ export class AdminService {
   private apiUrl = 'http://localhost:8081/api/v1/admin';
 
   constructor(private http: HttpClient) {}
+
+  // ── Proveedores
 
   getPendingProviders(): Observable<ProviderPending[]> {
     return this.http.get<ProviderPending[]>(`${this.apiUrl}/providers/pending`);
@@ -52,12 +78,23 @@ export class AdminService {
     return this.http.put<ProviderPending>(`${this.apiUrl}/providers/${id}/review`, dto);
   }
 
-  // ── métodos para usuarios
+  // ── Usuarios
+
   getAllUsers(): Observable<UserStatus[]> {
     return this.http.get<UserStatus[]>(`${this.apiUrl}/users`);
   }
 
   reviewUser(id: number, dto: ReviewUserDTO): Observable<UserStatus> {
     return this.http.put<UserStatus>(`${this.apiUrl}/users/${id}/review`, dto);
+  }
+
+  // ── Moderación de servicios 
+
+  getPendingCareServices(): Observable<CareServicePending[]> {
+    return this.http.get<CareServicePending[]>(`${this.apiUrl}/services/pending`);
+  }
+
+  reviewCareService(id: number, dto: ReviewCareServiceDTO): Observable<CareServicePending> {
+    return this.http.put<CareServicePending>(`${this.apiUrl}/services/${id}/review`, dto);
   }
 }

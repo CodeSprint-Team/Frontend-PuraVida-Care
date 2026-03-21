@@ -1,1 +1,238 @@
-<p>admin-services works!</p>
+<div class="flex">
+  <app-navbar [role]="role"></app-navbar>
+
+  <div class="flex-1 lg:ml-64 p-8 bg-gray-50 min-h-screen">
+  <div class="flex-1 p-8 bg-gray-50 min-h-screen">
+
+    <!-- Back -->
+    <button (click)="goBack()" class="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-6 transition-colors">
+      <ng-icon name="heroArrowLeft" size="18"></ng-icon>
+      Volver al dashboard
+    </button>
+
+    <h1 class="text-2xl font-bold mb-1">Moderación de Servicios</h1>
+    <p class="text-gray-500 mb-6">Aprueba o rechaza servicios publicados por los proveedores</p>
+
+    <!-- Stats -->
+    <div class="flex gap-4 mb-6">
+      <div class="bg-white rounded-xl shadow-sm px-6 py-4 flex items-center gap-4 flex-1">
+        <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+          <ng-icon name="heroClock" size="20" class="text-amber-500"></ng-icon>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Pendientes</p>
+          <p class="text-2xl font-bold text-amber-500">{{ pendingCount }}</p>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm px-6 py-4 flex items-center gap-4 flex-1">
+        <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+          <ng-icon name="heroCheckCircle" size="20" class="text-emerald-600"></ng-icon>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Aprobados</p>
+          <p class="text-2xl font-bold text-emerald-600">{{ approvedCount }}</p>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm px-6 py-4 flex items-center gap-4 flex-1">
+        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+          <ng-icon name="heroXCircle" size="20" class="text-red-500"></ng-icon>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Rechazados</p>
+          <p class="text-2xl font-bold text-red-500">{{ rejectedCount }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex gap-6">
+
+      <!-- Left list -->
+      <div class="w-80 flex-shrink-0">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+
+          <!-- Filter tabs -->
+          <div class="flex border-b">
+            <button
+              *ngFor="let tab of tabs"
+              (click)="setFilter(tab.value)"
+              class="flex-1 py-3 text-xs font-semibold transition-colors"
+              [ngClass]="activeFilter === tab.value
+                ? 'border-b-2 border-emerald-500 text-emerald-600'
+                : 'text-gray-400 hover:text-gray-600'"
+            >
+              {{ tab.label }}
+              <span
+                class="ml-1 px-1.5 py-0.5 rounded-full text-xs"
+                [ngClass]="activeFilter === tab.value
+                  ? 'bg-emerald-100 text-emerald-600'
+                  : 'bg-gray-100 text-gray-500'"
+              >
+                {{ getCountByState(tab.value) }}
+              </span>
+            </button>
+          </div>
+
+          <div *ngIf="filteredServices.length === 0" class="p-6 text-center text-gray-400 text-sm">
+            No hay servicios
+          </div>
+
+          <div
+            *ngFor="let service of filteredServices"
+            (click)="selectService(service)"
+            class="flex items-start gap-3 p-4 border-b cursor-pointer hover:bg-gray-50 transition"
+            [ngClass]="{
+              'bg-emerald-50 border-l-4 border-l-emerald-500':
+              selectedService?.careServiceId === service.careServiceId
+            }"
+          >
+            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-500 flex-shrink-0">
+              {{ service.serviceCategory?.charAt(0) ?? '?' }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-sm truncate">{{ service.title }}</p>
+              <p class="text-xs text-gray-500 truncate">{{ service.providerName }}</p>
+              <div class="mt-1">
+                <span
+                  class="text-xs px-2 py-0.5 rounded-full font-semibold"
+                  [ngClass]="{
+                    'bg-amber-100 text-amber-600':     service.publicationState === 'pending',
+                    'bg-emerald-100 text-emerald-600': service.publicationState === 'published',
+                    'bg-red-100 text-red-500':         service.publicationState === 'rejected'
+                  }"
+                >
+                  {{ stateLabel(service.publicationState) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Detail panel -->
+      <div class="flex-1 bg-white rounded-xl shadow-sm p-6">
+
+        <div *ngIf="!selectedService" class="h-full flex flex-col items-center justify-center text-gray-400 gap-3">
+          <ng-icon name="heroClipboardDocument" size="40"></ng-icon>
+          <p>Selecciona un servicio para moderarlo</p>
+        </div>
+
+        <div *ngIf="selectedService">
+
+          <!-- Header -->
+          <div class="flex items-start gap-4 mb-6 pb-6 border-b">
+            <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center text-2xl font-bold text-gray-500 flex-shrink-0">
+              {{ selectedService.serviceCategory?.charAt(0) ?? '?' }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <h2 class="text-xl font-bold">{{ selectedService.title }}</h2>
+              <p class="text-gray-500 text-sm">{{ selectedService.serviceDescription }}</p>
+            </div>
+            <span
+              class="px-3 py-1 rounded-full text-sm font-semibold flex-shrink-0"
+              [ngClass]="{
+                'bg-amber-100 text-amber-600':     selectedService.publicationState === 'pending',
+                'bg-emerald-100 text-emerald-700': selectedService.publicationState === 'published',
+                'bg-red-100 text-red-600':         selectedService.publicationState === 'rejected'
+              }"
+            >
+              {{ stateLabel(selectedService.publicationState) }}
+            </span>
+          </div>
+          ->
+          <div class="grid grid-cols-3 gap-4 mb-6">
+            <div class="bg-gray-50 rounded-xl p-4">
+              <p class="text-xs text-gray-500 mb-1">Proveedor</p>
+              <p class="font-semibold text-sm text-gray-800">{{ selectedService.providerName }}</p>
+              <p class="text-xs text-gray-400">{{ selectedService.providerEmail }}</p>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-4">
+              <p class="text-xs text-gray-500 mb-1">Categoría</p>
+              <p class="font-semibold text-sm text-gray-800">{{ selectedService.serviceCategory }}</p>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-4">
+              <p class="text-xs text-gray-500 mb-1">Precio base</p>
+              <p class="font-semibold text-sm text-gray-800">₡{{ selectedService.basePrice | number }}</p>
+              <p class="text-xs text-gray-400">{{ selectedService.priceMode }}</p>
+            </div>
+          </div>
+
+          <!-- Motivo de rechazo (si ya fue rechazado) -->
+          <div
+            *ngIf="selectedService.publicationState === 'rejected' && selectedService.rejectionReason"
+            class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl"
+          >
+            <p class="text-xs font-semibold text-red-600 mb-1">Motivo de rechazo</p>
+            <p class="text-sm text-red-700">{{ selectedService.rejectionReason }}</p>
+          </div>
+
+          <!-- Input motivo (aparece al hacer clic en Rechazar) -->
+          <div *ngIf="showRejectionInput" class="mb-6">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              Motivo de rechazo <span class="text-red-500">*</span>
+            </label>
+            <textarea
+              [(ngModel)]="rejectionReason"
+              rows="3"
+              placeholder="Describe el motivo por el que se rechaza este servicio..."
+              class="w-full border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-red-400 resize-none transition"
+              [ngClass]="rejectionError ? 'border-red-400 bg-red-50' : 'border-gray-300'"
+            ></textarea>
+            <p *ngIf="rejectionError" class="text-xs text-red-500 mt-1">
+              El motivo de rechazo es obligatorio.
+            </p>
+          </div>
+
+          <!-- Acciones (solo para pendientes) -->
+          <div *ngIf="selectedService.publicationState === 'pending'" class="flex gap-3">
+
+            <button
+              (click)="approveService()"
+              class="bg-emerald-500 text-white px-6 py-2.5 rounded-lg hover:bg-emerald-600 transition-colors flex items-center gap-2 font-medium"
+            >
+              <ng-icon name="heroCheckCircle" size="18"></ng-icon>
+              Aprobar
+            </button>
+
+            <button
+              *ngIf="!showRejectionInput"
+              (click)="showRejectionInput = true; rejectionError = false"
+              class="bg-red-500 text-white px-6 py-2.5 rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2 font-medium"
+            >
+              <ng-icon name="heroXCircle" size="18"></ng-icon>
+              Rechazar
+            </button>
+
+            <ng-container *ngIf="showRejectionInput">
+              <button
+                (click)="confirmReject()"
+                class="bg-red-500 text-white px-6 py-2.5 rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2 font-medium"
+              >
+                <ng-icon name="heroXCircle" size="18"></ng-icon>
+                Confirmar rechazo
+              </button>
+              <button
+                (click)="cancelRejection()"
+                class="bg-gray-100 text-gray-600 px-4 py-2.5 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+              >
+                Cancelar
+              </button>
+            </ng-container>
+
+          </div>
+
+
+          <div
+            *ngIf="selectedService.publicationState !== 'pending'"
+            class="p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-500 flex items-center gap-2"
+          >
+            <ng-icon name="heroInformationCircle" size="16"></ng-icon>
+            Este servicio ya fue moderado. Solo se pueden moderar servicios en estado pendiente.
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
