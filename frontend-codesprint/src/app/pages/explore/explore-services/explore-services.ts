@@ -13,7 +13,7 @@ import { NavbarComponent } from '../../../components/navbar/navbar';
 import { ProviderSearchService } from '../services/provider-search';
 import {
   ProviderSearchResult, ProviderSearchFilters, EMPTY_FILTERS
-} from '../models/ProviderSearchResult';
+} from '../Models/ProviderSearchResult';
 
 @Component({
   selector: 'app-explorar-servicios',

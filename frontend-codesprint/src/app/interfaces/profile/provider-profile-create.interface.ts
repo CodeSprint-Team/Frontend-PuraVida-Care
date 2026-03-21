@@ -11,3 +11,4 @@ export interface ProviderProfileCreateRequest {
   verified?: boolean;
   insuranceActive?: boolean;
 }
+
