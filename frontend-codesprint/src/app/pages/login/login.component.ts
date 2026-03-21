@@ -48,25 +48,29 @@ export class LoginComponent implements OnInit {
     }).subscribe({
       next: (response) => {
         this.loading = false;
-        this.redirectByRole(response.role);
+        this.redirectByRole(response.role, String(response.userId));
       },
       error: (error) => {
         this.loading = false;
-        this.errorMessage = error?.error?.message || 'Credenciales incorrectas';
+        this.errorMessage = error?.error?.error || 'Credenciales incorrectas';
       }
     });
   }
 
-  private redirectByRole(role: string): void {
+  private redirectByRole(role: string, userId: string): void {
     switch (role) {
       case 'PROVIDER':
-        this.router.navigate(['/provider-dashboard']);
+        this.router.navigate(['/provider-profile', userId]);
+        break;
+      case 'CLIENT':
+        this.router.navigate(['/family-profile', userId]);
+        break;
+      case 'SENIOR':
+        this.router.navigate(['/profile', userId]);
         break;
       case 'ADMIN':
         this.router.navigate(['/admin-dashboard']);
         break;
-      case 'CLIENT':
-      case 'SENIOR':
       default:
         this.router.navigate(['/home']);
         break;

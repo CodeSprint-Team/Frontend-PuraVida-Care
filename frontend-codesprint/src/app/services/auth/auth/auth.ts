@@ -24,6 +24,9 @@ export class AuthService {
       tap((response) => {
         if (response?.token) {
           localStorage.setItem('auth_token', response.token);
+          localStorage.setItem('user_id', String(response.userId));
+          localStorage.setItem('user_role', response.role);
+          localStorage.setItem('user_name', response.name ?? '');
         }
       })
     );
@@ -33,12 +36,27 @@ export class AuthService {
     return localStorage.getItem('auth_token');
   }
 
+  getUserId(): string | null {
+    return localStorage.getItem('user_id');
+  }
+
+  getUserName(): string | null {
+    return localStorage.getItem('user_name');
+  }
+
+  getUserRole(): string | null {
+    return localStorage.getItem('user_role');
+  }
+
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
 
   logout(): void {
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('user_role');
+    localStorage.removeItem('user_name');
     this.router.navigate(['/login']);
   }
 }

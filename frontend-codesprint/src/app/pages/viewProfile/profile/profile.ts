@@ -5,11 +5,13 @@ import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../../../components/navbar/navbar';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { ProfileService } from '../services/profile.services';
+import { AuthService } from '../../../services/auth/auth/auth';
 import { SeniorProfile, FavoriteProviderDTO } from '../models/senior-profile.model';
 import {
   heroPencilSquare, heroUser, heroPhone, heroEnvelope,
   heroMapPin, heroShieldCheck, heroInformationCircle,
-  heroDocumentText, heroHeart, heroStar, heroUsers, heroPhoto, heroTrash
+  heroDocumentText, heroHeart, heroStar, heroUsers, heroPhoto, heroTrash,
+  heroArrowRightOnRectangle
 } from '@ng-icons/heroicons/outline';
 
 @Component({
@@ -19,7 +21,8 @@ import {
   viewProviders: [provideIcons({
     heroPencilSquare, heroUser, heroPhone, heroEnvelope,
     heroMapPin, heroShieldCheck, heroInformationCircle,
-    heroDocumentText, heroHeart, heroStar, heroUsers, heroPhoto, heroTrash
+    heroDocumentText, heroHeart, heroStar, heroUsers, heroPhoto, heroTrash,
+    heroArrowRightOnRectangle
   })],
   templateUrl: './profile.html',
   styleUrl: './profile.css',
@@ -28,22 +31,26 @@ export class ProfileComponent implements OnInit {
   private router         = inject(Router);
   private route          = inject(ActivatedRoute);
   private profileService = inject(ProfileService);
+  private authService    = inject(AuthService);
   private cdr            = inject(ChangeDetectorRef);
 
   profileData: SeniorProfile | null = null;
   errorMessage = '';
   userId       = '';
+  profileId    = '';
 
   ngOnInit(): void {
-    this.userId = this.route.snapshot.paramMap.get('id') ?? '1';
+    this.userId = this.route.snapshot.paramMap.get('id') ?? '';
     this.loadProfile();
   }
 
   loadProfile(): void {
     this.errorMessage = '';
-    this.profileService.getSeniorProfile(this.userId).subscribe({
+    // Carga por userId usando el endpoint by-user
+    this.profileService.getSeniorProfileByUserId(this.userId).subscribe({
       next: (profile) => {
         this.profileData = profile;
+        this.profileId   = String(profile.id);
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -71,7 +78,11 @@ export class ProfileComponent implements OnInit {
   }
 
   navigateToEdit(): void {
-    this.router.navigate(['/profile-edit', this.userId]);
+    this.router.navigate(['/profile-edit', this.profileId]);
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 
   hasProfileImage(): boolean {

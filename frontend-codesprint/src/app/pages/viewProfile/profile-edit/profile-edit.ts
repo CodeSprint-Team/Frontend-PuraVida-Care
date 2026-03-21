@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProfileService } from '../services/profile.services';
 import { SeniorProfile, SeniorProfileUpdateDTO } from '../models/senior-profile.model';
@@ -16,7 +17,7 @@ import {
 @Component({
   selector: 'app-profile-edit',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NgIconComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgIconComponent],
   viewProviders: [provideIcons({
     heroArrowLeft, heroPhoto, heroExclamationTriangle, heroCheckCircle,
     heroLockClosed, heroEye, heroEyeSlash
@@ -31,7 +32,10 @@ export class ProfileEdit implements OnInit {
   private profileService = inject(ProfileService);
 
   profileForm!: FormGroup;
+
+  profileId     = '';
   userId        = '';
+
   imagePreview: string | null = null;
   isLoading     = false;
   isSubmitting  = false;
@@ -39,6 +43,9 @@ export class ProfileEdit implements OnInit {
 
   useFamilyAsEmergency = false;
   familyPhone          = '';
+
+  familyEmail          = '';
+  familySearchStatus: 'idle' | 'loading' | 'found' | 'not-found' = 'idle';
 
   passwordForm!: FormGroup;
   showPasswordSection  = false;
@@ -49,13 +56,13 @@ export class ProfileEdit implements OnInit {
   passwordStatus: { text: string; type: 'success' | 'error' | null } = { text: '', type: null };
 
   ngOnInit(): void {
-    this.userId = this.route.snapshot.paramMap.get('id') ?? '';
+    this.profileId = this.route.snapshot.paramMap.get('id') ?? '';
+    this.userId    = localStorage.getItem('user_id') ?? '';
     this.buildForm();
     this.buildPasswordForm();
-    if (this.userId) this.loadProfile();
+    if (this.profileId) this.loadProfile();
   }
 
-  // ── Formulario principal ──────────────────────────────────────
   private buildForm(): void {
     this.profileForm = this.fb.group({
       userName:              ['', [Validators.required, Validators.minLength(2)]],
@@ -78,7 +85,7 @@ export class ProfileEdit implements OnInit {
   }
 
   private loadProfile(): void {
-    this.profileService.getSeniorProfile(this.userId).subscribe({
+    this.profileService.getSeniorProfile(this.profileId).subscribe({
       next: (profile: SeniorProfile) => {
         this.imagePreview = profile.profileImage ?? null;
         const parts    = (profile.fullName ?? '').split(' ');
@@ -101,15 +108,9 @@ export class ProfileEdit implements OnInit {
           allergies:            profile.allergies,
         });
 
-        // Guardar el teléfono real del familiar
         this.familyPhone = profile.familyPhone ?? '';
 
-        // Detectar si los datos de emergencia coinciden con el familiar
-        // para pre-marcar el checkbox si corresponde
-        if (
-          profile.familyMember &&
-          profile.emergencyContactName === profile.familyMember
-        ) {
+        if (profile.familyMember && profile.emergencyContactName === profile.familyMember) {
           this.useFamilyAsEmergency = true;
         }
       },
@@ -117,7 +118,28 @@ export class ProfileEdit implements OnInit {
     });
   }
 
-  // ── Checkbox: copiar datos del familiar al contacto emergencia ─
+  searchFamilyByEmail(): void {
+    if (!this.familyEmail.trim()) return;
+
+    this.familySearchStatus = 'loading';
+
+    this.profileService.getFamilyProfileByEmail(this.familyEmail.trim()).subscribe({
+      next: (data) => {
+        this.familySearchStatus = 'found';
+        this.profileForm.patchValue({
+          familyMember:          data.fullName,
+          emergencyContactName:  data.fullName,
+          emergencyContactPhone: data.phone,
+          emergencyRelation:     data.relationToSenior ?? '',
+        });
+        this.familyPhone = data.phone;
+      },
+      error: () => {
+        this.familySearchStatus = 'not-found';
+      }
+    });
+  }
+
   onUseFamilyAsEmergencyChange(checked: boolean): void {
     this.useFamilyAsEmergency = checked;
 
@@ -130,7 +152,6 @@ export class ProfileEdit implements OnInit {
         emergencyRelation:     familyRelation,
         emergencyContactPhone: phone,
       });
-
       this.profileForm.get('emergencyContactName')?.disable();
       this.profileForm.get('emergencyRelation')?.disable();
       this.profileForm.get('emergencyContactPhone')?.disable();
@@ -170,7 +191,7 @@ export class ProfileEdit implements OnInit {
       allergies:             v.allergies,
     };
 
-    this.profileService.updateSeniorProfile(this.userId, payload).subscribe({
+    this.profileService.updateSeniorProfile(this.profileId, payload).subscribe({
       next: () => {
         this.isSubmitting = false;
         this.showStatus('Perfil actualizado correctamente.', 'success');
@@ -256,7 +277,9 @@ export class ProfileEdit implements OnInit {
       && this.passwordForm.get('confirmPassword')?.touched);
   }
 
-  handleCancel(): void { this.router.navigate(['/profile', this.userId]); }
+  handleCancel(): void {
+    this.router.navigate(['/profile', this.userId]);
+  }
 
   private showStatus(text: string, type: 'success' | 'error'): void {
     this.statusMessage = { text, type };

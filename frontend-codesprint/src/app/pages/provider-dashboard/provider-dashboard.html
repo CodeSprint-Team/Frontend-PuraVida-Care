@@ -1,5 +1,5 @@
 <div class="flex">
-    <app-navbar [role]="role"></app-navbar>
+  <app-navbar [role]="role"></app-navbar>
 
   <div class="flex-1 lg:ml-64 p-8 bg-gray-50 min-h-screen">
 
@@ -13,10 +13,16 @@
       <p class="mt-1 text-sm">Tu cuenta está verificada y puedes recibir solicitudes de clientes.</p>
     </div>
 
-    <app-stats-cards [role]="role" [providerPendingCount]="pendingCount"></app-stats-cards>
-    
+    <app-stats-cards
+      [role]="role"
+      [providerPendingCount]="pendingCount"
+      [providerTotalCount]="totalCount"
+      [providerAcceptedCount]="acceptedCount">
+    </app-stats-cards>
+
     <div class="mt-8">
       <app-quick-actions [role]="role"></app-quick-actions>
     </div>
+
   </div>
 </div>
