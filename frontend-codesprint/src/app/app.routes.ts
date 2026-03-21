@@ -16,8 +16,8 @@ import {VerificacionBiometricaComponent} from './pages/biometric-verification/bi
 import { AdminDashboard } from './pages/admin-dashboard/admin-dashboard';
 import { ProviderDashboard } from './pages/provider-dashboard/provider-dashboard';
 import { ProviderRequests } from './pages/provider-requests/provider-requests';
+import { AdminUsers } from './pages/admin-users/admin-users';
 import { LoginComponent } from './pages/login/login.component';
-
 
 
 
@@ -117,5 +117,19 @@ export const routes: Routes = [
   },
   { path: 'admin/provider-requests',
     component: ProviderRequests
+  },
+  { path: 'admin-dashboard',
+    component: AdminDashboard
+  },
+  { path: 'admin-dashboard/providers',
+    component: AdminDashboard
+  },
+  {
+    path: 'admin/users',
+    component: AdminUsers
+  },
+  {
+    path: 'admin/services',
+    component: AdminDashboard
   },
 ];
