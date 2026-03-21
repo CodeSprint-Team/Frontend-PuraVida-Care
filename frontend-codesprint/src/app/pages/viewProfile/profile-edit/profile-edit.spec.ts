@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { HomeComponent } from './home-client';
+import { ProfileEdit } from './profile-edit';
 
-describe('HomeClient', () => {
-  let component: HomeComponent;
-  let fixture: ComponentFixture<HomeComponent>;
+describe('ProfileEdit', () => {
+  let component: ProfileEdit;
+  let fixture: ComponentFixture<ProfileEdit>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HomeComponent],
+      imports: [ProfileEdit],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(HomeComponent);
+    fixture = TestBed.createComponent(ProfileEdit);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

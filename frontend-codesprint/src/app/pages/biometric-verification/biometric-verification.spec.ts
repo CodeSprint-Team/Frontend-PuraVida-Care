@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { HomeComponent } from './home-client';
+import { BiometricVerification } from './biometric-verification';
 
-describe('HomeClient', () => {
-  let component: HomeComponent;
-  let fixture: ComponentFixture<HomeComponent>;
+describe('BiometricVerification', () => {
+  let component: BiometricVerification;
+  let fixture: ComponentFixture<BiometricVerification>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HomeComponent],
+      imports: [BiometricVerification],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(HomeComponent);
+    fixture = TestBed.createComponent(BiometricVerification);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });
