@@ -1,0 +1,390 @@
+<div class="min-h-screen bg-gray-50">
+  <main class="lg:ml-64 pb-24 lg:pb-8">
+    <div class="container mx-auto px-6 py-8 max-w-6xl">
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- SKELETON — visible mientras isLoading = true              -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <ng-container *ngIf="isLoading">
+
+        <!-- Header skeleton -->
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-gray-200 animate-pulse"></div>
+            <div class="space-y-2">
+              <div class="h-7 w-56 bg-gray-200 rounded-xl animate-pulse"></div>
+              <div class="h-4 w-40 bg-gray-100 rounded-xl animate-pulse"></div>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <div class="h-12 w-24 bg-gray-200 rounded-2xl animate-pulse"></div>
+            <div class="h-12 w-36 bg-gray-200 rounded-2xl animate-pulse"></div>
+          </div>
+        </div>
+
+        <!-- Card superior skeleton -->
+        <div class="bg-gray-200 rounded-3xl p-6 md:p-8 mb-6 animate-pulse">
+          <div class="flex flex-col lg:flex-row lg:items-center gap-6">
+            <div class="w-28 h-28 rounded-3xl bg-gray-300"></div>
+            <div class="flex-1 space-y-3">
+              <div class="h-8 w-64 bg-gray-300 rounded-xl"></div>
+              <div class="flex gap-3">
+                <div class="h-7 w-28 bg-gray-300 rounded-full"></div>
+                <div class="h-7 w-36 bg-gray-300 rounded-full"></div>
+                <div class="h-7 w-28 bg-gray-300 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Accordion skeleton 1 -->
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mb-6">
+          <div class="flex items-center justify-between mb-6">
+            <div class="space-y-2">
+              <div class="h-5 w-44 bg-gray-200 rounded-xl animate-pulse"></div>
+              <div class="h-3 w-56 bg-gray-100 rounded-xl animate-pulse"></div>
+            </div>
+            <div class="w-10 h-10 bg-gray-100 rounded-2xl animate-pulse"></div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="h-14 bg-gray-100 rounded-2xl animate-pulse"></div>
+            <div class="h-14 bg-gray-100 rounded-2xl animate-pulse"></div>
+            <div class="h-14 bg-gray-100 rounded-2xl animate-pulse"></div>
+            <div class="h-14 bg-gray-100 rounded-2xl animate-pulse"></div>
+            <div class="h-14 bg-gray-100 rounded-2xl animate-pulse"></div>
+            <div class="h-14 bg-gray-100 rounded-2xl animate-pulse"></div>
+            <div class="md:col-span-2 h-28 bg-gray-100 rounded-2xl animate-pulse"></div>
+            <div class="md:col-span-2 h-36 bg-gray-100 rounded-2xl animate-pulse"></div>
+          </div>
+        </div>
+
+        <!-- Accordion skeleton 2 -->
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div class="space-y-2">
+              <div class="h-5 w-36 bg-gray-200 rounded-xl animate-pulse"></div>
+              <div class="h-3 w-48 bg-gray-100 rounded-xl animate-pulse"></div>
+            </div>
+            <div class="w-10 h-10 bg-gray-100 rounded-2xl animate-pulse"></div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="h-32 bg-gray-100 rounded-3xl animate-pulse"></div>
+            <div class="h-32 bg-gray-100 rounded-3xl animate-pulse"></div>
+          </div>
+        </div>
+
+      </ng-container>
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- CONTENIDO REAL — visible cuando isLoading = false         -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <ng-container *ngIf="!isLoading">
+
+        <!-- ── Header ───────────────────────────────────────────────── -->
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
+          <div class="flex items-center gap-4">
+            <button type="button" (click)="handleCancel()"
+              class="w-12 h-12 rounded-2xl bg-white shadow-sm border border-gray-200
+                     flex items-center justify-center hover:bg-gray-50 transition">
+              <ng-icon name="heroArrowLeft" class="text-xl text-gray-700"></ng-icon>
+            </button>
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900">Editar perfil profesional</h1>
+              <p class="text-gray-600">Actualiza tu información y presentación pública</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <button type="button" (click)="handleCancel()" [disabled]="isSubmitting"
+              class="px-5 py-3 rounded-2xl bg-white border border-gray-200 text-gray-700
+                     font-medium hover:bg-gray-50 transition disabled:opacity-50">
+              Cancelar
+            </button>
+            <button type="submit" form="providerFormMain" [disabled]="isSubmitting"
+              class="px-5 py-3 rounded-2xl bg-teal-600 text-white font-semibold
+                     hover:bg-teal-700 transition shadow-sm disabled:opacity-70
+                     disabled:cursor-not-allowed">
+              {{ isSubmitting ? 'Guardando...' : 'Guardar cambios' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Mensaje de estado ────────────────────────────────────── -->
+        <div *ngIf="statusMessage.type"
+             class="mb-6 rounded-2xl p-4 flex items-start gap-3 border"
+             [ngClass]="{
+               'bg-green-50 border-green-200 text-green-800': statusMessage.type === 'success',
+               'bg-red-50   border-red-200   text-red-800':   statusMessage.type === 'error'
+             }">
+          <ng-icon
+            [name]="statusMessage.type === 'success' ? 'heroCheckCircle' : 'heroExclamationTriangle'"
+            class="text-2xl flex-shrink-0 mt-0.5">
+          </ng-icon>
+          <p class="text-sm font-medium">{{ statusMessage.text }}</p>
+        </div>
+
+        <!-- ── FORMULARIO ──────────────────────────────────────────── -->
+        <form id="providerFormMain" [formGroup]="providerForm"
+              (ngSubmit)="handleSave()" class="space-y-6">
+
+          <!-- Card superior con foto -->
+          <div class="bg-gradient-to-r from-teal-600 to-emerald-600 rounded-3xl
+                      p-6 md:p-8 text-white shadow-lg">
+            <div class="flex flex-col lg:flex-row lg:items-center gap-6">
+              <div class="relative">
+                <div class="w-28 h-28 rounded-3xl overflow-hidden border-4 border-white/30
+                            bg-white/20 backdrop-blur flex items-center justify-center">
+                  <img *ngIf="imagePreview" [src]="imagePreview" alt="Vista previa"
+                       class="w-full h-full object-cover" />
+                  <ng-icon *ngIf="!imagePreview" name="heroPhoto"
+                           class="text-6xl text-white"></ng-icon>
+                </div>
+                <label for="providerImage"
+                  class="absolute -bottom-2 -right-2 w-11 h-11 rounded-2xl bg-white
+                         text-teal-700 shadow-lg flex items-center justify-center
+                         cursor-pointer hover:scale-105 transition">
+                  <ng-icon name="heroPencilSquare" class="text-xl"></ng-icon>
+                </label>
+                <input id="providerImage" type="file"
+                       accept="image/png,image/jpeg,image/webp"
+                       class="hidden" (change)="handleImageUpload($event)" />
+              </div>
+              <div class="flex-1">
+                <h2 class="text-2xl md:text-3xl font-bold mb-2">
+                  {{ (providerForm.get('userName')?.value || '') + ' ' +
+                     (providerForm.get('lastName')?.value  || '') }}
+                </h2>
+                <div class="flex flex-wrap gap-3 text-sm">
+                  <span class="px-3 py-1.5 rounded-full bg-white/20 backdrop-blur">
+                    {{ providerForm.get('zone')?.value || 'Zona de trabajo' }}
+                  </span>
+                  <span class="px-3 py-1.5 rounded-full bg-white/20 backdrop-blur">
+                    {{ providerForm.get('experienceYears')?.value || 0 }} años de experiencia
+                  </span>
+                  <span class="px-3 py-1.5 rounded-full font-medium"
+                    [ngClass]="providerForm.get('insuranceActive')?.value
+                      ? 'bg-green-400/20 text-white' : 'bg-white/20 text-white'">
+                    {{ providerForm.get('insuranceActive')?.value
+                       ? 'Seguro activo' : 'Sin seguro activo' }}
+                  </span>
+                </div>
+                <p *ngIf="selectedFileError" class="text-sm text-red-100 mt-3 font-medium">
+                  {{ selectedFileError }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Información general -->
+          <details open class="group bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <summary class="list-none cursor-pointer px-6 py-5 flex items-center justify-between">
+              <div>
+                <h3 class="text-lg font-bold text-gray-900">Información general</h3>
+                <p class="text-sm text-gray-500">Datos principales que verán los usuarios</p>
+              </div>
+              <div class="w-10 h-10 rounded-2xl bg-gray-100 flex items-center
+                          justify-center group-open:rotate-180 transition">
+                <span class="text-gray-600 text-lg">⌄</span>
+              </div>
+            </summary>
+
+            <div class="px-6 pb-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+                  <input type="text" formControlName="userName"
+                    [class.border-red-300]="isInvalid('userName')"
+                    class="w-full rounded-2xl border px-4 py-3.5 outline-none transition
+                           border-gray-300 focus:border-teal-500" placeholder="Juan" />
+                  <p *ngIf="getFieldError('userName')" class="text-sm text-red-600 mt-1">
+                    {{ getFieldError('userName') }}
+                  </p>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Apellido</label>
+                  <input type="text" formControlName="lastName"
+                    [class.border-red-300]="isInvalid('lastName')"
+                    class="w-full rounded-2xl border px-4 py-3.5 outline-none transition
+                           border-gray-300 focus:border-teal-500" placeholder="Pérez" />
+                  <p *ngIf="getFieldError('lastName')" class="text-sm text-red-600 mt-1">
+                    {{ getFieldError('lastName') }}
+                  </p>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Correo electrónico
+                  </label>
+                  <input type="email" formControlName="email"
+                    [class.border-red-300]="isInvalid('email')"
+                    class="w-full rounded-2xl border px-4 py-3.5 outline-none transition
+                           border-gray-300 focus:border-teal-500"
+                    placeholder="correo@ejemplo.com" />
+                  <p *ngIf="getFieldError('email')" class="text-sm text-red-600 mt-1">
+                    {{ getFieldError('email') }}
+                  </p>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+                  <input type="text" formControlName="phone"
+                    [class.border-red-300]="isInvalid('phone')"
+                    class="w-full rounded-2xl border px-4 py-3.5 outline-none transition
+                           border-gray-300 focus:border-teal-500" placeholder="8888-7777" />
+                  <p *ngIf="getFieldError('phone')" class="text-sm text-red-600 mt-1">
+                    {{ getFieldError('phone') }}
+                  </p>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Zona principal de trabajo
+                  </label>
+                  <input type="text" formControlName="zone"
+                    class="w-full rounded-2xl border px-4 py-3.5 outline-none transition
+                           border-gray-300 focus:border-teal-500"
+                    placeholder="Ej: Escazú, Santa Ana" />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Años de experiencia
+                  </label>
+                  <input type="number" formControlName="experienceYears"
+                    [class.border-red-300]="isInvalid('experienceYears')"
+                    class="w-full rounded-2xl border px-4 py-3.5 outline-none transition
+                           border-gray-300 focus:border-teal-500" placeholder="5" />
+                  <p *ngIf="getFieldError('experienceYears')" class="text-sm text-red-600 mt-1">
+                    {{ getFieldError('experienceYears') }}
+                  </p>
+                </div>
+
+                <!-- Toggle seguro -->
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 mb-3">
+                    Estado del seguro
+                  </label>
+                  <label class="inline-flex items-center gap-4 cursor-pointer
+                                bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3">
+                    <div class="w-14 h-8 rounded-full relative transition"
+                      [ngClass]="providerForm.get('insuranceActive')?.value
+                        ? 'bg-teal-500' : 'bg-gray-300'">
+                      <div class="absolute top-1 w-6 h-6 bg-white rounded-full shadow transition"
+                        [ngClass]="providerForm.get('insuranceActive')?.value
+                          ? 'left-7' : 'left-1'">
+                      </div>
+                    </div>
+                    <input type="checkbox" formControlName="insuranceActive" class="hidden" />
+                    <div>
+                      <p class="text-sm font-semibold text-gray-800">
+                        {{ providerForm.get('insuranceActive')?.value
+                           ? 'Seguro activo' : 'Seguro inactivo' }}
+                      </p>
+                      <p class="text-xs text-gray-500">
+                        Esto ayuda a generar confianza en tu perfil
+                      </p>
+                    </div>
+                  </label>
+                </div>
+
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Descripción de experiencia <span class="text-red-500">*</span>
+                  </label>
+                  <textarea rows="4" formControlName="experienceDescription"
+                    [class.border-red-300]="isInvalid('experienceDescription')"
+                    class="w-full rounded-2xl border px-4 py-3.5 outline-none
+                           transition resize-none border-gray-300 focus:border-teal-500"
+                    placeholder="Describe tu experiencia profesional, certificaciones...">
+                  </textarea>
+                  <p *ngIf="getFieldError('experienceDescription')"
+                     class="text-sm text-red-600 mt-1">
+                    {{ getFieldError('experienceDescription') }}
+                  </p>
+                </div>
+
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Descripción pública (Bio)
+                  </label>
+                  <textarea rows="5" formControlName="bio"
+                    class="w-full rounded-2xl border px-4 py-3.5 outline-none
+                           transition resize-none border-gray-300 focus:border-teal-500"
+                    placeholder="Describe tu enfoque de trabajo y lo que te diferencia...">
+                  </textarea>
+                </div>
+
+              </div>
+            </div>
+          </details>
+
+          <!-- Reseñas solo lectura -->
+          <details class="group bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <summary class="list-none cursor-pointer px-6 py-5 flex items-center justify-between">
+              <div>
+                <h3 class="text-lg font-bold text-gray-900">
+                  Reseñas recientes ({{ reviews.length }})
+                </h3>
+                <p class="text-sm text-gray-500">Vista previa de las reseñas de tus clientes</p>
+              </div>
+              <div class="w-10 h-10 rounded-2xl bg-gray-100 flex items-center
+                          justify-center group-open:rotate-180 transition">
+                <span class="text-gray-600 text-lg">⌄</span>
+              </div>
+            </summary>
+
+            <div class="px-6 pb-6">
+              <div *ngIf="reviews.length === 0"
+                   class="text-center py-8 text-gray-400 text-sm">
+                Aún no tienes reseñas.
+              </div>
+              <div *ngIf="reviews.length > 0"
+                   class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div *ngFor="let review of reviews"
+                     class="rounded-3xl border border-gray-200 p-5 bg-gray-50">
+                  <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-teal-100 flex items-center
+                                justify-center flex-shrink-0 text-teal-700 font-bold text-lg">
+                      {{ review.author?.charAt(0) ?? '?' }}
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between gap-3 mb-1">
+                        <h4 class="font-semibold text-gray-900 text-sm">{{ review.author }}</h4>
+                        <span class="px-2.5 py-1 rounded-full bg-yellow-100
+                                     text-yellow-700 text-xs font-semibold">
+                          ⭐ {{ review.rating }}
+                        </span>
+                      </div>
+                      <p class="text-xs text-gray-500 mb-2">{{ review.date }}</p>
+                      <p class="text-sm text-gray-600 leading-relaxed">{{ review.comment }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- Footer botones -->
+          <div class="flex flex-col sm:flex-row gap-4 justify-end pt-2 pb-4">
+            <button type="button" (click)="handleCancel()" [disabled]="isSubmitting"
+              class="px-6 py-3 rounded-2xl bg-gray-100 text-gray-700 font-medium
+                     hover:bg-gray-200 transition disabled:opacity-50">
+              Cancelar
+            </button>
+            <button type="submit" [disabled]="isSubmitting"
+              class="px-6 py-3 rounded-2xl bg-teal-600 text-white font-semibold
+                     hover:bg-teal-700 transition shadow-sm disabled:opacity-70
+                     disabled:cursor-not-allowed flex items-center gap-2">
+              <span *ngIf="isSubmitting"
+                    class="w-4 h-4 border-2 border-white border-t-transparent
+                           rounded-full animate-spin"></span>
+              {{ isSubmitting ? 'Guardando...' : 'Guardar cambios' }}
+            </button>
+          </div>
+
+        </form>
+      </ng-container>
+    </div>
+  </main>
+</div>

@@ -1,0 +1,313 @@
+<div class="min-h-screen bg-gray-50">
+  <app-navbar></app-navbar>
+
+  <main class="lg:ml-64 pb-24 lg:pb-8">
+    <div class="container mx-auto px-6 py-8 max-w-5xl">
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- SKELETON — visible mientras provider es null              -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <ng-container *ngIf="!provider && !errorMessage">
+
+        <!-- Botón volver skeleton -->
+        <div class="h-6 w-36 bg-gray-200 rounded-xl animate-pulse mb-6"></div>
+
+        <!-- Header card skeleton -->
+        <div class="bg-white rounded-2xl shadow-sm p-8 mb-6">
+          <div class="flex flex-col md:flex-row gap-6">
+            <!-- Foto -->
+            <div class="w-32 h-32 rounded-2xl bg-gray-200 animate-pulse flex-shrink-0"></div>
+            <!-- Info -->
+            <div class="flex-1 space-y-4">
+              <div class="flex items-center justify-between">
+                <div class="space-y-2">
+                  <div class="h-7 w-48 bg-gray-200 rounded-xl animate-pulse"></div>
+                  <div class="h-4 w-28 bg-gray-100 rounded-xl animate-pulse"></div>
+                  <div class="h-9 w-36 bg-gray-100 rounded-xl animate-pulse"></div>
+                </div>
+                <div class="h-11 w-32 bg-gray-100 rounded-xl animate-pulse"></div>
+              </div>
+              <div class="h-4 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+              <div class="h-4 w-3/4 bg-gray-100 rounded-xl animate-pulse"></div>
+              <div class="grid grid-cols-3 gap-4">
+                <div class="h-12 bg-gray-100 rounded-xl animate-pulse"></div>
+                <div class="h-12 bg-gray-100 rounded-xl animate-pulse"></div>
+                <div class="h-12 bg-gray-100 rounded-xl animate-pulse"></div>
+              </div>
+              <div class="flex gap-4 pt-4 border-t border-gray-100">
+                <div class="h-5 w-28 bg-gray-100 rounded-xl animate-pulse"></div>
+                <div class="h-5 w-40 bg-gray-100 rounded-xl animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Servicios skeleton -->
+        <div class="mb-6">
+          <div class="h-7 w-44 bg-gray-200 rounded-xl animate-pulse mb-4"></div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+              <div class="h-5 w-32 bg-gray-200 rounded-xl animate-pulse mb-3"></div>
+              <div class="h-4 w-full bg-gray-100 rounded-xl animate-pulse mb-2"></div>
+              <div class="h-4 w-2/3 bg-gray-100 rounded-xl animate-pulse mb-4"></div>
+              <div class="h-6 w-24 bg-gray-200 rounded-xl animate-pulse mb-2"></div>
+              <div class="h-4 w-20 bg-gray-100 rounded-xl animate-pulse"></div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+              <div class="h-5 w-28 bg-gray-200 rounded-xl animate-pulse mb-3"></div>
+              <div class="h-4 w-full bg-gray-100 rounded-xl animate-pulse mb-2"></div>
+              <div class="h-4 w-3/4 bg-gray-100 rounded-xl animate-pulse mb-4"></div>
+              <div class="h-6 w-20 bg-gray-200 rounded-xl animate-pulse mb-2"></div>
+              <div class="h-4 w-24 bg-gray-100 rounded-xl animate-pulse"></div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 hidden lg:block">
+              <div class="h-5 w-36 bg-gray-200 rounded-xl animate-pulse mb-3"></div>
+              <div class="h-4 w-full bg-gray-100 rounded-xl animate-pulse mb-2"></div>
+              <div class="h-4 w-1/2 bg-gray-100 rounded-xl animate-pulse mb-4"></div>
+              <div class="h-6 w-28 bg-gray-200 rounded-xl animate-pulse mb-2"></div>
+              <div class="h-4 w-16 bg-gray-100 rounded-xl animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reseñas skeleton -->
+        <div class="mb-6">
+          <div class="h-7 w-32 bg-gray-200 rounded-xl animate-pulse mb-4"></div>
+          <div class="space-y-4">
+            <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+                <div class="flex-1 space-y-2">
+                  <div class="flex justify-between">
+                    <div class="h-4 w-32 bg-gray-200 rounded-xl animate-pulse"></div>
+                    <div class="h-4 w-24 bg-gray-100 rounded-xl animate-pulse"></div>
+                  </div>
+                  <div class="flex gap-1">
+                    <div *ngFor="let s of [1,2,3,4,5]"
+                         class="w-4 h-4 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                  <div class="h-4 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+                  <div class="h-4 w-4/5 bg-gray-100 rounded-xl animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA skeleton -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+          <div class="flex items-center justify-between">
+            <div class="space-y-2">
+              <div class="h-4 w-12 bg-gray-100 rounded-xl animate-pulse"></div>
+              <div class="h-7 w-28 bg-gray-200 rounded-xl animate-pulse"></div>
+            </div>
+            <div class="h-12 w-36 bg-gray-200 rounded-xl animate-pulse"></div>
+          </div>
+        </div>
+
+      </ng-container>
+
+      <!-- ── Error ────────────────────────────────────────────────── -->
+      <div *ngIf="errorMessage"
+           class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+        <p class="text-red-700 font-medium">{{ errorMessage }}</p>
+        <button (click)="loadProfile()"
+                class="mt-4 text-sm text-teal-600 hover:underline">
+          Intentar nuevamente
+        </button>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- CONTENIDO REAL — visible cuando provider tiene datos      -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <ng-container *ngIf="provider">
+
+        <!-- Botón volver -->
+        <button (click)="goBack()"
+          class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition">
+          <ng-icon name="heroArrowLeft" class="text-xl"></ng-icon>
+          <span class="font-medium">Volver a explorar</span>
+        </button>
+
+        <!-- ── Header ───────────────────────────────────────────────── -->
+        <div class="bg-white rounded-2xl shadow-sm p-8 mb-6">
+          <div class="flex flex-col md:flex-row gap-6">
+
+            <!-- Foto -->
+            <div class="w-32 h-32 rounded-2xl overflow-hidden bg-gradient-to-br
+                        from-teal-100 to-teal-200 flex-shrink-0 flex items-center
+                        justify-center border border-teal-100">
+              <img *ngIf="hasProfileImage()"
+                   [src]="provider.profileImage"
+                   [alt]="provider.fullName"
+                   class="w-full h-full object-cover" />
+              <ng-icon *ngIf="!hasProfileImage()"
+                       name="heroUserCircle" class="text-7xl text-teal-700">
+              </ng-icon>
+            </div>
+
+            <!-- Info -->
+            <div class="flex-1">
+              <div class="flex flex-col lg:flex-row lg:items-start
+                          lg:justify-between gap-4 mb-4">
+                <div>
+                  <div class="flex flex-wrap items-center gap-3 mb-2">
+                    <h1 class="text-2xl font-bold text-gray-900">{{ provider.fullName }}</h1>
+                    <span *ngIf="provider.verified"
+                      class="inline-flex items-center gap-1 px-3 py-1 rounded-full
+                             bg-teal-50 text-teal-700 text-sm font-semibold">
+                      <ng-icon name="heroCheckBadge" class="text-lg"></ng-icon>
+                      Verificado
+                    </span>
+                  </div>
+                  <p *ngIf="provider.providerType"
+                     class="text-gray-500 text-sm mb-3">{{ provider.providerType }}</p>
+                  <div class="flex items-center gap-2 bg-yellow-50 px-4 py-2 rounded-xl w-fit">
+                    <ng-icon name="heroStar" class="text-lg text-yellow-500"></ng-icon>
+                    <span class="text-lg font-semibold text-gray-900">{{ ratingDisplay }}</span>
+                    <span class="text-gray-600">({{ provider.totalReviews ?? 0 }} reseñas)</span>
+                  </div>
+                </div>
+                <button (click)="editProviderProfile()"
+                  class="inline-flex items-center justify-center gap-2 px-5 py-3
+                         bg-white border border-gray-200 text-gray-700 rounded-xl
+                         hover:bg-gray-50 transition font-medium">
+                  <ng-icon name="heroPencilSquare" class="text-lg"></ng-icon>
+                  Editar perfil
+                </button>
+              </div>
+
+              <p *ngIf="provider.bio" class="text-gray-700 mb-5 leading-relaxed">
+                {{ provider.bio }}
+              </p>
+              <p *ngIf="!provider.bio" class="text-gray-400 mb-5 text-sm italic">
+                Sin descripción registrada.
+              </p>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="flex items-center gap-3 text-gray-700 bg-gray-50 rounded-xl px-4 py-3">
+                  <ng-icon name="heroMapPin" class="text-xl text-teal-600"></ng-icon>
+                  <span>{{ provider.zone ?? 'Zona no especificada' }}</span>
+                </div>
+                <div class="flex items-center gap-3 text-gray-700 bg-gray-50 rounded-xl px-4 py-3">
+                  <ng-icon name="heroBriefcase" class="text-xl text-teal-600"></ng-icon>
+                  <span>{{ provider.experienceYears }} años de experiencia</span>
+                </div>
+                <div class="flex items-center gap-3 text-gray-700 bg-gray-50 rounded-xl px-4 py-3">
+                  <ng-icon name="heroShieldCheck" class="text-xl text-teal-600"></ng-icon>
+                  <span>{{ provider.insuranceActive ? 'Seguro activo' : 'Sin seguro' }}</span>
+                </div>
+              </div>
+
+              <div class="mt-5 pt-5 border-t border-gray-200 flex flex-col md:flex-row gap-4">
+                <div *ngIf="provider.phone" class="flex items-center gap-3 text-gray-700">
+                  <ng-icon name="heroPhone" class="text-xl text-teal-600"></ng-icon>
+                  <a [href]="'tel:' + provider.phone" class="hover:text-teal-600 transition">
+                    {{ provider.phone }}
+                  </a>
+                </div>
+                <div class="flex items-center gap-3 text-gray-700">
+                  <ng-icon name="heroEnvelope" class="text-xl text-teal-600"></ng-icon>
+                  <a [href]="'mailto:' + provider.email" class="hover:text-teal-600 transition">
+                    {{ provider.email }}
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Servicios ────────────────────────────────────────────── -->
+        <div class="mb-6">
+          <h2 class="text-2xl font-bold text-gray-900 mb-4">Servicios ofrecidos</h2>
+
+          <div *ngIf="!provider.services || provider.services.length === 0"
+               class="bg-white rounded-2xl shadow-sm p-8 text-center text-gray-400">
+            <p class="text-sm">Este proveedor aún no tiene servicios publicados.</p>
+          </div>
+
+          <div *ngIf="provider.services && provider.services.length > 0"
+               class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div *ngFor="let service of provider.services"
+                 class="bg-white rounded-2xl shadow-sm p-6 hover:shadow-md
+                        transition-shadow border border-gray-100">
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <h3 class="text-lg font-bold text-gray-900">{{ service.name }}</h3>
+                <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center flex-shrink-0">
+                  <ng-icon name="heroBriefcase" class="text-xl text-teal-600"></ng-icon>
+                </div>
+              </div>
+              <p class="text-gray-600 text-sm mb-4 leading-relaxed">{{ service.description }}</p>
+              <span class="text-teal-600 font-bold text-lg block mb-2">{{ service.price }}</span>
+              <div class="flex items-center gap-2 text-sm text-gray-600">
+                <ng-icon name="heroClock" class="text-base"></ng-icon>
+                <span>{{ service.priceMode }}</span>
+              </div>
+              <span *ngIf="service.category"
+                    class="inline-block mt-3 text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
+                {{ service.category }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Reseñas ───────────────────────────────────────────────── -->
+        <div class="mb-6">
+          <h2 class="text-2xl font-bold text-gray-900 mb-4">
+            Reseñas ({{ provider.totalReviews ?? 0 }})
+          </h2>
+
+          <div *ngIf="!provider.reviewsList || provider.reviewsList.length === 0"
+               class="bg-white rounded-2xl shadow-sm p-8 text-center text-gray-400">
+            <p class="text-sm">Aún no hay reseñas para este proveedor.</p>
+          </div>
+
+          <div *ngIf="provider.reviewsList && provider.reviewsList.length > 0"
+               class="space-y-4">
+            <div *ngFor="let review of provider.reviewsList"
+                 class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-full bg-teal-100 flex items-center
+                            justify-center flex-shrink-0">
+                  <ng-icon name="heroUserCircle" class="text-2xl text-teal-600"></ng-icon>
+                </div>
+                <div class="flex-1">
+                  <div class="flex flex-col sm:flex-row sm:items-center
+                              sm:justify-between gap-2 mb-2">
+                    <h4 class="font-semibold text-gray-900">{{ review.author }}</h4>
+                    <span class="text-sm text-gray-500">{{ review.date }}</span>
+                  </div>
+                  <div class="flex items-center gap-1 mb-3">
+                    <ng-container *ngFor="let star of getStarsArray(review.rating)">
+                      <ng-icon name="heroStar" class="text-base"
+                        [ngClass]="star ? 'text-yellow-500' : 'text-gray-300'">
+                      </ng-icon>
+                    </ng-container>
+                  </div>
+                  <p class="text-gray-700 leading-relaxed">{{ review.comment }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── CTA Contratar ─────────────────────────────────────────── -->
+        <div class="sticky bottom-0 lg:bottom-8 bg-white rounded-2xl shadow-lg
+                    p-6 border border-gray-200">
+          <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+              <p class="text-gray-600 mb-1">Desde</p>
+              <p class="text-2xl font-bold text-teal-600">{{ startingPrice }}</p>
+            </div>
+            <button (click)="hireProvider()"
+              class="w-full md:w-auto px-12 py-3 bg-teal-600 text-white rounded-xl
+                     font-semibold hover:bg-teal-700 transition-colors">
+              Contratar
+            </button>
+          </div>
+        </div>
+
+      </ng-container>
+    </div>
+  </main>
+</div>

@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ManagementNavbar } from '../../components/management-navbar/management-navbar';
+import { NavbarComponent } from '../../components/navbar/navbar';
 import { AdminService, ProviderPending } from '../../services/admin';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
@@ -20,7 +20,7 @@ import {
 @Component({
   selector: 'app-provider-requests',
   standalone: true,
-  imports: [CommonModule, FormsModule, ManagementNavbar, NgIconComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, NgIconComponent],
   viewProviders: [
     provideIcons({
       heroArrowLeft,

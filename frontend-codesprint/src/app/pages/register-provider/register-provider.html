@@ -1,0 +1,161 @@
+<div class="min-h-screen bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
+  <div class="mx-auto max-w-5xl">
+
+    <div class="mb-10 text-center sm:mb-12">
+      <h1 class="text-3xl font-semibold text-slate-900 sm:text-4xl">
+        Crear perfil de
+        <span class="text-teal-600">Proveedor</span>
+      </h1>
+      <p class="mt-3 text-sm text-slate-500 sm:text-base">
+        Completa la información para ofrecer tus servicios
+      </p>
+    </div>
+
+    <div class="rounded-3xl bg-white p-6 shadow-sm sm:p-8 lg:p-10">
+      <form [formGroup]="registerForm" (ngSubmit)="submit()" class="space-y-10">
+
+        <div>
+          <h2 class="mb-6 text-lg font-semibold text-slate-800">
+            Datos personales
+          </h2>
+
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <label class="mb-2 block text-sm font-medium text-slate-700">
+                Nombre
+              </label>
+              <input type="text" formControlName="userName" placeholder="Nombre" class="input" />
+            </div>
+
+            <div>
+              <label class="mb-2 block text-sm font-medium text-slate-700">
+                Apellido
+              </label>
+              <input type="text" formControlName="lastName" placeholder="Apellido" class="input" />
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="mb-2 block text-sm font-medium text-slate-700">
+                Correo electrónico
+              </label>
+              <input type="email" formControlName="email" placeholder="Correo electrónico" class="input" />
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="mb-2 block text-sm font-medium text-slate-700">
+                Contraseña
+              </label>
+              <input type="password" formControlName="password" placeholder="Contraseña" class="input" />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h2 class="mb-6 text-lg font-semibold text-slate-800">
+            Información profesional
+          </h2>
+
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <label class="mb-2 block text-sm font-medium text-slate-700">
+                Tipo de proveedor
+              </label>
+
+              <div class="relative">
+                <select formControlName="providerTypeId" class="select-input">
+                  <option [value]="1">Cuidador/a</option>
+                  <option [value]="2">Enfermero/a</option>
+                  <option [value]="3">Acompañante</option>
+                  <option [value]="4">Terapeuta</option>
+                  <option [value]="5">Otro</option>
+                </select>
+
+                <div class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-slate-500">
+                  <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path
+                      fill-rule="evenodd"
+                      d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="mb-2 block text-sm font-medium text-slate-700">
+                Años de experiencia
+              </label>
+              <input type="number" formControlName="experienceYears" placeholder="Años de experiencia" class="input" />
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="mb-2 block text-sm font-medium text-slate-700">
+                Experiencia
+              </label>
+              <textarea
+                formControlName="experienceDescription"
+                placeholder="Describe tu experiencia"
+                rows="4"
+                class="input"
+              ></textarea>
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="mb-2 block text-sm font-medium text-slate-700">
+                Biografía
+              </label>
+              <textarea
+                formControlName="bio"
+                placeholder="Cuéntanos un poco sobre ti"
+                rows="4"
+                class="input"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h2 class="mb-6 text-lg font-semibold text-slate-800">
+            Ubicación y contacto
+          </h2>
+
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <label class="mb-2 block text-sm font-medium text-slate-700">
+                Zona
+              </label>
+              <input type="text" formControlName="zone" placeholder="Zona o ubicación" class="input" />
+            </div>
+
+            <div>
+              <label class="mb-2 block text-sm font-medium text-slate-700">
+                Teléfono
+              </label>
+              <input type="text" formControlName="phone" placeholder="Teléfono" class="input" />
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-center pt-4">
+          <button
+            type="submit"
+            [disabled]="loading"
+            class="w-full max-w-xs rounded-2xl bg-teal-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-teal-300"
+          >
+            {{ loading ? 'Registrando...' : 'Crear cuenta' }}
+          </button>
+        </div>
+
+        <div *ngIf="errorMessage" class="text-center text-sm text-red-500">
+          {{ errorMessage }}
+        </div>
+
+        <div *ngIf="successMessage" class="text-center text-sm text-green-600">
+          {{ successMessage }}
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

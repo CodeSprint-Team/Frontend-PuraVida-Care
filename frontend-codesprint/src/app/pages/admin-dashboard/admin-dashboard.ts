@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ManagementNavbar } from '../../components/management-navbar/management-navbar';
+import { NavbarComponent } from '../../components/navbar/navbar';
 import { StatsCards } from '../../components/stats-cards/stats-cards';
 import { QuickActions } from '../../components/quick-actions/quick-actions';
 import { AdminService, ProviderPending } from '../../services/admin';
@@ -9,7 +9,8 @@ import { AdminService, ProviderPending } from '../../services/admin';
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, ManagementNavbar, StatsCards, QuickActions],
+  imports: [CommonModule, FormsModule, NavbarComponent, StatsCards, QuickActions],
+
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.css'
 })
