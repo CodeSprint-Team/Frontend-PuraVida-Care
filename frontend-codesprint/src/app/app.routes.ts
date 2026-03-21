@@ -3,6 +3,14 @@ import { Landing } from './pages/landing/landing';
 import { LoginComponent } from './pages/login/login.component';
 import { HomeComponent } from './pages/client/home-client/home-client';
 
+// Auth / Registro
+import { Register } from './pages/auth/register/register';
+import { RegisterRole } from './pages/register-role/register-role';
+import { RegisterClient } from './pages/register-client/register-client';
+import { RegisterProvider } from './pages/register-provider/register-provider';
+import { RegisterSenior } from './pages/register-senior/register-senior';
+import { VerificacionBiometricaComponent } from './pages/biometric-verification/biometric-verification';
+
 // Perfiles
 import { ProfileComponent } from './pages/viewProfile/profile/profile';
 import { ProfileEdit } from './pages/viewProfile/profile-edit/profile-edit';
@@ -14,6 +22,7 @@ import { FamilyProfileEdit } from './pages/viewProfile/family-profile-edit/famil
 // Admin
 import { AdminDashboard } from './pages/admin-dashboard/admin-dashboard';
 import { ProviderRequests } from './pages/provider-requests/provider-requests';
+import { AdminUsers } from './pages/admin-users/admin-users';
 
 // Proveedor
 import { ProviderDashboard } from './pages/provider-dashboard/provider-dashboard';
@@ -24,36 +33,47 @@ import { SolicitudDetalleComponent } from './pages/solicitudes/solicitud-detalle
 import { ExplorarServiciosComponent } from './pages/explore/explore-services/explore-services';
 import { PublicProviderProfileComponent } from './pages/publicProvider/public-provider-profile/public-provider-profile';
 
-// Otros
-import { VerificacionBiometricaComponent } from './pages/biometric-verification/biometric-verification';
-
 export const routes: Routes = [
-
+  // General
   { path: '',        redirectTo: 'landing', pathMatch: 'full' },
   { path: 'landing', component: Landing },
   { path: 'login',   component: LoginComponent },
   { path: 'home',    component: HomeComponent },
 
-  { path: 'profile/:id',      component: ProfileComponent },
-  { path: 'profile-edit/:id', component: ProfileEdit },
+  // Registro
+  { path: 'register',          component: Register },
+  { path: 'register/role',     component: RegisterRole },
+  { path: 'register/client',   component: RegisterClient },
+  { path: 'register/provider', component: RegisterProvider },
+  { path: 'register/senior',   component: RegisterSenior },
 
+  // Verificación
+  { path: 'biometric-verification', component: VerificacionBiometricaComponent },
+
+  // Perfiles
+  { path: 'profile/:id',               component: ProfileComponent },
+  { path: 'profile-edit/:id',          component: ProfileEdit },
   { path: 'provider-profile/:id',      component: ProviderProfileComponent },
   { path: 'provider-profile-edit/:id', component: ProviderProfileEditComponent },
+  { path: 'family-profile/:id',        component: FamilyProfileComponent },
+  { path: 'family-profile-edit/:id',   component: FamilyProfileEdit },
 
-  { path: 'family-profile/:id',      component: FamilyProfileComponent },
-  { path: 'family-profile-edit/:id', component: FamilyProfileEdit },
-
+  // Admin
   { path: 'admin-dashboard',           component: AdminDashboard },
   { path: 'admin-dashboard/providers', component: AdminDashboard },
   { path: 'admin/provider-requests',   component: ProviderRequests },
+  { path: 'admin/users',               component: AdminUsers },
+  { path: 'admin/services',            component: AdminDashboard },
 
+  // Proveedor
   { path: 'provider-dashboard',        component: ProviderDashboard },
   { path: 'proveedor/solicitudes/:id', component: SolicitudesProveedorComponent },
   { path: 'proveedor/solicitud/:id',   component: SolicitudDetalleComponent },
 
+  // Explorar
   { path: 'explorar',      component: ExplorarServiciosComponent },
   { path: 'proveedor/:id', component: PublicProviderProfileComponent },
 
-  { path: 'biometric-verification', component: VerificacionBiometricaComponent },
-
+  // Wildcard (siempre al final)
+  { path: '**', redirectTo: 'landing' },
 ];

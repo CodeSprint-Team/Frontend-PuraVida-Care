@@ -62,14 +62,14 @@ export class QuickActions {
       ];
     }
 
-    // ✅ Lee el profileId del localStorage para construir la ruta correcta
+    //  Lee el profileId del localStorage para construir la ruta correcta
     const profileId = localStorage.getItem('profileId') ?? '1';
 
     return [
       { title: 'Crear servicio',   description: 'Publicar nueva oferta',   icon: 'heroPlus',           color: 'green',  route: '/provider-dashboard'                       },
       { title: 'Mis servicios',    description: 'Ver y editar servicios',   icon: 'heroDocumentText',   color: 'blue',   route: '/provider-dashboard'                       },
       { title: 'Disponibilidad',   description: 'Gestionar calendario',     icon: 'heroCalendarDays',   color: 'purple', route: '/provider-dashboard'                       },
-      { title: 'Solicitudes',      description: 'Ver solicitudes',          icon: 'heroInbox',          color: 'orange', route: `/proveedor/solicitudes/${profileId}`        }, // ✅
+      { title: 'Solicitudes',      description: 'Ver solicitudes',          icon: 'heroInbox',          color: 'orange', route: `/proveedor/solicitudes/${profileId}`        }, 
       { title: 'Perfil público',   description: 'Ver como cliente',         icon: 'heroUser',           color: 'pink',   route: `/proveedor/${profileId}`                   },
       { title: 'Mensajes',         description: 'Ver mensajes',             icon: 'heroChatBubbleLeft', color: 'gray',   route: '/provider-dashboard'                       },
     ];
