@@ -7,11 +7,17 @@ import { ProviderProfileEditComponent } from './pages/viewProfile/provider-profi
 import { FamilyProfileComponent } from './pages/viewProfile/family-profile/family-profile';
 import { FamilyProfileEdit } from './pages/viewProfile/family-profile-edit/family-profile-edit';
 import { HomeComponent } from './pages/client/home-client/home-client';
+import { Register } from './pages/auth/register/register';
+import { RegisterRole } from './pages/register-role/register-role';
+import { RegisterClient } from './pages/register-client/register-client';
+import { RegisterProvider } from './pages/register-provider/register-provider';
+import { RegisterSenior } from './pages/register-senior/register-senior';
 import {VerificacionBiometricaComponent} from './pages/biometric-verification/biometric-verification';
 import { AdminDashboard } from './pages/admin-dashboard/admin-dashboard';
 import { ProviderDashboard } from './pages/provider-dashboard/provider-dashboard';
 import { ProviderRequests } from './pages/provider-requests/provider-requests';
 import { LoginComponent } from './pages/login/login.component';
+
 
 
 
@@ -61,6 +67,39 @@ export const routes: Routes = [
   },
 
   {
+    path: 'profile-edit',
+    component: ProfileEdit
+  },
+
+  { path: 'register',
+    component: Register
+  },
+
+  { path: '',
+    redirectTo: 'register/role',
+    pathMatch: 'full'
+  },
+
+  { path: 'register/role',
+    component: RegisterRole 
+  },
+
+  { path: 'register/client',
+    component: RegisterClient
+  },
+
+  { path: 'register/provider',
+    component: RegisterProvider
+  },
+
+  { path: 'register/senior',
+    component: RegisterSenior
+  },
+  
+  { path: '**',
+    redirectTo: 'register/role'
+  },
+  }
     path: 'biometric-verification',
     component: VerificacionBiometricaComponent
   },
