@@ -1,5 +1,5 @@
 <div class="min-h-screen bg-gray-50">
-  <app-navbar [role]="'provider'"></app-navbar>
+  <app-navbar [role]="'client'"></app-navbar>
 
   <main class="lg:ml-64 pb-24 lg:pb-8">
     <div class="container mx-auto px-6 py-8 max-w-5xl">
@@ -15,97 +15,36 @@
           <div class="flex flex-col md:flex-row gap-6">
             <div class="w-32 h-32 rounded-2xl bg-gray-200 animate-pulse flex-shrink-0"></div>
             <div class="flex-1 space-y-4">
-              <div class="flex items-center justify-between">
-                <div class="space-y-2">
-                  <div class="h-7 w-48 bg-gray-200 rounded-xl animate-pulse"></div>
-                  <div class="h-4 w-28 bg-gray-100 rounded-xl animate-pulse"></div>
-                  <div class="h-9 w-36 bg-gray-100 rounded-xl animate-pulse"></div>
-                </div>
-                <div class="h-11 w-32 bg-gray-100 rounded-xl animate-pulse"></div>
-              </div>
+              <div class="h-7 w-48 bg-gray-200 rounded-xl animate-pulse"></div>
+              <div class="h-4 w-28 bg-gray-100 rounded-xl animate-pulse"></div>
+              <div class="h-9 w-36 bg-gray-100 rounded-xl animate-pulse"></div>
               <div class="h-4 w-full bg-gray-100 rounded-xl animate-pulse"></div>
-              <div class="h-4 w-3/4 bg-gray-100 rounded-xl animate-pulse"></div>
               <div class="grid grid-cols-3 gap-4">
                 <div class="h-12 bg-gray-100 rounded-xl animate-pulse"></div>
                 <div class="h-12 bg-gray-100 rounded-xl animate-pulse"></div>
                 <div class="h-12 bg-gray-100 rounded-xl animate-pulse"></div>
               </div>
-              <div class="flex gap-4 pt-4 border-t border-gray-100">
-                <div class="h-5 w-28 bg-gray-100 rounded-xl animate-pulse"></div>
-                <div class="h-5 w-40 bg-gray-100 rounded-xl animate-pulse"></div>
-              </div>
             </div>
-          </div>
-        </div>
-
-        <!-- Solicitudes skeleton -->
-        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 border border-gray-100">
-          <div class="flex items-center justify-between">
-            <div class="space-y-2">
-              <div class="h-5 w-44 bg-gray-200 rounded-xl animate-pulse"></div>
-              <div class="h-4 w-56 bg-gray-100 rounded-xl animate-pulse"></div>
-            </div>
-            <div class="h-11 w-36 bg-gray-200 rounded-xl animate-pulse"></div>
           </div>
         </div>
 
         <div class="mb-6">
           <div class="h-7 w-44 bg-gray-200 rounded-xl animate-pulse mb-4"></div>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-              <div class="h-5 w-32 bg-gray-200 rounded-xl animate-pulse mb-3"></div>
-              <div class="h-4 w-full bg-gray-100 rounded-xl animate-pulse mb-2"></div>
-              <div class="h-4 w-2/3 bg-gray-100 rounded-xl animate-pulse mb-4"></div>
-              <div class="h-6 w-24 bg-gray-200 rounded-xl animate-pulse mb-2"></div>
-              <div class="h-4 w-20 bg-gray-100 rounded-xl animate-pulse"></div>
-            </div>
-            <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-              <div class="h-5 w-28 bg-gray-200 rounded-xl animate-pulse mb-3"></div>
-              <div class="h-4 w-full bg-gray-100 rounded-xl animate-pulse mb-2"></div>
-              <div class="h-4 w-3/4 bg-gray-100 rounded-xl animate-pulse mb-4"></div>
-              <div class="h-6 w-20 bg-gray-200 rounded-xl animate-pulse mb-2"></div>
-              <div class="h-4 w-24 bg-gray-100 rounded-xl animate-pulse"></div>
-            </div>
-            <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 hidden lg:block">
-              <div class="h-5 w-36 bg-gray-200 rounded-xl animate-pulse mb-3"></div>
-              <div class="h-4 w-full bg-gray-100 rounded-xl animate-pulse mb-2"></div>
-              <div class="h-4 w-1/2 bg-gray-100 rounded-xl animate-pulse mb-4"></div>
-              <div class="h-6 w-28 bg-gray-200 rounded-xl animate-pulse mb-2"></div>
-              <div class="h-4 w-16 bg-gray-100 rounded-xl animate-pulse"></div>
+            <div *ngFor="let s of [1,2,3]"
+                 class="bg-white rounded-2xl p-6 border border-gray-100 animate-pulse">
+              <div class="h-5 w-32 bg-gray-200 rounded-xl mb-3"></div>
+              <div class="h-4 w-full bg-gray-100 rounded-xl mb-2"></div>
+              <div class="h-4 w-2/3 bg-gray-100 rounded-xl mb-4"></div>
+              <div class="h-6 w-24 bg-gray-200 rounded-xl"></div>
             </div>
           </div>
         </div>
 
-        <div class="mb-6">
-          <div class="h-7 w-32 bg-gray-200 rounded-xl animate-pulse mb-4"></div>
-          <div class="space-y-4">
-            <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-              <div class="flex items-start gap-4">
-                <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
-                <div class="flex-1 space-y-2">
-                  <div class="flex justify-between">
-                    <div class="h-4 w-32 bg-gray-200 rounded-xl animate-pulse"></div>
-                    <div class="h-4 w-24 bg-gray-100 rounded-xl animate-pulse"></div>
-                  </div>
-                  <div class="flex gap-1">
-                    <div *ngFor="let s of [1,2,3,4,5]"
-                         class="w-4 h-4 bg-gray-200 rounded animate-pulse"></div>
-                  </div>
-                  <div class="h-4 w-full bg-gray-100 rounded-xl animate-pulse"></div>
-                  <div class="h-4 w-4/5 bg-gray-100 rounded-xl animate-pulse"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200 animate-pulse">
           <div class="flex items-center justify-between">
-            <div class="space-y-2">
-              <div class="h-4 w-12 bg-gray-100 rounded-xl animate-pulse"></div>
-              <div class="h-7 w-28 bg-gray-200 rounded-xl animate-pulse"></div>
-            </div>
-            <div class="h-12 w-36 bg-gray-200 rounded-xl animate-pulse"></div>
+            <div class="h-7 w-28 bg-gray-200 rounded-xl"></div>
+            <div class="h-12 w-36 bg-gray-200 rounded-xl"></div>
           </div>
         </div>
 
@@ -126,17 +65,18 @@
       <!-- ══════════════════════════════════════════════════════════ -->
       <ng-container *ngIf="provider">
 
-        <!-- Botón volver -->
+        <!-- Botón volver a explorar -->
         <button (click)="goBack()"
           class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition">
           <ng-icon name="heroArrowLeft" class="text-xl"></ng-icon>
-          <span class="font-medium">Volver al inicio</span>
+          <span class="font-medium">Volver a explorar</span>
         </button>
 
         <!-- ── Header ───────────────────────────────────────────────── -->
         <div class="bg-white rounded-2xl shadow-sm p-8 mb-6">
           <div class="flex flex-col md:flex-row gap-6">
 
+            <!-- Foto -->
             <div class="w-32 h-32 rounded-2xl overflow-hidden bg-gradient-to-br
                         from-teal-100 to-teal-200 flex-shrink-0 flex items-center
                         justify-center border border-teal-100">
@@ -149,34 +89,25 @@
               </ng-icon>
             </div>
 
+            <!-- Info — SIN botón editar -->
             <div class="flex-1">
-              <div class="flex flex-col lg:flex-row lg:items-start
-                          lg:justify-between gap-4 mb-4">
-                <div>
-                  <div class="flex flex-wrap items-center gap-3 mb-2">
-                    <h1 class="text-2xl font-bold text-gray-900">{{ provider.fullName }}</h1>
-                    <span *ngIf="provider.verified"
-                      class="inline-flex items-center gap-1 px-3 py-1 rounded-full
-                             bg-teal-50 text-teal-700 text-sm font-semibold">
-                      <ng-icon name="heroCheckBadge" class="text-lg"></ng-icon>
-                      Verificado
-                    </span>
-                  </div>
-                  <p *ngIf="provider.providerType"
-                     class="text-gray-500 text-sm mb-3">{{ provider.providerType }}</p>
-                  <div class="flex items-center gap-2 bg-yellow-50 px-4 py-2 rounded-xl w-fit">
-                    <ng-icon name="heroStar" class="text-lg text-yellow-500"></ng-icon>
-                    <span class="text-lg font-semibold text-gray-900">{{ ratingDisplay }}</span>
-                    <span class="text-gray-600">({{ provider.totalReviews ?? 0 }} reseñas)</span>
-                  </div>
-                </div>
-                <button (click)="editProviderProfile()"
-                  class="inline-flex items-center justify-center gap-2 px-5 py-3
-                         bg-white border border-gray-200 text-gray-700 rounded-xl
-                         hover:bg-gray-50 transition font-medium">
-                  <ng-icon name="heroPencilSquare" class="text-lg"></ng-icon>
-                  Editar perfil
-                </button>
+              <div class="flex flex-wrap items-center gap-3 mb-2">
+                <h1 class="text-2xl font-bold text-gray-900">{{ provider.fullName }}</h1>
+                <span *ngIf="provider.verified"
+                  class="inline-flex items-center gap-1 px-3 py-1 rounded-full
+                         bg-teal-50 text-teal-700 text-sm font-semibold">
+                  <ng-icon name="heroCheckBadge" class="text-lg"></ng-icon>
+                  Verificado
+                </span>
+              </div>
+
+              <p *ngIf="provider.providerType"
+                 class="text-gray-500 text-sm mb-3">{{ provider.providerType }}</p>
+
+              <div class="flex items-center gap-2 bg-yellow-50 px-4 py-2 rounded-xl w-fit mb-4">
+                <ng-icon name="heroStar" class="text-lg text-yellow-500"></ng-icon>
+                <span class="text-lg font-semibold text-gray-900">{{ ratingDisplay }}</span>
+                <span class="text-gray-600">({{ provider.totalReviews ?? 0 }} reseñas)</span>
               </div>
 
               <p *ngIf="provider.bio" class="text-gray-700 mb-5 leading-relaxed">
@@ -189,28 +120,31 @@
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="flex items-center gap-3 text-gray-700 bg-gray-50 rounded-xl px-4 py-3">
                   <ng-icon name="heroMapPin" class="text-xl text-teal-600"></ng-icon>
-                  <span>{{ provider.zone ?? 'Zona no especificada' }}</span>
+                  <span class="text-sm">{{ provider.zone ?? 'Zona no especificada' }}</span>
                 </div>
                 <div class="flex items-center gap-3 text-gray-700 bg-gray-50 rounded-xl px-4 py-3">
                   <ng-icon name="heroBriefcase" class="text-xl text-teal-600"></ng-icon>
-                  <span>{{ provider.experienceYears }} años de experiencia</span>
+                  <span class="text-sm">{{ provider.experienceYears }} años de exp.</span>
                 </div>
                 <div class="flex items-center gap-3 text-gray-700 bg-gray-50 rounded-xl px-4 py-3">
                   <ng-icon name="heroShieldCheck" class="text-xl text-teal-600"></ng-icon>
-                  <span>{{ provider.insuranceActive ? 'Seguro activo' : 'Sin seguro' }}</span>
+                  <span class="text-sm">
+                    {{ provider.insuranceActive ? 'Seguro activo' : 'Sin seguro' }}
+                  </span>
                 </div>
               </div>
 
               <div class="mt-5 pt-5 border-t border-gray-200 flex flex-col md:flex-row gap-4">
                 <div *ngIf="provider.phone" class="flex items-center gap-3 text-gray-700">
                   <ng-icon name="heroPhone" class="text-xl text-teal-600"></ng-icon>
-                  <a [href]="'tel:' + provider.phone" class="hover:text-teal-600 transition">
+                  <a [href]="'tel:' + provider.phone" class="hover:text-teal-600 transition text-sm">
                     {{ provider.phone }}
                   </a>
                 </div>
                 <div class="flex items-center gap-3 text-gray-700">
                   <ng-icon name="heroEnvelope" class="text-xl text-teal-600"></ng-icon>
-                  <a [href]="'mailto:' + provider.email" class="hover:text-teal-600 transition">
+                  <a [href]="'mailto:' + provider.email"
+                     class="hover:text-teal-600 transition text-sm">
                     {{ provider.email }}
                   </a>
                 </div>
@@ -219,32 +153,12 @@
           </div>
         </div>
 
-        <!-- ✅ Solicitudes recibidas ──────────────────────────────── -->
-        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 border border-gray-100">
-          <div class="flex items-center justify-between">
-            <div>
-              <h2 class="text-lg font-bold text-gray-900 mb-1">
-                Solicitudes recibidas
-              </h2>
-              <p class="text-sm text-gray-500">
-                Gestiona las solicitudes de tus clientes
-              </p>
-            </div>
-            <button (click)="goToSolicitudes()"
-              class="inline-flex items-center gap-2 px-5 py-3 bg-teal-600 text-white
-                     rounded-xl font-semibold hover:bg-teal-700 transition text-sm">
-              <ng-icon name="heroClipboardDocumentList" class="text-lg"></ng-icon>
-              Ver solicitudes
-            </button>
-          </div>
-        </div>
-
         <!-- ── Servicios ────────────────────────────────────────────── -->
         <div class="mb-6">
-          <h2 class="text-2xl font-bold text-gray-900 mb-4">Servicios ofrecidos</h2>
+          <h2 class="text-xl font-bold text-gray-900 mb-4">Servicios ofrecidos</h2>
 
           <div *ngIf="!provider.services || provider.services.length === 0"
-               class="bg-white rounded-2xl shadow-sm p-8 text-center text-gray-400">
+               class="bg-white rounded-2xl shadow-sm p-8 text-center text-gray-400 border border-gray-100">
             <p class="text-sm">Este proveedor aún no tiene servicios publicados.</p>
           </div>
 
@@ -254,7 +168,7 @@
                  class="bg-white rounded-2xl shadow-sm p-6 hover:shadow-md
                         transition-shadow border border-gray-100">
               <div class="flex items-start justify-between gap-3 mb-3">
-                <h3 class="text-lg font-bold text-gray-900">{{ service.name }}</h3>
+                <h3 class="text-base font-bold text-gray-900">{{ service.name }}</h3>
                 <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center flex-shrink-0">
                   <ng-icon name="heroBriefcase" class="text-xl text-teal-600"></ng-icon>
                 </div>
@@ -266,7 +180,8 @@
                 <span>{{ service.priceMode }}</span>
               </div>
               <span *ngIf="service.category"
-                    class="inline-block mt-3 text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
+                    class="inline-block mt-3 text-xs bg-gray-100 text-gray-600
+                           px-3 py-1 rounded-full">
                 {{ service.category }}
               </span>
             </div>
@@ -275,12 +190,12 @@
 
         <!-- ── Reseñas ───────────────────────────────────────────────── -->
         <div class="mb-6">
-          <h2 class="text-2xl font-bold text-gray-900 mb-4">
+          <h2 class="text-xl font-bold text-gray-900 mb-4">
             Reseñas ({{ provider.totalReviews ?? 0 }})
           </h2>
 
           <div *ngIf="!provider.reviewsList || provider.reviewsList.length === 0"
-               class="bg-white rounded-2xl shadow-sm p-8 text-center text-gray-400">
+               class="bg-white rounded-2xl shadow-sm p-8 text-center text-gray-400 border border-gray-100">
             <p class="text-sm">Aún no hay reseñas para este proveedor.</p>
           </div>
 
@@ -316,6 +231,7 @@
         <!-- ── CTA Contratar ─────────────────────────────────────────── -->
         <div class="bg-white rounded-2xl p-6 border border-gray-200 mb-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+
             <div class="flex items-center gap-6">
               <div class="border-r border-gray-200 pr-6">
                 <p class="text-xs text-gray-400 mb-1">Precio desde</p>
@@ -337,12 +253,15 @@
                 </div>
               </div>
             </div>
+
             <button (click)="hireProvider()"
               class="px-8 py-3.5 bg-teal-700 text-teal-50 rounded-xl font-medium
-                    text-base hover:opacity-85 transition-opacity">
+                     text-base hover:opacity-85 transition-opacity w-full sm:w-auto">
               Contratar
             </button>
+
           </div>
+
           <div class="border-t border-gray-100 mt-5 pt-4 flex flex-wrap gap-5">
             <span class="text-xs text-gray-400 flex items-center gap-1.5">
               <ng-icon name="heroClock" class="text-xs"></ng-icon>
@@ -358,6 +277,7 @@
             </span>
           </div>
         </div>
+
       </ng-container>
     </div>
   </main>
