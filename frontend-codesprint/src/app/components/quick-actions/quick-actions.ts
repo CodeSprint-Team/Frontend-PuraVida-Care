@@ -55,7 +55,7 @@ export class QuickActions {
     { title: 'Crear servicio', description: 'Publicar nueva oferta', icon: 'heroPlus', color: 'green', route: '/provider-dashboard' },
     { title: 'Mis servicios', description: 'Ver y editar servicios', icon: 'heroDocument', color: 'blue', route: '/provider-dashboard' },
     { title: 'Disponibilidad', description: 'Gestionar calendario', icon: 'heroCalendar', color: 'purple', route: '/provider-dashboard' },
-    { title: 'Solicitudes', description: 'Ver solicitudes', icon: 'heroInbox', color: 'orange', route: '/provider-dashboard' },
+    { title: 'Solicitudes', description: 'Ver solicitudes', icon: 'heroInbox', color: 'orange', route: '/provider-requests-service' },
     { title: 'Perfil público', description: 'Ver como cliente', icon: 'heroUser', color: 'pink', route: '/provider-dashboard' },
     { title: 'Mensajes', description: 'Ver mensajes', icon: 'heroChatBubbleLeft', color: 'gray', route: '/provider-dashboard' }
   ];

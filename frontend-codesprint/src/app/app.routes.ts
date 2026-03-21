@@ -12,6 +12,10 @@ import { AdminDashboard } from './pages/admin-dashboard/admin-dashboard';
 import { ProviderDashboard } from './pages/provider-dashboard/provider-dashboard';
 import { ProviderRequests } from './pages/provider-requests/provider-requests';
 import { LoginComponent } from './pages/login/login.component';
+import {ProviderRequestsComponent} from './pages/provider-request-service/provider-request-service';
+import { ProviderBookingDetail } from './pages/provider-booking-detail/provider-booking-detail';
+import { ProviderStartBooking } from './pages/provider-start-booking/provider-start-booking';
+import { ProviderInService } from './pages/provider-in-service/provider-in-service';
 
 
 
@@ -79,4 +83,18 @@ export const routes: Routes = [
   { path: 'admin/provider-requests',
     component: ProviderRequests
   },
+  { path: 'provider-requests-service',
+    component: ProviderRequestsComponent
+  },
+  { path: 'provider-booking-detail/:id',
+    component: ProviderBookingDetail
+  },
+  { path: 'provider-start-service/:id', 
+    component: ProviderStartBooking 
+  },
+  { path: 'provider-in-service/:id',
+    component: ProviderInService
+  }
+
+
 ];
