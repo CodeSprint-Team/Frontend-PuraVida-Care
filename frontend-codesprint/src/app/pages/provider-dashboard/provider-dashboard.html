@@ -13,8 +13,8 @@
       <p class="mt-1 text-sm">Tu cuenta está verificada y puedes recibir solicitudes de clientes.</p>
     </div>
 
-    <app-stats-cards [role]="role"></app-stats-cards>
-
+    <app-stats-cards [role]="role" [providerPendingCount]="pendingCount"></app-stats-cards>
+    
     <div class="mt-8">
       <app-quick-actions [role]="role"></app-quick-actions>
     </div>

@@ -1,74 +1,65 @@
-// src/app/pages/viewProfile/provider-profile/provider-profile.ts
+// src/app/public-provider-profile/public-provider-profile.ts
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { NavbarComponent } from '../../../components/navbar/navbar';
-import { ProfileService } from '../services/profile.services';
-import { ProviderProfile } from '../models/provider-profile.model';
+import { ProfileService } from '../../viewProfile/services/profile.services';
+import { ProviderProfile } from '../../viewProfile/models/provider-profile.model';
 import {
   heroArrowLeft, heroCheckBadge, heroMapPin, heroShieldCheck,
-  heroPhone, heroEnvelope, heroClock, heroPencilSquare,
-  heroStar, heroBriefcase, heroUserCircle, heroClipboardDocumentList
+  heroPhone, heroEnvelope, heroClock, heroStar, heroBriefcase,
+  heroUserCircle
 } from '@ng-icons/heroicons/outline';
 
 @Component({
-  selector: 'app-provider-profile',
+  selector: 'app-public-provider-profile',
   standalone: true,
   imports: [CommonModule, NgIconComponent, NavbarComponent],
   viewProviders: [provideIcons({
     heroArrowLeft, heroCheckBadge, heroMapPin, heroShieldCheck,
-    heroPhone, heroEnvelope, heroClock, heroPencilSquare,
-    heroStar, heroBriefcase, heroUserCircle, heroClipboardDocumentList
+    heroPhone, heroEnvelope, heroClock, heroStar, heroBriefcase,
+    heroUserCircle
   })],
-  templateUrl: './provider-profile.html',
-  styleUrls: ['./provider-profile.css'],
+  templateUrl: './public-provider-profile.html',
+  styleUrl: './public-provider-profile.css',
 })
-export class ProviderProfileComponent implements OnInit {
+export class PublicProviderProfileComponent implements OnInit {
   private route          = inject(ActivatedRoute);
   private router         = inject(Router);
   private profileService = inject(ProfileService);
   private cdr            = inject(ChangeDetectorRef);
 
   provider: ProviderProfile | null = null;
-  isLoading    = false;
   errorMessage = '';
-  userId       = '';
+  providerId   = '';
 
   ngOnInit(): void {
-    this.userId = this.route.snapshot.paramMap.get('id') ?? '1';
+    this.providerId = this.route.snapshot.paramMap.get('id') ?? '1';
     this.loadProfile();
   }
 
   loadProfile(): void {
     this.errorMessage = '';
-    this.profileService.getProviderProfile(this.userId).subscribe({
-      next: (data: ProviderProfile) => {
+    this.profileService.getProviderProfile(this.providerId).subscribe({
+      next: (data) => {
         this.provider = data;
         this.cdr.detectChanges();
       },
-      error: (err: unknown) => {
-        console.error('Error cargando proveedor:', err);
+      error: () => {
         this.errorMessage = 'No se pudo cargar el perfil del proveedor.';
         this.cdr.detectChanges();
       }
     });
   }
 
+  // ✅ Vuelve a explorar, no al perfil del proveedor
   goBack(): void {
-    this.router.navigate(['/provider-dashboard']);
-  }
-
-  editProviderProfile(): void {
-    this.router.navigate(['/provider-profile-edit', this.userId]);
-  }
-
-  goToSolicitudes(): void {
-    this.router.navigate(['/proveedor/solicitudes', this.userId]);
+    this.router.navigate(['/explorar']);
   }
 
   hireProvider(): void {
-    this.router.navigate(['/seleccionar-servicio', this.userId]);
+    this.router.navigate(['/seleccionar-servicio', this.providerId]);
   }
 
   hasProfileImage(): boolean {

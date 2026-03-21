@@ -31,25 +31,18 @@ export class NavbarComponent implements OnInit, OnChanges {
   navItems: NavItem[] = [];
   panelLabel = '';
 
-  private clientNav: NavItem[] = [
-    { label: 'Home',     path: '/home',      icon: 'heroHome' },
-    { label: 'Explorar', path: '/explorar',  icon: 'heroMagnifyingGlass' },
-    { label: 'Agenda',   path: '/agenda',    icon: 'heroCalendarDays' },
-    { label: 'Chat IA',  path: '/chat-ia',   icon: 'heroCpuChip' },
-    { label: 'Mensajes', path: '/mensajes',  icon: 'heroChatBubbleLeftRight' },
-    { label: 'Perfil',   path: '/profile',   icon: 'heroUser' },
+  private readonly clientNav: NavItem[] = [
+    { label: 'Inicio',   path: '/home',     icon: 'heroHome' },
+    { label: 'Explorar', path: '/explorar', icon: 'heroMagnifyingGlass' },
+    { label: 'Agenda',   path: '/agenda',   icon: 'heroCalendarDays' },
+    { label: 'Chat IA',  path: '/chat-ia',  icon: 'heroCpuChip' },
+    { label: 'Mensajes', path: '/mensajes', icon: 'heroChatBubbleLeftRight' },
+    { label: 'Perfil',   path: '/profile',  icon: 'heroUser' },
   ];
 
-  private adminNav: NavItem[] = [
+  private readonly adminNav: NavItem[] = [
     { label: 'Dashboard', path: '/admin-dashboard', icon: 'heroCog6Tooth' },
     { label: 'Perfil',    path: '/admin-profile',   icon: 'heroUser' },
-  ];
-
-  private providerNav: NavItem[] = [
-    { label: 'Dashboard', path: '/provider-dashboard', icon: 'heroClipboardDocumentList' },
-    { label: 'Mensajes',  path: '/provider-messages',  icon: 'heroChatBubbleLeftRight' },
-    { label: 'Agenda',    path: '/provider-agenda',     icon: 'heroCalendarDays' },
-    { label: 'Perfil',    path: '/provider-profile',    icon: 'heroUser' },
   ];
 
   ngOnInit(): void {
@@ -63,22 +56,33 @@ export class NavbarComponent implements OnInit, OnChanges {
   }
 
   private resolveRole(): void {
-    const currentRole = this.role ?? localStorage.getItem('userRole') as 'client' | 'admin' | 'provider' ?? 'client';
+    const currentRole = this.role
+      ?? localStorage.getItem('userRole') as 'client' | 'admin' | 'provider'
+      ?? 'client';
     this.loadNav(currentRole);
   }
 
   private loadNav(role: string): void {
+    const profileId = localStorage.getItem('profileId') ?? '1';
+
     switch (role) {
       case 'admin':
-        this.navItems = this.adminNav;
+        this.navItems   = this.adminNav;
         this.panelLabel = 'Panel Admin';
         break;
+
       case 'provider':
-        this.navItems = this.providerNav;
+        this.navItems = [
+          { label: 'Dashboard', path: '/provider-dashboard',            icon: 'heroClipboardDocumentList' },
+          { label: 'Mensajes',  path: '/provider-messages',             icon: 'heroChatBubbleLeftRight'   },
+          { label: 'Agenda',    path: '/provider-agenda',               icon: 'heroCalendarDays'          },
+          { label: 'Perfil',    path: `/provider-profile/${profileId}`, icon: 'heroUser'                  },
+        ];
         this.panelLabel = 'Panel Proveedor';
         break;
+
       default:
-        this.navItems = this.clientNav;
+        this.navItems   = this.clientNav;
         this.panelLabel = '';
     }
   }
