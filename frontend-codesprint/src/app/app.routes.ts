@@ -16,6 +16,7 @@ import {ProviderRequestsComponent} from './pages/provider-request-service/provid
 import { ProviderBookingDetail } from './pages/provider-booking-detail/provider-booking-detail';
 import { ProviderStartBooking } from './pages/provider-start-booking/provider-start-booking';
 import { ProviderInService } from './pages/provider-in-service/provider-in-service';
+import { FamilyTrackingComponent } from './pages/family-tracking/family-tracking';
 
 
 
@@ -94,6 +95,9 @@ export const routes: Routes = [
   },
   { path: 'provider-in-service/:id',
     component: ProviderInService
+  },
+  { path: 'family-tracking/:sessionId',
+    component: FamilyTrackingComponent
   }
 
 

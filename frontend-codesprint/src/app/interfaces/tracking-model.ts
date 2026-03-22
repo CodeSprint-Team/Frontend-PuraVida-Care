@@ -2,8 +2,6 @@ export interface TrackingSessionRequest {
   bookingId: number;
 }
 
-// Backend devuelve: trackingSessionId, bookingId, providerProfileId,
-//                   trackingState, startedAt, endedAt
 export interface TrackingSessionResponse {
   trackingSessionId: number;
   bookingId: number;
@@ -11,6 +9,12 @@ export interface TrackingSessionResponse {
   trackingState: 'active' | 'ended';
   startedAt: string;
   endedAt: string | null;
+
+  // Coordenadas del booking 
+  originLatitude: number;
+  originLongitude: number;
+  destinationLatitude: number;
+  destinationLongitude: number;
 }
 
 export interface TrackingPointRequest {
@@ -18,8 +22,6 @@ export interface TrackingPointRequest {
   longitude: number;
 }
 
-// Backend devuelve: trackingPointId, trackingSessionId,
-//                   latitude, longitude, recordedAt
 export interface TrackingPointResponse {
   trackingPointId: number;
   trackingSessionId: number;
