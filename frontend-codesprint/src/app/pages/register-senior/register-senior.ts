@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { switchMap } from 'rxjs';
 import { AuthService } from '../../services/auth/auth/auth';
 import { ProfileService } from '../../services/profile/profile';
@@ -19,6 +19,7 @@ export class RegisterSenior {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly profileService = inject(ProfileService);
+  private readonly router = inject(Router);
 
   loading = false;
   errorMessage = '';
@@ -29,7 +30,6 @@ export class RegisterSenior {
     lastName: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
-
     phone: ['', [Validators.required]],
     age: [null],
     address: [''],
@@ -53,6 +53,7 @@ export class RegisterSenior {
     this.successMessage = '';
 
     const formValue = this.registerForm.getRawValue();
+    let capturedUserId: number;
 
     const userData: RegisterUserRequest = {
       roleId: 3,
@@ -64,6 +65,7 @@ export class RegisterSenior {
 
     this.authService.register(userData).pipe(
       switchMap((userResponse) => {
+        capturedUserId = userResponse.id;
         const profileData: SeniorProfileCreateRequest = {
           userId: userResponse.id,
           phone: formValue.phone ?? '',
@@ -77,14 +79,20 @@ export class RegisterSenior {
           mobilityNotes: formValue.mobilityNotes ?? '',
           allergies: formValue.allergies ?? ''
         };
-
         return this.profileService.createSeniorProfile(profileData);
       })
     ).subscribe({
       next: () => {
         this.loading = false;
-        this.successMessage = 'Perfil de adulto mayor creado correctamente.';
-        this.registerForm.reset();
+        this.router.navigate(['/biometric-verification'], {
+          state: {
+            adultoMayorData: {
+              id: capturedUserId,
+              fullName: `${formValue.userName} ${formValue.lastName}`
+            },
+            userRole: 'adulto-mayor'
+          }
+        });
       },
       error: (error) => {
         this.loading = false;

@@ -3,12 +3,14 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProfileService } from '../services/profile.services';
+import { AuthService } from '../../../services/auth/auth/auth';
 import { FamilyProfile } from '../models/family-profile.model';
 import { NavbarComponent } from '../../../components/navbar/navbar';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   heroPencilSquare, heroUser, heroPhone, heroEnvelope, heroUsers,
-  heroExclamationTriangle, heroShieldCheck, heroDocumentText, heroPhoto
+  heroExclamationTriangle, heroShieldCheck, heroDocumentText, heroPhoto,
+  heroArrowRightOnRectangle
 } from '@ng-icons/heroicons/outline';
 
 @Component({
@@ -17,13 +19,15 @@ import {
   imports: [CommonModule, NavbarComponent, NgIconComponent],
   viewProviders: [provideIcons({
     heroPencilSquare, heroUser, heroPhone, heroEnvelope, heroUsers,
-    heroExclamationTriangle, heroShieldCheck, heroDocumentText, heroPhoto
+    heroExclamationTriangle, heroShieldCheck, heroDocumentText, heroPhoto,
+    heroArrowRightOnRectangle
   })],
   templateUrl: './family-profile.html',
   styleUrl: './family-profile.css',
 })
 export class FamilyProfileComponent implements OnInit {
   private profileService = inject(ProfileService);
+  private authService    = inject(AuthService);
   private router         = inject(Router);
   private route          = inject(ActivatedRoute);
   private cdr            = inject(ChangeDetectorRef);
@@ -31,18 +35,17 @@ export class FamilyProfileComponent implements OnInit {
   profile: FamilyProfile | null = null;
   errorMessage = '';
   userId       = '';
+  profileId    = '';
 
   ngOnInit(): void {
-    this.userId = this.route.snapshot.paramMap.get('id') ?? '1';
+    this.userId = this.route.snapshot.paramMap.get('id') ?? '';
     this.loadProfile();
   }
 
   loadProfile(): void {
     this.errorMessage = '';
-    this.profileService.getFamilyProfile(this.userId).subscribe({
+    this.profileService.getFamilyProfileByUserId(this.userId).subscribe({
       next: (data) => {
-        // El backend devuelve emergencyContactName/Relation/Phone
-        // los mapeamos a emergencyName/Relation/Phone que usa el HTML
         this.profile = {
           ...data,
           emergencyName:     data.emergencyContactName     ?? data.emergencyName     ?? '',
@@ -51,6 +54,7 @@ export class FamilyProfileComponent implements OnInit {
           importantNotes:    data.importantNotes           ?? data.notes             ?? '',
           relationToSenior:  data.relationToSenior         ?? '',
         };
+        this.profileId = String(data.id);
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -61,8 +65,12 @@ export class FamilyProfileComponent implements OnInit {
     });
   }
 
+  logout(): void {
+    this.authService.logout();
+  }
+
   editProfile(): void {
-    this.router.navigate(['/family-profile-edit', this.userId]);
+    this.router.navigate(['/family-profile-edit', this.profileId]);
   }
 
   hasProfileImage(): boolean {

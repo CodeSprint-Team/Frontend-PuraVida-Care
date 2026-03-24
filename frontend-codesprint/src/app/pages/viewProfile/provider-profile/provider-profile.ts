@@ -5,11 +5,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { NavbarComponent } from '../../../components/navbar/navbar';
 import { ProfileService } from '../services/profile.services';
+import { AuthService } from '../../../services/auth/auth/auth';
 import { ProviderProfile } from '../models/provider-profile.model';
 import {
   heroArrowLeft, heroCheckBadge, heroMapPin, heroShieldCheck,
   heroPhone, heroEnvelope, heroClock, heroPencilSquare,
-  heroStar, heroBriefcase, heroUserCircle, heroClipboardDocumentList
+  heroStar, heroBriefcase, heroUserCircle, heroClipboardDocumentList,
+  heroArrowRightOnRectangle
 } from '@ng-icons/heroicons/outline';
 
 @Component({
@@ -19,7 +21,8 @@ import {
   viewProviders: [provideIcons({
     heroArrowLeft, heroCheckBadge, heroMapPin, heroShieldCheck,
     heroPhone, heroEnvelope, heroClock, heroPencilSquare,
-    heroStar, heroBriefcase, heroUserCircle, heroClipboardDocumentList
+    heroStar, heroBriefcase, heroUserCircle, heroClipboardDocumentList,
+    heroArrowRightOnRectangle
   })],
   templateUrl: './provider-profile.html',
   styleUrls: ['./provider-profile.css'],
@@ -28,23 +31,26 @@ export class ProviderProfileComponent implements OnInit {
   private route          = inject(ActivatedRoute);
   private router         = inject(Router);
   private profileService = inject(ProfileService);
+  private authService    = inject(AuthService);
   private cdr            = inject(ChangeDetectorRef);
 
   provider: ProviderProfile | null = null;
   isLoading    = false;
   errorMessage = '';
   userId       = '';
+  profileId    = '';
 
   ngOnInit(): void {
-    this.userId = this.route.snapshot.paramMap.get('id') ?? '1';
+    this.userId = this.route.snapshot.paramMap.get('id') ?? '';
     this.loadProfile();
   }
 
   loadProfile(): void {
     this.errorMessage = '';
-    this.profileService.getProviderProfile(this.userId).subscribe({
+    this.profileService.getProviderProfileByUserId(this.userId).subscribe({
       next: (data: ProviderProfile) => {
-        this.provider = data;
+        this.provider  = data;
+        this.profileId = String(data.id);
         this.cdr.detectChanges();
       },
       error: (err: unknown) => {
@@ -55,20 +61,24 @@ export class ProviderProfileComponent implements OnInit {
     });
   }
 
+  logout(): void {
+    this.authService.logout();
+  }
+
   goBack(): void {
     this.router.navigate(['/provider-dashboard']);
   }
 
   editProviderProfile(): void {
-    this.router.navigate(['/provider-profile-edit', this.userId]);
+    this.router.navigate(['/provider-profile-edit', this.profileId]);
   }
 
   goToSolicitudes(): void {
-    this.router.navigate(['/proveedor/solicitudes', this.userId]);
+    this.router.navigate(['/proveedor/solicitudes', this.profileId]);
   }
 
   hireProvider(): void {
-    this.router.navigate(['/seleccionar-servicio', this.userId]);
+    this.router.navigate(['/seleccionar-servicio', this.profileId]);
   }
 
   hasProfileImage(): boolean {

@@ -25,19 +25,19 @@ export class RegisterClient {
   errorMessage = '';
   successMessage = '';
 
- registerForm = this.fb.group({
-  userName: ['', [Validators.required]],
-  lastName: ['', [Validators.required]],
-  email: ['', [Validators.required, Validators.email]],
-  password: ['', [Validators.required, Validators.minLength(6)]],
-  phone: ['', [Validators.required]],
-  notes: [''],
-  relationToSenior: [''],
-  emergencyContactName: [''],
-  emergencyContactRelation: [''],
-  emergencyContactPhone: [''],
-  importantNotes: ['']
-});
+  registerForm = this.fb.group({
+    userName: ['', [Validators.required]],
+    lastName: ['', [Validators.required]],
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
+    phone: ['', [Validators.required]],
+    notes: [''],
+    relationToSenior: [''],
+    emergencyContactName: [''],
+    emergencyContactRelation: [''],
+    emergencyContactPhone: [''],
+    importantNotes: ['']
+  });
 
   submit(): void {
     if (this.registerForm.invalid) {
@@ -50,6 +50,7 @@ export class RegisterClient {
     this.successMessage = '';
 
     const formValue = this.registerForm.getRawValue();
+    let capturedUserId: number;
 
     const userData: RegisterUserRequest = {
       roleId: 1,
@@ -61,6 +62,7 @@ export class RegisterClient {
 
     this.authService.register(userData).pipe(
       switchMap((userResponse) => {
+        capturedUserId = userResponse.id;
         const profileData: ClientProfileCreateRequest = {
           userId: userResponse.id,
           phone: formValue.phone ?? '',
@@ -71,14 +73,20 @@ export class RegisterClient {
           emergencyContactPhone: formValue.emergencyContactPhone ?? '',
           importantNotes: formValue.importantNotes ?? ''
         };
-
         return this.profileService.createClientProfile(profileData);
       })
     ).subscribe({
       next: () => {
         this.loading = false;
-        this.successMessage = 'Registro completado correctamente.';
-        this.registerForm.reset();
+        this.router.navigate(['/biometric-verification'], {
+          state: {
+            clientData: {
+              id: capturedUserId,
+              fullName: `${formValue.userName} ${formValue.lastName}`
+            },
+            userRole: 'client'
+          }
+        });
       },
       error: (error) => {
         this.loading = false;

@@ -1,22 +1,3 @@
-/*
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { NavbarComponent } from '../../components/navbar/navbar';
-import { StatsCards } from '../../components/stats-cards/stats-cards';
-import { QuickActions } from '../../components/quick-actions/quick-actions';
-
-@Component({
-  selector: 'app-provider-dashboard',
-  standalone: true,
-  imports: [CommonModule, NavbarComponent, StatsCards, QuickActions],
-  templateUrl: './provider-dashboard.html',
-  styleUrl: './provider-dashboard.css'
-})
-export class ProviderDashboard {
-  role: 'admin' | 'provider' = 'provider';
-}
-*/
-
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -24,6 +5,7 @@ import { NavbarComponent } from '../../components/navbar/navbar';
 import { StatsCards } from '../../components/stats-cards/stats-cards';
 import { QuickActions } from '../../components/quick-actions/quick-actions';
 import { BookingService } from '../solicitudes/services/booking';
+import { ProfileService } from '../viewProfile/services/profile.services';
 
 @Component({
   selector: 'app-provider-dashboard',
@@ -34,8 +16,9 @@ import { BookingService } from '../solicitudes/services/booking';
 })
 export class ProviderDashboard implements OnInit {
   private bookingService = inject(BookingService);
+  private profileService = inject(ProfileService);
   private router         = inject(Router);
-  private cdr            = inject(ChangeDetectorRef); // ✅
+  private cdr            = inject(ChangeDetectorRef);
 
   role: 'admin' | 'provider' = 'provider';
   providerProfileId = 0;
@@ -45,12 +28,20 @@ export class ProviderDashboard implements OnInit {
   loaded            = false;
 
   ngOnInit(): void {
-    localStorage.setItem('profileId', '2');
+    const userId = Number(localStorage.getItem('user_id') ?? '0');
 
-    this.providerProfileId = Number(localStorage.getItem('profileId') ?? '0');
-
-    if (this.providerProfileId > 0) {
-      this.loadStats();
+    if (userId > 0) {
+      this.profileService.getProviderProfileByUserId(userId).subscribe({
+        next: (profile) => {
+          this.providerProfileId = profile.id;
+          localStorage.setItem('profileId', String(profile.id));
+          this.loadStats();
+        },
+        error: () => {
+          this.loaded = true;
+          this.cdr.detectChanges();
+        }
+      });
     } else {
       this.loaded = true;
     }
@@ -63,7 +54,7 @@ export class ProviderDashboard implements OnInit {
         this.pendingCount  = bookings.filter(b => b.bookingStatus === 'pending').length;
         this.acceptedCount = bookings.filter(b => b.bookingStatus === 'accepted').length;
         this.loaded        = true;
-        this.cdr.detectChanges(); // ✅ fuerza actualización del StatsCards
+        this.cdr.detectChanges();
       },
       error: () => {
         this.loaded = true;
@@ -77,6 +68,7 @@ export class ProviderDashboard implements OnInit {
   }
 
   goToProfile(): void {
-    this.router.navigate(['/provider-profile', this.providerProfileId]);
+    const userId = localStorage.getItem('user_id') ?? '0';
+    this.router.navigate(['/provider-profile', userId]);
   }
 }

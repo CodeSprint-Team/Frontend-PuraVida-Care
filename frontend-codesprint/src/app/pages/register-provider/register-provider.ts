@@ -30,7 +30,6 @@ export class RegisterProvider {
     lastName: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
-
     providerTypeId: [2, [Validators.required]],
     experienceDescription: ['', [Validators.required]],
     experienceYears: [0, [Validators.required, Validators.min(0)]],
@@ -50,6 +49,7 @@ export class RegisterProvider {
     this.successMessage = '';
 
     const formValue = this.registerForm.getRawValue();
+    let capturedUserId: number;
 
     const userData: RegisterUserRequest = {
       roleId: 2,
@@ -61,6 +61,7 @@ export class RegisterProvider {
 
     this.authService.register(userData).pipe(
       switchMap((userResponse) => {
+        capturedUserId = userResponse.id;
         const profileData: ProviderProfileCreateRequest = {
           userId: userResponse.id,
           providerTypeId: Number(formValue.providerTypeId ?? 2),
@@ -73,16 +74,19 @@ export class RegisterProvider {
           verified: false,
           insuranceActive: false,
         };
-
         return this.profileService.createProviderProfile(profileData);
       })
     ).subscribe({
       next: () => {
         this.loading = false;
-        this.successMessage = 'Perfil de proveedor creado correctamente.';
-        this.registerForm.reset({
-          providerTypeId: 2,
-          experienceYears: 0,
+        this.router.navigate(['/biometric-verification'], {
+          state: {
+            providerData: {
+              id: capturedUserId,
+              fullName: `${formValue.userName} ${formValue.lastName}`
+            },
+            userRole: 'provider'
+          }
         });
       },
       error: (error) => {
