@@ -62,7 +62,7 @@ export class AdminUsers implements OnInit {
       cancelButtonColor: '#6b7280',
       confirmButtonText: 'Sí, activar',
       cancelButtonText: 'Cancelar'
-    }).then(result => {
+    }).then((result: { isConfirmed: boolean }) => {
       if (!result.isConfirmed || !this.selectedUser) return;
       const userId = this.selectedUser.userId;
       this.adminService.reviewUser(userId, { action: 'activate' }).subscribe({
@@ -86,7 +86,7 @@ export class AdminUsers implements OnInit {
       cancelButtonColor: '#6b7280',
       confirmButtonText: 'Sí, desactivar',
       cancelButtonText: 'Cancelar'
-    }).then(result => {
+    }).then((result: { isConfirmed: boolean }) => {
       if (!result.isConfirmed || !this.selectedUser) return;
       const userId = this.selectedUser.userId;
       this.adminService.reviewUser(userId, { action: 'deactivate' }).subscribe({

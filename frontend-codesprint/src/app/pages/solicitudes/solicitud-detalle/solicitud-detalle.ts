@@ -10,7 +10,7 @@ import {
   heroPhone, heroCalendarDays
 } from '@ng-icons/heroicons/outline';
 import { BookingService } from '../services/booking';
-import { Booking } from '../Models/Booking.model';
+import { Booking } from '../models/Booking.model';
 import { NavbarComponent } from '../../../components/navbar/navbar';
 
 @Component({
