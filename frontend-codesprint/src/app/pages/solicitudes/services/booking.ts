@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Booking, BookingStatusUpdateDTO } from '../Models/Booking.model';
+import { Booking, BookingStatusUpdateDTO } from '../models/Booking.model';
 
 @Injectable({ providedIn: 'root' })
 export class BookingService {
