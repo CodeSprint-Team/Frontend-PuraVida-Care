@@ -52,6 +52,15 @@ export class QuickActions {
     { title: 'Ver reportes',        description: 'Métricas y estadísticas', icon: 'heroChartBar',     color: 'green',  route: '/admin-dashboard' },
   ];
 
+  providerActions = [
+    { title: 'Crear servicio', description: 'Publicar nueva oferta', icon: 'heroPlus', color: 'green', route: '/provider-dashboard' },
+    { title: 'Mis servicios', description: 'Ver y editar servicios', icon: 'heroDocument', color: 'blue', route: '/provider-dashboard' },
+    { title: 'Disponibilidad', description: 'Gestionar calendario', icon: 'heroCalendar', color: 'purple', route: '/provider-dashboard' },
+    { title: 'Solicitudes', description: 'Ver solicitudes', icon: 'heroInbox', color: 'orange', route: '/provider-requests-service' },
+    { title: 'Perfil público', description: 'Ver como cliente', icon: 'heroUser', color: 'pink', route: '/provider-dashboard' },
+    { title: 'Mensajes', description: 'Ver mensajes', icon: 'heroChatBubbleLeft', color: 'gray', route: '/provider-dashboard' }
+  ];
+
   get actions() {
     if (this.role === 'admin') {
       return [
@@ -61,19 +70,6 @@ export class QuickActions {
         { title: 'Ver reportes',         description: 'Métricas y estadísticas',         icon: 'heroChartBar',      color: 'green',  route: '/admin-dashboard'         },
       ];
     }
-
-    //  Lee el profileId del localStorage para construir la ruta correcta
-    const profileId = localStorage.getItem('profileId') ?? '1';
-
-    return [
-      { title: 'Crear servicio',   description: 'Publicar nueva oferta',   icon: 'heroPlus',           color: 'green',  route: '/provider-dashboard'                       },
-      { title: 'Mis servicios',    description: 'Ver y editar servicios',   icon: 'heroDocumentText',   color: 'blue',   route: '/provider-dashboard'                       },
-      { title: 'Disponibilidad',   description: 'Gestionar calendario',     icon: 'heroCalendarDays',   color: 'purple', route: '/provider-dashboard'                       },
-      { title: 'Solicitudes',      description: 'Ver solicitudes',          icon: 'heroInbox',          color: 'orange', route: `/proveedor/solicitudes/${profileId}`        }, 
-      { title: 'Perfil público',   description: 'Ver como cliente',         icon: 'heroUser',           color: 'pink',   route: `/proveedor/${profileId}`                   },
-      { title: 'Mensajes',         description: 'Ver mensajes',             icon: 'heroChatBubbleLeft', color: 'gray',   route: '/provider-dashboard'                       },
-    ];
-  }
 
   navigate(route: string): void {
     this.router.navigate([route]);

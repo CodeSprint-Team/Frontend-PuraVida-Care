@@ -22,7 +22,17 @@ import { FamilyProfileEdit } from './pages/viewProfile/family-profile-edit/famil
 // Admin
 import { AdminDashboard } from './pages/admin-dashboard/admin-dashboard';
 import { ProviderRequests } from './pages/provider-requests/provider-requests';
+
+
+import {ProviderRequestsComponent} from './pages/provider-request-service/provider-request-service';
+import { ProviderBookingDetail } from './pages/provider-booking-detail/provider-booking-detail';
+import { ProviderStartBooking } from './pages/provider-start-booking/provider-start-booking';
+import { ProviderInService } from './pages/provider-in-service/provider-in-service';
+import { FamilyTrackingComponent } from './pages/family-tracking/family-tracking';
+
+=======
 import { AdminUsers } from './pages/admin-users/admin-users';
+
 
 // Proveedor
 import { ProviderDashboard } from './pages/provider-dashboard/provider-dashboard';
@@ -60,7 +70,6 @@ export const routes: Routes = [
 
   // Admin
   { path: 'admin-dashboard',           component: AdminDashboard },
-  { path: 'admin-dashboard/providers', component: AdminDashboard },
   { path: 'admin/provider-requests',   component: ProviderRequests },
   { path: 'admin/users',               component: AdminUsers },
   { path: 'admin/services',            component: AdminDashboard },
@@ -74,6 +83,29 @@ export const routes: Routes = [
   { path: 'explorar',      component: ExplorarServiciosComponent },
   { path: 'proveedor/:id', component: PublicProviderProfileComponent },
 
+
+  { path: 'admin-dashboard/providers',
+    component: AdminDashboard
+  },
+  { path: 'provider-requests-service',
+    component: ProviderRequestsComponent
+  },
+  { path: 'provider-booking-detail/:id',
+    component: ProviderBookingDetail
+  },
+  { path: 'provider-start-service/:id', 
+    component: ProviderStartBooking 
+  },
+  { path: 'provider-in-service/:id',
+    component: ProviderInService
+  },
+  { path: 'family-tracking/:sessionId',
+    component: FamilyTrackingComponent
+  }
+
+
+];
+
   // Wildcard (siempre al final)
   { path: '**', redirectTo: 'landing' },
-];
+
