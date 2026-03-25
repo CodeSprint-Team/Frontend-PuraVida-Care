@@ -1,4 +1,3 @@
-// src/app/viewProfile/provider-profile-edit/provider-profile-edit.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -30,12 +29,12 @@ export class ProviderProfileEditComponent implements OnInit {
   private router         = inject(Router);
   private profileService = inject(ProfileService);
 
-  providerId   = '';
+  // profileId viene en la URL, userId viene del localStorage
+  profileId    = '';
+  userId       = '';
   providerData: ProviderProfile | null = null;
   providerForm!: FormGroup;
 
-  // ✅ Empieza en false → el formulario se muestra de inmediato
-  // Los campos se rellenan solos cuando llega la respuesta del backend
   isLoading    = false;
   isSubmitting = false;
   imagePreview: string | null = null;
@@ -43,7 +42,8 @@ export class ProviderProfileEditComponent implements OnInit {
   statusMessage: { text: string; type: 'success' | 'error' | null } = { text: '', type: null };
 
   ngOnInit(): void {
-    this.providerId = this.route.snapshot.paramMap.get('id') ?? '1';
+    this.profileId = this.route.snapshot.paramMap.get('id') ?? '';
+    this.userId    = localStorage.getItem('user_id') ?? '';
     this.initForm();
     this.loadProvider();
   }
@@ -64,9 +64,9 @@ export class ProviderProfileEditComponent implements OnInit {
     });
   }
 
-  // ── Carga datos y rellena el form cuando llegan ───────────────
+  // ── Carga por profileId (el PUT usa profileId) ────────────────
   loadProvider(): void {
-    this.profileService.getProviderProfile(this.providerId).subscribe({
+    this.profileService.getProviderProfile(this.profileId).subscribe({
       next: (provider: ProviderProfile) => {
         this.providerData = provider;
         this.imagePreview = provider.profileImage ?? null;
@@ -122,11 +122,13 @@ export class ProviderProfileEditComponent implements OnInit {
       providerState:        this.providerData?.providerState,
     };
 
-    this.profileService.updateProviderProfile(this.providerId, payload).subscribe({
+    // Actualiza por profileId
+    this.profileService.updateProviderProfile(this.profileId, payload).subscribe({
       next: () => {
         this.isSubmitting = false;
         this.showStatus('Perfil actualizado correctamente.', 'success');
-        setTimeout(() => this.router.navigate(['/provider-profile', this.providerId]), 900);
+        // Regresa al perfil usando el userId del localStorage
+        setTimeout(() => this.router.navigate(['/provider-profile', this.userId]), 900);
       },
       error: (err: unknown) => {
         console.error('Error actualizando proveedor:', err);
@@ -170,7 +172,8 @@ export class ProviderProfileEditComponent implements OnInit {
 
   // ── Navegación ────────────────────────────────────────────────
   handleCancel(): void {
-    this.router.navigate(['/provider-profile', this.providerId]);
+    // Regresa al perfil usando el userId del localStorage
+    this.router.navigate(['/provider-profile', this.userId]);
   }
 
   // ── Helpers ───────────────────────────────────────────────────

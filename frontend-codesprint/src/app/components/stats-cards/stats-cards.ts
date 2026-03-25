@@ -21,31 +21,26 @@ import {
 })
 export class StatsCards {
   @Input() role: 'admin' | 'provider' = 'admin';
-
-  adminStats = [
-    { icon: 'heroUsers', value: '1247', label: 'Usuarios totales', color: 'emerald' },
-    { icon: 'heroClock', value: '8', label: 'Proveedores pendientes', color: 'orange' },
-    { icon: 'heroCurrencyDollar', value: '₡4580K', label: 'Ingresos este mes', color: 'emerald' },
-    { icon: 'heroChartBar', value: '892', label: 'Servicios completados', color: 'blue' }
-  ];
-
-  providerStats = [
-    { icon: 'heroDocument', value: '8', label: 'Servicios activos', color: 'emerald' },
-    { icon: 'heroInbox', value: '3', label: 'Solicitudes pendientes', color: 'orange' },
-    { icon: 'heroCurrencyDollar', value: '₡125 000', label: 'Ganancias este mes', color: 'emerald' },
-    { icon: 'heroChartBar', value: '127', label: 'Servicios completados', color: 'blue' }
-  ];
-
   @Input() pendingCount: number = 0;
+  @Input() providerPendingCount: number = 0;
+  @Input() providerTotalCount: number = 0;
+  @Input() providerAcceptedCount: number = 0;
 
   get stats() {
     const admin = [
-      { icon: 'heroUsers', value: '1247', label: 'Usuarios totales', color: 'emerald' },
-      { icon: 'heroClock', value: this.pendingCount.toString(), label: 'Proveedores pendientes', color: 'orange' },
-      { icon: 'heroCurrencyDollar', value: '₡4580K', label: 'Ingresos este mes', color: 'emerald' },
-      { icon: 'heroChartBar', value: '892', label: 'Servicios completados', color: 'blue' }
+      { icon: 'heroUsers',          value: '1247',                          label: 'Usuarios totales',        color: 'emerald' },
+      { icon: 'heroClock',          value: this.pendingCount.toString(),     label: 'Proveedores pendientes',  color: 'orange'  },
+      { icon: 'heroCurrencyDollar', value: '₡4580K',                        label: 'Ingresos este mes',       color: 'emerald' },
+      { icon: 'heroChartBar',       value: '892',                            label: 'Servicios completados',   color: 'blue'    },
     ];
-    return this.role === 'admin' ? admin : this.providerStats;
-  }
 
+    const provider = [
+      { icon: 'heroDocument',       value: this.providerTotalCount.toString(),    label: 'Solicitudes totales',     color: 'blue'    },
+      { icon: 'heroInbox',          value: this.providerPendingCount.toString(),  label: 'Solicitudes pendientes',  color: 'orange'  },
+      { icon: 'heroChartBar',       value: this.providerAcceptedCount.toString(), label: 'Solicitudes aceptadas',   color: 'emerald' },
+      { icon: 'heroCurrencyDollar', value: '₡125 000',                            label: 'Ganancias este mes',      color: 'emerald' },
+    ];
+
+    return this.role === 'admin' ? admin : provider;
+  }
 }

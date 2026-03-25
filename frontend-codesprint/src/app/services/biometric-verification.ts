@@ -20,7 +20,7 @@ export interface IdentityVerificationResponse {
 })
 export class BiometricVerification {
 
-  private apiUrl = 'http://localhost:8080/api/v1/verifications';
+  private apiUrl = 'http://localhost:8081/api/v1/verifications';
 
   constructor(private http: HttpClient) {}
 

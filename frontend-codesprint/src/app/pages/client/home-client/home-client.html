@@ -1,5 +1,5 @@
 <div class="min-h-screen bg-gray-50">
-  <app-navbar></app-navbar>
+  <app-navbar [role]="userRole"></app-navbar>
 
   <main class="lg:ml-64 pb-24 lg:pb-8">
     <div class="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
@@ -27,7 +27,7 @@
 
       <!-- Header -->
       <div class="mb-6 sm:mb-8">
-        <h1 class="mb-2 text-2xl sm:text-3xl font-semibold">Bienvenido/a</h1>
+        <h1 class="mb-2 text-2xl sm:text-3xl font-semibold">Bienvenido, {{ userName }}</h1>
         <p class="text-sm sm:text-base text-gray-600">¿Qué servicio de cuidado necesitas hoy?</p>
       </div>
 

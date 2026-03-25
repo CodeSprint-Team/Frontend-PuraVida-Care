@@ -1,0 +1,176 @@
+<div class="min-h-screen bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
+  <div class="mx-auto max-w-5xl">
+
+    <!-- Header -->
+    <div class="mb-10 text-center sm:mb-12">
+      <h1 class="text-3xl font-semibold text-slate-900 sm:text-4xl">
+        Crear perfil de
+        <span class="text-teal-600">Cliente</span>
+      </h1>
+      <p class="mt-3 text-sm text-slate-500 sm:text-base">
+        Completa la información para continuar
+      </p>
+    </div>
+
+    <!-- Card -->
+    <div class="rounded-3xl bg-white p-6 shadow-sm sm:p-8 lg:p-10">
+      <form [formGroup]="registerForm" (ngSubmit)="submit()" class="space-y-10">
+
+        <!-- Datos personales -->
+        <div>
+          <h2 class="text-lg font-semibold text-slate-800 mb-6">
+            Datos personales
+          </h2>
+
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <input type="text" placeholder="Nombre"
+              formControlName="userName"
+              class="input" />
+
+            <input type="text" placeholder="Apellido"
+              formControlName="lastName"
+              class="input" />
+
+            <input type="email" placeholder="Correo electrónico"
+              formControlName="email"
+              class="input sm:col-span-2" />
+
+            <input type="password" placeholder="Contraseña"
+              formControlName="password"
+              class="input sm:col-span-2" />
+          </div>
+        </div>
+
+        <!-- Contacto -->
+        <div>
+          <h2 class="text-lg font-semibold text-slate-800 mb-6">
+            Información de contacto
+          </h2>
+
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <input type="text" placeholder="Teléfono"
+              formControlName="phone"
+              class="input" />
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-700">
+              Relación con la persona a cuidar
+            </label>
+
+            <div class="relative">
+              <select formControlName="relationToSenior" class="select-input">
+                <option value="">Selecciona una opción</option>
+                <option value="Soy yo mismo/a">Soy yo mismo/a</option>
+                <option value="Hijo/a">Hijo/a</option>
+                <option value="Nieto/a">Nieto/a</option>
+                <option value="Cónyuge">Cónyuge</option>
+                <option value="Hermano/a">Hermano/a</option>
+                <option value="Otro familiar">Otro familiar</option>
+              </select>
+
+              <div class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-slate-500">
+                <svg
+                  class="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+            <textarea placeholder="Notas adicionales"
+              formControlName="notes"
+              rows="3"
+              class="input sm:col-span-2"></textarea>
+          </div>
+        </div>
+
+        <!-- Contacto de emergencia -->
+        <div>
+          <h2 class="text-lg font-semibold text-slate-800 mb-6">
+            Contacto de emergencia
+          </h2>
+
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <input type="text" placeholder="Nombre del contacto"
+              formControlName="emergencyContactName"
+              class="input" />
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-700">
+              Relación con el contacto de emergencia
+            </label>
+
+            <div class="relative">
+              <select formControlName="emergencyContactRelation" class="select-input">
+                <option value="">Selecciona una opción</option>
+                <option value="Padre">Padre</option>
+                <option value="Madre">Madre</option>
+                <option value="Hijo/a">Hijo/a</option>
+                <option value="Hermano/a">Hermano/a</option>
+                <option value="Cónyuge">Cónyuge</option>
+                <option value="Otro familiar">Otro familiar</option>
+                <option value="Amigo/a">Amigo/a</option>
+                <option value="Vecino/a">Vecino/a</option>
+                <option value="Encargado/a">Encargado/a</option>
+                <option value="Otro">Otro</option>
+              </select>
+
+              <div class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-slate-500">
+                <svg
+                  class="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+            <input type="text" placeholder="Teléfono"
+              formControlName="emergencyContactPhone"
+              class="input sm:col-span-2" />
+
+            <textarea placeholder="Notas importantes"
+              formControlName="importantNotes"
+              rows="3"
+              class="input sm:col-span-2"></textarea>
+          </div>
+        </div>
+
+        <!-- Botón -->
+        <div class="flex justify-center pt-4">
+          <button
+            type="submit"
+            [disabled]="loading"
+            class="w-full max-w-xs rounded-2xl bg-teal-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:bg-teal-300"
+          >
+            {{ loading ? 'Registrando...' : 'Crear cuenta' }}
+          </button>
+        </div>
+
+        <!-- Mensajes -->
+        <div *ngIf="errorMessage" class="text-center text-sm text-red-500">
+          {{ errorMessage }}
+        </div>
+
+        <div *ngIf="successMessage" class="text-center text-sm text-green-600">
+          {{ successMessage }}
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>

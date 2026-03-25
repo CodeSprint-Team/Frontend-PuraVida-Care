@@ -37,7 +37,10 @@ export class FamilyProfileEdit implements OnInit {
   selectedFileError = '';
   isLoading         = false;
   isSubmitting      = false;
-  userId            = '';
+
+  // profileId viene en la URL, userId viene del localStorage
+  profileId = '';
+  userId    = '';
 
   // ── Contraseña ────────────────────────────────────────────────
   passwordForm!: FormGroup;
@@ -49,7 +52,8 @@ export class FamilyProfileEdit implements OnInit {
   passwordStatus: { text: string; type: 'success' | 'error' | null } = { text: '', type: null };
 
   ngOnInit(): void {
-    this.userId = this.route.snapshot.paramMap.get('id') ?? '1';
+    this.profileId = this.route.snapshot.paramMap.get('id') ?? '';
+    this.userId    = localStorage.getItem('user_id') ?? '';
     this.buildForm();
     this.buildPasswordForm();
     this.loadProfile();
@@ -59,7 +63,7 @@ export class FamilyProfileEdit implements OnInit {
   private buildForm(): void {
     this.profileForm = this.fb.group({
       fullName:         ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
-      email:            ['', [Validators.required, Validators.email]],   // ✅ email agregado
+      email:            ['', [Validators.required, Validators.email]],
       phone:            ['', [Validators.required, Validators.pattern(/^[0-9]{4}-[0-9]{4}$/)]],
       relationToSenior: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
       emergencyName:    ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
@@ -70,20 +74,21 @@ export class FamilyProfileEdit implements OnInit {
   }
 
   private loadProfile(): void {
-    this.profileService.getFamilyProfile(this.userId).subscribe({
+    // Carga por profileId (el PUT también usa profileId)
+    this.profileService.getFamilyProfile(this.profileId).subscribe({
       next: (data) => {
         this.originalProfile = data;
         this.imagePreview    = data.profileImage || null;
 
         this.profileForm.patchValue({
           fullName:          data.fullName,
-          email:             data.email                                        ?? '',  // ✅
+          email:             data.email                                         ?? '',
           phone:             data.phone,
-          relationToSenior:  data.relationToSenior                             ?? '',
-          emergencyName:     data.emergencyContactName ?? data.emergencyName   ?? '',
+          relationToSenior:  data.relationToSenior                              ?? '',
+          emergencyName:     data.emergencyContactName ?? data.emergencyName    ?? '',
           emergencyRelation: data.emergencyContactRelation ?? data.emergencyRelation ?? '',
-          emergencyPhone:    data.emergencyContactPhone ?? data.emergencyPhone ?? '',
-          importantNotes:    data.importantNotes ?? data.notes                 ?? '',
+          emergencyPhone:    data.emergencyContactPhone ?? data.emergencyPhone  ?? '',
+          importantNotes:    data.importantNotes ?? data.notes                  ?? '',
         });
       },
       error: (err) => console.error('Error cargando perfil familiar:', err)
@@ -101,7 +106,7 @@ export class FamilyProfileEdit implements OnInit {
     const updatedProfile: Partial<FamilyProfile> = {
       ...this.originalProfile,
       fullName:          v.fullName.trim(),
-      email:             v.email.trim(),       // ✅ email incluido en el save
+      email:             v.email.trim(),
       phone:             v.phone.trim(),
       profileImage:      this.imagePreview,
       relationToSenior:  v.relationToSenior.trim(),
@@ -111,9 +116,11 @@ export class FamilyProfileEdit implements OnInit {
       importantNotes:    v.importantNotes?.trim() || '',
     };
 
-    this.profileService.updateFamilyProfile(this.userId, updatedProfile).subscribe({
+    // Actualiza por profileId
+    this.profileService.updateFamilyProfile(this.profileId, updatedProfile).subscribe({
       next: () => {
         this.isSubmitting = false;
+        // Regresa al perfil usando el userId del localStorage
         this.router.navigate(['/family-profile', this.userId]);
       },
       error: (err) => {
@@ -124,6 +131,7 @@ export class FamilyProfileEdit implements OnInit {
   }
 
   handleCancel(): void {
+    // Regresa al perfil usando el userId del localStorage
     this.router.navigate(['/family-profile', this.userId]);
   }
 
