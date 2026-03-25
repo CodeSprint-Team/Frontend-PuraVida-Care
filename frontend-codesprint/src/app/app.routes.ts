@@ -30,14 +30,11 @@ import { ProviderStartBooking } from './pages/provider-start-booking/provider-st
 import { ProviderInService } from './pages/provider-in-service/provider-in-service';
 import { FamilyTrackingComponent } from './pages/family-tracking/family-tracking';
 
-=======
 import { AdminUsers } from './pages/admin-users/admin-users';
 
 
 // Proveedor
 import { ProviderDashboard } from './pages/provider-dashboard/provider-dashboard';
-import { SolicitudesProveedorComponent } from './pages/solicitudes/solicitudes-proveedor/solicitudes-proveedor';
-import { SolicitudDetalleComponent } from './pages/solicitudes/solicitud-detalle/solicitud-detalle';
 
 // Cliente / Explorar
 import { ExplorarServiciosComponent } from './pages/explore/explore-services/explore-services';
@@ -76,8 +73,6 @@ export const routes: Routes = [
 
   // Proveedor
   { path: 'provider-dashboard',        component: ProviderDashboard },
-  { path: 'proveedor/solicitudes/:id', component: SolicitudesProveedorComponent },
-  { path: 'proveedor/solicitud/:id',   component: SolicitudDetalleComponent },
 
   // Explorar
   { path: 'explorar',      component: ExplorarServiciosComponent },
@@ -101,11 +96,11 @@ export const routes: Routes = [
   },
   { path: 'family-tracking/:sessionId',
     component: FamilyTrackingComponent
-  }
+  },
 
+  { path: '**', redirectTo: 'landing' },
 
 ];
 
-  // Wildcard (siempre al final)
-  { path: '**', redirectTo: 'landing' },
+
 
