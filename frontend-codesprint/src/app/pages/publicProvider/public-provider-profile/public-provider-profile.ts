@@ -1,0 +1,82 @@
+// src/app/public-provider-profile/public-provider-profile.ts
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { NavbarComponent } from '../../../components/navbar/navbar';
+import { ProfileService } from '../../viewProfile/services/profile.services';
+import { ProviderProfile } from '../../viewProfile/models/provider-profile.model';
+import {
+  heroArrowLeft, heroCheckBadge, heroMapPin, heroShieldCheck,
+  heroPhone, heroEnvelope, heroClock, heroStar, heroBriefcase,
+  heroUserCircle
+} from '@ng-icons/heroicons/outline';
+
+@Component({
+  selector: 'app-public-provider-profile',
+  standalone: true,
+  imports: [CommonModule, NgIconComponent, NavbarComponent],
+  viewProviders: [provideIcons({
+    heroArrowLeft, heroCheckBadge, heroMapPin, heroShieldCheck,
+    heroPhone, heroEnvelope, heroClock, heroStar, heroBriefcase,
+    heroUserCircle
+  })],
+  templateUrl: './public-provider-profile.html',
+  styleUrl: './public-provider-profile.css',
+})
+export class PublicProviderProfileComponent implements OnInit {
+  private route          = inject(ActivatedRoute);
+  private router         = inject(Router);
+  private profileService = inject(ProfileService);
+  private cdr            = inject(ChangeDetectorRef);
+
+  provider: ProviderProfile | null = null;
+  errorMessage = '';
+  providerId   = '';
+
+  ngOnInit(): void {
+    this.providerId = this.route.snapshot.paramMap.get('id') ?? '1';
+    this.loadProfile();
+  }
+
+  loadProfile(): void {
+    this.errorMessage = '';
+    this.profileService.getProviderProfile(this.providerId).subscribe({
+      next: (data) => {
+        this.provider = data;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.errorMessage = 'No se pudo cargar el perfil del proveedor.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // ✅ Vuelve a explorar, no al perfil del proveedor
+  goBack(): void {
+    this.router.navigate(['/explorar']);
+  }
+
+  hireProvider(): void {
+    this.router.navigate(['/seleccionar-servicio', this.providerId]);
+  }
+
+  hasProfileImage(): boolean {
+    return !!this.provider?.profileImage;
+  }
+
+  getStarsArray(rating: number): number[] {
+    return Array.from({ length: 5 }, (_, i) => (i < Math.round(rating) ? 1 : 0));
+  }
+
+  get ratingDisplay(): string {
+    return this.provider?.averageRating?.toFixed(1) ?? '0.0';
+  }
+
+  get startingPrice(): string {
+    return this.provider?.services?.length
+      ? this.provider.services[0].price
+      : 'Consultar';
+  }
+}

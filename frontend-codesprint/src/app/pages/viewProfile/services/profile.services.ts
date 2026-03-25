@@ -10,8 +10,16 @@ export class ProfileService {
   private http    = inject(HttpClient);
   private baseUrl = 'http://localhost:8081/api/v1/profiles';
 
+  // ═══════════════════════════════════════════════════════════════
+  // SENIOR
+  // ═══════════════════════════════════════════════════════════════
+
   getSeniorProfile(id: string | number): Observable<SeniorProfile> {
     return this.http.get<SeniorProfile>(`${this.baseUrl}/senior/${id}`);
+  }
+
+  getSeniorProfileByUserId(userId: string | number): Observable<SeniorProfile> {
+    return this.http.get<SeniorProfile>(`${this.baseUrl}/senior/by-user/${userId}`);
   }
 
   updateSeniorProfile(id: string | number, data: SeniorProfileUpdateDTO): Observable<SeniorProfile> {
@@ -30,36 +38,38 @@ export class ProfileService {
     );
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // PROVIDER
+  // ═══════════════════════════════════════════════════════════════
+
   getProviderProfile(id: string | number): Observable<ProviderProfile> {
     return this.http.get<ProviderProfile>(`${this.baseUrl}/provider/${id}`);
+  }
+
+  getProviderProfileByUserId(userId: string | number): Observable<ProviderProfile> {
+    return this.http.get<ProviderProfile>(`${this.baseUrl}/provider/by-user/${userId}`);
   }
 
   updateProviderProfile(id: string | number, data: ProviderProfileUpdateDTO): Observable<ProviderProfile> {
     return this.http.put<ProviderProfile>(`${this.baseUrl}/provider/${id}`, data);
   }
 
-  private mapClientResponse(raw: any): FamilyProfile {
-    return {
-      id:               String(raw.id),
-      fullName:         raw.fullName          ?? '',
-      email:            raw.email             ?? '',
-      phone:            raw.phone             ?? '',
-      profileImage:     raw.profileImage      ?? null,
-      memberSince:      raw.memberSince       ?? '',
-      address:          raw.address           ?? '',
-      relationToSenior: raw.relationToSenior  ?? '',
-      importantNotes:   raw.importantNotes    ?? raw.notes ?? '',
-      emergencyName:     raw.emergencyContactName     ?? '',
-      emergencyRelation: raw.emergencyContactRelation ?? '',
-      emergencyPhone:    raw.emergencyContactPhone    ?? '',
-      emergencyContactName:     raw.emergencyContactName     ?? '',
-      emergencyContactRelation: raw.emergencyContactRelation ?? '',
-      emergencyContactPhone:    raw.emergencyContactPhone    ?? '',
-    };
-  }
+  // ═══════════════════════════════════════════════════════════════
+  // CLIENT
+  // ═══════════════════════════════════════════════════════════════
 
   getFamilyProfile(id: string | number): Observable<FamilyProfile> {
     return this.http.get<any>(`${this.baseUrl}/client/${id}`)
+      .pipe(map(raw => this.mapClientResponse(raw)));
+  }
+
+  getFamilyProfileByUserId(userId: string | number): Observable<FamilyProfile> {
+    return this.http.get<any>(`${this.baseUrl}/client/by-user/${userId}`)
+      .pipe(map(raw => this.mapClientResponse(raw)));
+  }
+
+  getFamilyProfileByEmail(email: string): Observable<FamilyProfile> {
+    return this.http.get<any>(`${this.baseUrl}/client/by-email/${email}`)
       .pipe(map(raw => this.mapClientResponse(raw)));
   }
 
@@ -86,5 +96,29 @@ export class ProfileService {
 
     return this.http.put<any>(`${this.baseUrl}/client/${id}`, payload)
       .pipe(map(raw => this.mapClientResponse(raw)));
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // MAPPER
+  // ═══════════════════════════════════════════════════════════════
+
+  private mapClientResponse(raw: any): FamilyProfile {
+    return {
+      id:               String(raw.id),
+      fullName:         raw.fullName          ?? '',
+      email:            raw.email             ?? '',
+      phone:            raw.phone             ?? '',
+      profileImage:     raw.profileImage      ?? null,
+      memberSince:      raw.memberSince       ?? '',
+      address:          raw.address           ?? '',
+      relationToSenior: raw.relationToSenior  ?? '',
+      importantNotes:   raw.importantNotes    ?? raw.notes ?? '',
+      emergencyName:              raw.emergencyContactName     ?? '',
+      emergencyRelation:          raw.emergencyContactRelation ?? '',
+      emergencyPhone:             raw.emergencyContactPhone    ?? '',
+      emergencyContactName:       raw.emergencyContactName     ?? '',
+      emergencyContactRelation:   raw.emergencyContactRelation ?? '',
+      emergencyContactPhone:      raw.emergencyContactPhone    ?? '',
+    };
   }
 }

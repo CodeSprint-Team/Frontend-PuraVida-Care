@@ -26,30 +26,21 @@ interface NavItem {
   templateUrl: './navbar.html',
 })
 export class NavbarComponent implements OnInit, OnChanges {
-  @Input() role: 'client' | 'admin' | 'provider' | null = null;
-
+  @Input() role: 'client' | 'admin' | 'provider' | 'senior' | null = null;
   navItems: NavItem[] = [];
   panelLabel = '';
 
-  private clientNav: NavItem[] = [
-    { label: 'Home',     path: '/home',      icon: 'heroHome' },
-    { label: 'Explorar', path: '/explorar',  icon: 'heroMagnifyingGlass' },
-    { label: 'Agenda',   path: '/agenda',    icon: 'heroCalendarDays' },
-    { label: 'Chat IA',  path: '/chat-ia',   icon: 'heroCpuChip' },
-    { label: 'Mensajes', path: '/mensajes',  icon: 'heroChatBubbleLeftRight' },
-    { label: 'Perfil',   path: '/profile',   icon: 'heroUser' },
+  private readonly clientNav: NavItem[] = [
+    { label: 'Inicio',   path: '/home',     icon: 'heroHome' },
+    { label: 'Explorar', path: '/explorar', icon: 'heroMagnifyingGlass' },
+    { label: 'Agenda',   path: '/agenda',   icon: 'heroCalendarDays' },
+    { label: 'Chat IA',  path: '/chat-ia',  icon: 'heroCpuChip' },
+    { label: 'Mensajes', path: '/mensajes', icon: 'heroChatBubbleLeftRight' },
   ];
 
-  private adminNav: NavItem[] = [
+  private readonly adminNav: NavItem[] = [
     { label: 'Dashboard', path: '/admin-dashboard', icon: 'heroCog6Tooth' },
     { label: 'Perfil',    path: '/admin-profile',   icon: 'heroUser' },
-  ];
-
-  private providerNav: NavItem[] = [
-    { label: 'Dashboard', path: '/provider-dashboard', icon: 'heroClipboardDocumentList' },
-    { label: 'Mensajes',  path: '/provider-messages',  icon: 'heroChatBubbleLeftRight' },
-    { label: 'Agenda',    path: '/provider-agenda',     icon: 'heroCalendarDays' },
-    { label: 'Perfil',    path: '/provider-profile',    icon: 'heroUser' },
   ];
 
   ngOnInit(): void {
@@ -63,23 +54,52 @@ export class NavbarComponent implements OnInit, OnChanges {
   }
 
   private resolveRole(): void {
-    const currentRole = this.role ?? localStorage.getItem('userRole') as 'client' | 'admin' | 'provider' ?? 'client';
+    // Usa user_role (clave que guarda el AuthService)
+    const currentRole = this.role
+      ?? localStorage.getItem('user_role')?.toLowerCase() as 'client' | 'admin' | 'provider' | 'senior'
+      ?? 'client';
     this.loadNav(currentRole);
   }
 
   private loadNav(role: string): void {
+    // Usa user_id (clave que guarda el AuthService)
+    const userId = localStorage.getItem('user_id') ?? '1';
+
     switch (role) {
       case 'admin':
-        this.navItems = this.adminNav;
+        this.navItems   = this.adminNav;
         this.panelLabel = 'Panel Admin';
         break;
+
       case 'provider':
-        this.navItems = this.providerNav;
+        this.navItems = [
+          { label: 'Dashboard', path: '/provider-dashboard',          icon: 'heroClipboardDocumentList' },
+          { label: 'Mensajes',  path: '/provider-messages',           icon: 'heroChatBubbleLeftRight'   },
+          { label: 'Agenda',    path: '/provider-agenda',             icon: 'heroCalendarDays'          },
+          { label: 'Perfil',    path: `/provider-profile/${userId}`,  icon: 'heroUser'                  },
+        ];
         this.panelLabel = 'Panel Proveedor';
         break;
-      default:
-        this.navItems = this.clientNav;
+
+      case 'senior':
+        this.navItems = [
+          { label: 'Inicio',   path: '/home',               icon: 'heroHome'                },
+          { label: 'Explorar', path: '/explorar',           icon: 'heroMagnifyingGlass'     },
+          { label: 'Agenda',   path: '/agenda',             icon: 'heroCalendarDays'        },
+          { label: 'Mensajes', path: '/mensajes',           icon: 'heroChatBubbleLeftRight' },
+          { label: 'Perfil',   path: `/profile/${userId}`,  icon: 'heroUser'                },
+        ];
         this.panelLabel = '';
+        break;
+
+      case 'client':
+      default:
+        this.navItems = [
+          ...this.clientNav,
+          { label: 'Perfil', path: `/family-profile/${userId}`, icon: 'heroUser' },
+        ];
+        this.panelLabel = '';
+        break;
     }
   }
 }

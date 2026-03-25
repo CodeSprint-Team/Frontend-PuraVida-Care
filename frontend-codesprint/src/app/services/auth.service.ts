@@ -16,7 +16,7 @@ export class AuthService {
   }
 
   loginWithGoogle() {
-    this.http.get<{url: string}>(`${this.apiUrl}/google/url`).subscribe({
+    this.http.get<{ url: string }>(`${this.apiUrl}/google/url`).subscribe({
       next: (response) => {
         window.location.href = response.url;
       },
@@ -29,7 +29,7 @@ export class AuthService {
   handleAuthCallback(token: string) {
     localStorage.setItem(this.tokenKey, token);
     this.loadUser();
-    this.router.navigate(['/dashboard']);
+    this.router.navigate(['/home']);
   }
 
   private loadUser() {

@@ -36,6 +36,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   notificationMessage = '';
   private notifTimer: any;
 
+  // Rol leído del localStorage para pasárselo al navbar
+  userRole: 'client' | 'admin' | 'provider' | 'senior' | null = null;
+  userName = '';
+
   categories: Category[] = [
     {
       id: 'transporte',
@@ -98,6 +102,17 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(private router: Router) {}
 
   ngOnInit(): void {
+    // Lee el rol guardado por el AuthService al hacer login
+    const raw = localStorage.getItem('user_role')?.toLowerCase();
+    if (raw === 'client' || raw === 'senior' || raw === 'provider' || raw === 'admin') {
+      this.userRole = raw;
+    } else {
+      this.userRole = 'client';
+    }
+
+    const fullName = localStorage.getItem('user_name') ?? '';
+    this.userName = fullName;
+
     const nav = this.router.getCurrentNavigation();
     const state = nav?.extras?.state as { message?: string } | undefined;
     if (state?.message) {

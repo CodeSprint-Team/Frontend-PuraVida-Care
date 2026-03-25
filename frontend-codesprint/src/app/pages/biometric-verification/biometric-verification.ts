@@ -53,6 +53,11 @@ constructor(
     this.adultoMayorData = state?.['adultoMayorData'] ?? null;
     this.userRole        = state?.['userRole']
       ?? (this.providerData ? 'provider' : this.clientData ? 'client' : 'adulto-mayor');
+
+    if (!this.hasData) {
+      this.router.navigate(['/register']);
+      return;
+    }
   }
 
   ngOnDestroy(): void {
@@ -76,7 +81,7 @@ constructor(
   }
 
   get hasSummaryData(): boolean {
-    return !!(this.providerData || this.clientData || this.adultoMayorData);
+    return true;
   }
 
   onFileSelected(event: Event, type: 'selfie' | 'idFront' | 'idBack'): void {
@@ -167,7 +172,7 @@ constructor(
 
 handleContinue(): void {
   if (this.userRole === 'provider') {
-    this.router.navigate(['/proveedor/dashboard']).then(result => {
+    this.router.navigate(['/provider-dashboard']).then(result => {
     }).catch(err => {
     });
   } else {

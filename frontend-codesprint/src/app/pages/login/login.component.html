@@ -44,6 +44,10 @@
         </div>
       </div>
 
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
       <button type="submit" class="login-btn" [disabled]="loading">
         <span *ngIf="!loading">Iniciar sesión</span>
         <span *ngIf="loading">Cargando...</span>
@@ -51,9 +55,9 @@
     </form>
 
     <div class="register-link">
-      ¿No tienes cuenta? <a href="#" class="register">Regístrate</a>
+      ¿No tienes cuenta? <a href="/register/role" class="register">Regístrate</a>
     </div>
 
-    <a href="#" class="back-link">← Volver al inicio</a>
+    <a href="/landing" class="back-link">← Volver al inicio</a>
   </div>
 </div>
