@@ -23,6 +23,7 @@ import { FamilyProfileEdit } from './pages/viewProfile/family-profile-edit/famil
 import { AdminDashboard } from './pages/admin-dashboard/admin-dashboard';
 import { ProviderRequests } from './pages/provider-requests/provider-requests';
 import { AdminUsers } from './pages/admin-users/admin-users';
+import { AdminServices } from './pages/admin-services/admin-services';
 
 // Proveedor
 import { ProviderDashboard } from './pages/provider-dashboard/provider-dashboard';
@@ -63,7 +64,7 @@ export const routes: Routes = [
   { path: 'admin-dashboard/providers', component: AdminDashboard },
   { path: 'admin/provider-requests',   component: ProviderRequests },
   { path: 'admin/users',               component: AdminUsers },
-  { path: 'admin/services',            component: AdminDashboard },
+  { path: 'admin/services',            component: AdminServices },
 
   // Proveedor
   { path: 'provider-dashboard',        component: ProviderDashboard },
@@ -74,6 +75,6 @@ export const routes: Routes = [
   { path: 'explorar',      component: ExplorarServiciosComponent },
   { path: 'proveedor/:id', component: PublicProviderProfileComponent },
 
-  // Wildcard (siempre al final)
+  // Wildcard
   { path: '**', redirectTo: 'landing' },
 ];

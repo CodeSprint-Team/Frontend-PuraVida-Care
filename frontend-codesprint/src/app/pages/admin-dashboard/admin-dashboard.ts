@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../components/navbar/navbar';
@@ -22,7 +22,8 @@ export class AdminDashboard implements OnInit {
   showModal = false;
   actionType: 'approve' | 'reject' = 'approve';
 
-  constructor(private adminService: AdminService) {}
+
+  constructor(private adminService: AdminService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadPendingProviders();
@@ -35,6 +36,7 @@ export class AdminDashboard implements OnInit {
       next: (data: ProviderPending[]) => {
         this.pendingProviders = data;
         this.pendingCount = data.length;
+        this.cdr.detectChanges();
       },
       error: (err: Error) => console.error(err)
     });
