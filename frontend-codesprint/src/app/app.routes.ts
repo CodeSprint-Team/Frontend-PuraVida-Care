@@ -82,8 +82,8 @@ export const routes: Routes = [
   { path: 'admin-dashboard/providers',
     component: AdminDashboard
   },
-  { path: 'provider-requests-service',
-    component: ProviderRequestsComponent
+  { path: 'provider-requests-service/:id',
+    component: ProviderRequestsComponent 
   },
   { path: 'provider-booking-detail/:id',
     component: ProviderBookingDetail

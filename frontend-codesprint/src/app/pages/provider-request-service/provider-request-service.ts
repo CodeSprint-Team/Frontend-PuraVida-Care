@@ -1,6 +1,6 @@
-import { Component, OnInit,ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ProviderBookingService } from '../../services/provider-booking-service';
 import { ServiceBookingResponse } from '../../interfaces/booking-model';
 import { NavbarComponent } from '../../components/navbar/navbar';
@@ -21,8 +21,7 @@ export class ProviderRequestsComponent implements OnInit {
   loading = true;
   error = '';
 
-  // TODO: obtener del usuario autenticado (auth service, token, etc.)
-  providerProfileId = 6;
+  providerProfileId = 0;
 
   filters: { value: FilterStatus; label: string }[] = [
     { value: 'all', label: 'Todas' },
@@ -35,12 +34,23 @@ export class ProviderRequestsComponent implements OnInit {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private bookingService: ProviderBookingService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.loadRequests();
+    const routeId = this.route.snapshot.paramMap.get('id');
+    this.providerProfileId = routeId
+      ? Number(routeId)
+      : Number(localStorage.getItem('profile_id') ?? 0);
+
+    if (this.providerProfileId) {
+      this.loadRequests();
+    } else {
+      this.error = 'No se pudo identificar el proveedor.';
+      this.loading = false;
+    }
   }
 
   loadRequests(): void {
@@ -95,15 +105,17 @@ export class ProviderRequestsComponent implements OnInit {
 
   setFilter(status: FilterStatus): void {
     this.filterStatus = status;
+    this.loadRequests();
   }
 
   goBack(): void {
-      this.router.navigate(['/provider-dashboard']);
+    this.router.navigate(['/provider-dashboard']);
   }
 
-goToDetail(id: number): void {
+  goToDetail(id: number): void {
     this.router.navigate(['/provider-booking-detail', id]);
-}
+  }
+
   acceptRequest(id: number, event: Event): void {
     event.stopPropagation();
     this.bookingService

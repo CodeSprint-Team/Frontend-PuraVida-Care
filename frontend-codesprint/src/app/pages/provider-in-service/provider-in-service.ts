@@ -41,14 +41,12 @@ export class ProviderInService implements OnInit, OnDestroy {
   finishingService = false;
   shareLocation = false;
 
-  // Tracking
   trackingSessionId: number | null = null;
   pointCount = 0;
 
-  providerProfileId = 6;
+  providerProfileId = 0;
   bookingId = 0;
 
-  // Para manejar el timer con pausas
   private startTimestamp = 0;
   private pausedAccumulatedTime = 0;
   private pausedAt: number | null = null;
@@ -80,10 +78,15 @@ export class ProviderInService implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.bookingId = Number(this.route.snapshot.paramMap.get('id'));
+    this.providerProfileId = Number(localStorage.getItem('profile_id') ?? 0);
 
-    // Restaurar estado guardado si existe
+    if (!this.providerProfileId) {
+      this.error = 'No se pudo identificar el proveedor.';
+      this.loading = false;
+      return;
+    }
+
     this.restoreState();
-
     this.loadBooking();
     this.startTimer();
   }
@@ -99,7 +102,6 @@ export class ProviderInService implements OnInit, OnDestroy {
     }
   }
 
-  // PERSISTENCIA CON LOCALSTORAGE
   private saveState(): void {
     if (!this.bookingId) return;
 
@@ -136,7 +138,6 @@ export class ProviderInService implements OnInit, OnDestroy {
         return;
       }
 
-      // Restaurar todo el estado
       this.trackingSessionId = state.trackingSessionId;
       this.serviceStatus = state.serviceStatus;
       this.isPaused = state.isPaused;
@@ -146,10 +147,7 @@ export class ProviderInService implements OnInit, OnDestroy {
       this.pausedAt = state.pausedAt;
       this.pointCount = state.pointCount;
 
-      // Recalcular el tiempo transcurrido
       this.recalculateElapsedTime();
-
-      console.log('Estado restaurado desde localStorage');
     } catch (e) {
       console.error('Error restaurando estado:', e);
       this.clearState();
@@ -176,8 +174,6 @@ export class ProviderInService implements OnInit, OnDestroy {
     return 0;
   }
 
-
-  // BOOKING
   loadBooking(): void {
     this.loading = true;
     this.bookingService
@@ -213,7 +209,6 @@ export class ProviderInService implements OnInit, OnDestroy {
       });
   }
 
-  // CUSTOM ICONS
   private createOriginIcon(): any {
     return L.divIcon({
       className: 'custom-marker-origin',
@@ -360,7 +355,7 @@ export class ProviderInService implements OnInit, OnDestroy {
 
     return (toDeg(Math.atan2(y, x)) + 360) % 360;
   }
-  // LEAFLET
+
   private loadLeaflet(): Promise<void> {
     return new Promise((resolve) => {
       if (!document.getElementById('leaflet-css')) {
@@ -451,8 +446,6 @@ export class ProviderInService implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  // TIMER (con soporte de pausas y persistencia)
-
   startTimer(): void {
     if (!this.startTimestamp) {
       this.startTimestamp = Date.now();
@@ -502,8 +495,6 @@ export class ProviderInService implements OnInit, OnDestroy {
     return n.toString().padStart(2, '0');
   }
 
-
-  // TRACKING (GPS real)
   startTracking(): void {
     this.trackingService
       .startTracking(this.providerProfileId, { bookingId: this.bookingId })
@@ -555,8 +546,6 @@ export class ProviderInService implements OnInit, OnDestroy {
     }
   }
 
-
-  // ACTIONS
   setServiceStatus(status: 'en-camino' | 'en-servicio'): void {
     this.serviceStatus = status;
     this.saveState();
@@ -590,10 +579,8 @@ export class ProviderInService implements OnInit, OnDestroy {
           this.stopTimer();
           this.finishingService = false;
           this.closeFinishModal();
-
           this.clearState();
-
-          this.router.navigate(['/provider-requests-service']);
+          this.router.navigate(['/provider-requests-service', this.providerProfileId]);
         },
         error: (err) => {
           console.error('Error completando servicio:', err);
@@ -615,7 +602,6 @@ export class ProviderInService implements OnInit, OnDestroy {
     });
   }
 
-  // WEBSOCKET
   private connectToWebSocket(onConnected: () => void): void {
     this.stompClient = new Client({
       brokerURL: 'ws://localhost:8081/api/v1/ws',
@@ -623,8 +609,6 @@ export class ProviderInService implements OnInit, OnDestroy {
     });
 
     this.stompClient.onConnect = () => {
-      console.log('Proveedor WebSocket conectado');
-
       this.stompClient!.subscribe(
         `/topic/tracking/${this.trackingSessionId}`,
         (message: IMessage) => {
@@ -639,8 +623,6 @@ export class ProviderInService implements OnInit, OnDestroy {
     this.stompClient.activate();
   }
 
-
-  // SIMULACIÓN 
   simulateTrip(): void {
     if (!this.booking) return;
 

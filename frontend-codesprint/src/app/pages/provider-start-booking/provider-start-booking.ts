@@ -21,7 +21,7 @@ export class ProviderStartBooking implements OnInit {
   shareLocation = false;
   startingService = false;
 
-  providerProfileId = 6;
+  providerProfileId = 0;
   bookingId = 0;
 
   constructor(
@@ -33,7 +33,14 @@ export class ProviderStartBooking implements OnInit {
 
   ngOnInit(): void {
     this.bookingId = Number(this.route.snapshot.paramMap.get('id'));
-    this.loadBooking();
+    this.providerProfileId = Number(localStorage.getItem('profile_id') ?? 0);
+
+    if (this.providerProfileId && this.bookingId) {
+      this.loadBooking();
+    } else {
+      this.error = 'No se pudo identificar el proveedor o la solicitud.';
+      this.loading = false;
+    }
   }
 
   loadBooking(): void {
@@ -66,7 +73,7 @@ export class ProviderStartBooking implements OnInit {
     this.shareLocation = !this.shareLocation;
   }
 
-handleBegin(): void {
+  handleBegin(): void {
     if (!this.booking) return;
     this.startingService = true;
 
@@ -84,7 +91,7 @@ handleBegin(): void {
           this.startingService = false;
         },
       });
-}
+  }
 
   formatFullDate(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString('es-CR', {

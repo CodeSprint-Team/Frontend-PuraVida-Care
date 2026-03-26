@@ -22,8 +22,7 @@ export class ProviderBookingDetail implements OnInit {
   actionType: 'ACEPTAR' | 'RECHAZAR' | null = null;
   actionLoading = false;
 
-  // TODO: obtener del usuario autenticado
-  providerProfileId = 6;
+  providerProfileId = 0;
   bookingId = 0;
 
   constructor(
@@ -35,14 +34,20 @@ export class ProviderBookingDetail implements OnInit {
 
   ngOnInit(): void {
     this.bookingId = Number(this.route.snapshot.paramMap.get('id'));
-    this.loadBooking();
+    this.providerProfileId = Number(localStorage.getItem('profile_id') ?? 0);
+
+    if (this.providerProfileId && this.bookingId) {
+      this.loadBooking();
+    } else {
+      this.error = 'No se pudo identificar el proveedor o la solicitud.';
+      this.loading = false;
+    }
   }
 
   loadBooking(): void {
     this.loading = true;
     this.error = '';
 
-    // Cargamos todos los bookings del provider y buscamos el que coincide
     this.bookingService
       .getBookingsByProvider(this.providerProfileId)
       .subscribe({
@@ -64,18 +69,16 @@ export class ProviderBookingDetail implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/provider-requests-service']);
+    this.router.navigate(['/provider-requests-service', this.providerProfileId]);
   }
 
   navigateToStartService(): void {
     this.router.navigate(['/provider-start-service', this.bookingId]);
-}
+  }
 
-goToActiveService(): void {
+  goToActiveService(): void {
     this.router.navigate(['/provider-in-service', this.bookingId]);
-}
-
-  // ─── Actions ────────────────────────────────────────────
+  }
 
   openConfirmModal(action: 'ACEPTAR' | 'RECHAZAR'): void {
     this.actionType = action;
@@ -92,29 +95,24 @@ goToActiveService(): void {
 
     this.actionLoading = true;
 
-    if (this.actionType === 'ACEPTAR' || this.actionType === 'RECHAZAR') {
     this.bookingService
       .respondToBooking(this.booking.bookingId, this.providerProfileId, {
         action: this.actionType,
         reason: this.actionType === 'RECHAZAR' ? 'Rechazado por el proveedor' : undefined,
       })
-        .subscribe({
-          next: () => {
-            this.actionLoading = false;
-            this.closeModal();
-            this.loadBooking();
-          },
-          error: (err) => {
-            console.error('Error respondiendo solicitud:', err);
-            this.actionLoading = false;
-            this.closeModal();
-          },
-        });
-    }
+      .subscribe({
+        next: () => {
+          this.actionLoading = false;
+          this.closeModal();
+          this.loadBooking();
+        },
+        error: (err) => {
+          console.error('Error respondiendo solicitud:', err);
+          this.actionLoading = false;
+          this.closeModal();
+        },
+      });
   }
-
-
-  // ─── Helpers ────────────────────────────────────────────
 
   getStatusStyle(status: string): string {
     switch (status) {

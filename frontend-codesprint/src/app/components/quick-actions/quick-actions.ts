@@ -65,15 +65,25 @@ export class QuickActions {
   }
 
   providerActions = [
-    { title: 'Crear servicio',  description: 'Publicar nueva oferta', icon: 'heroPlus',            color: 'green',  route: '/provider-dashboard' },
-    { title: 'Mis servicios',   description: 'Ver y editar servicios', icon: 'heroDocumentText',   color: 'blue',   route: '/provider-dashboard' },
-    { title: 'Disponibilidad',  description: 'Gestionar calendario',  icon: 'heroCalendarDays',    color: 'purple', route: '/provider-dashboard' },
+    { title: 'Crear servicio',  description: 'Publicar nueva oferta', icon: 'heroPlus',           color: 'green',  route: '/provider-dashboard' },
+    { title: 'Mis servicios',   description: 'Ver y editar servicios', icon: 'heroDocumentText',  color: 'blue',   route: '/provider-dashboard' },
+    { title: 'Disponibilidad',  description: 'Gestionar calendario',  icon: 'heroCalendarDays',   color: 'purple', route: '/provider-dashboard' },
     { title: 'Solicitudes',     description: 'Ver solicitudes',       icon: 'heroInbox',           color: 'orange', route: '/provider-requests-service' },
     { title: 'Perfil público',  description: 'Ver como cliente',      icon: 'heroUser',            color: 'pink',   route: '/provider-dashboard' },
     { title: 'Mensajes',        description: 'Ver mensajes',          icon: 'heroChatBubbleLeft',  color: 'gray',   route: '/provider-dashboard' }
   ];
 
-  navigate(route: string): void {
-    this.router.navigate([route]);
-  }
+    profileId = '';
+
+    ngOnInit(): void {
+      this.profileId = localStorage.getItem('profile_id') ?? '';
+    }
+
+    navigate(route: string): void {
+      if (route === '/provider-requests-service') {
+        this.router.navigate(['/provider-requests-service', this.profileId]);
+      } else {
+        this.router.navigate([route]);
+      }
+    }
 }
