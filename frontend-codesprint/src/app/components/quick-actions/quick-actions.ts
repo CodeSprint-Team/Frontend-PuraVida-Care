@@ -14,8 +14,7 @@ import {
   heroInbox,
   heroUser,
   heroChatBubbleLeft,
-  heroCurrencyDollar,
-  heroDocument
+  heroCurrencyDollar
 } from '@ng-icons/heroicons/outline';
 
 @Component({
@@ -35,8 +34,7 @@ import {
       heroInbox,
       heroUser,
       heroChatBubbleLeft,
-      heroCurrencyDollar,
-      heroDocument
+      heroCurrencyDollar
     })
   ],
   templateUrl: './quick-actions.html'
@@ -49,7 +47,7 @@ export class QuickActions {
 
   adminActions = [
     { title: 'Aprobar proveedores', description: '8 pendientes',           icon: 'heroCheckBadge',   color: 'orange', route: '/admin/provider-requests' },
-    { title: 'Gestionar categorías', description: 'Crear y editar categorías', icon: 'heroFolderOpen', color: 'purple', route: '/admin/services' },
+    { title: 'Gestionar categorías', description: 'Crear y editar categorías', icon: 'heroFolderOpen', color: 'purple', route: '/admin-dashboard' },
     { title: 'Configurar comisión', description: 'Ajustar porcentaje',     icon: 'heroCurrencyDollar', color: 'blue',  route: '/admin-dashboard' },
     { title: 'Ver reportes',        description: 'Métricas y estadísticas', icon: 'heroChartBar',     color: 'green',  route: '/admin-dashboard' },
   ];
@@ -61,25 +59,31 @@ export class QuickActions {
         { title: 'Gestionar categorías', description: 'Crear y editar categorías',       icon: 'heroFolderOpen',    color: 'purple', route: '/admin-dashboard'         },
         { title: 'Configurar comisión',  description: 'Ajustar porcentaje',              icon: 'heroCurrencyDollar', color: 'blue',  route: '/admin-dashboard'         },
         { title: 'Ver reportes',         description: 'Métricas y estadísticas',         icon: 'heroChartBar',      color: 'green',  route: '/admin-dashboard'         },
-        { title: 'Gestionar usuarios', description: 'Activar y Desactivar Usuarios',       icon: 'heroUser',    color: 'pink', route: '/admin/users'         },
-        { title: 'Gestionar Servicios', description: 'Activar y Desactivar Servicios',       icon: 'heroDocument',    color: 'yellow', route: '/admin/services'         },
       ];
     }
-
-
-    const profileId = localStorage.getItem('profileId') ?? '1';
-
-    return [
-      { title: 'Crear servicio',   description: 'Publicar nueva oferta',   icon: 'heroPlus',           color: 'green',  route: '/provider-dashboard'                       },
-      { title: 'Mis servicios',    description: 'Ver y editar servicios',   icon: 'heroDocumentText',   color: 'blue',   route: '/provider-dashboard'                       },
-      { title: 'Disponibilidad',   description: 'Gestionar calendario',     icon: 'heroCalendarDays',   color: 'purple', route: '/provider-dashboard'                       },
-      { title: 'Solicitudes',      description: 'Ver solicitudes',          icon: 'heroInbox',          color: 'orange', route: `/proveedor/solicitudes/${profileId}`        },
-      { title: 'Perfil público',   description: 'Ver como cliente',         icon: 'heroUser',           color: 'pink',   route: `/proveedor/${profileId}`                   },
-      { title: 'Mensajes',         description: 'Ver mensajes',             icon: 'heroChatBubbleLeft', color: 'gray',   route: '/provider-dashboard'                       },
-    ];
+    return this.providerActions;
   }
 
-  navigate(route: string): void {
-    this.router.navigate([route]);
-  }
+  providerActions = [
+    { title: 'Crear servicio',  description: 'Publicar nueva oferta', icon: 'heroPlus',           color: 'green',  route: '/provider-dashboard' },
+    { title: 'Mis servicios',   description: 'Ver y editar servicios', icon: 'heroDocumentText',  color: 'blue',   route: '/provider-dashboard' },
+    { title: 'Disponibilidad',  description: 'Gestionar calendario',  icon: 'heroCalendarDays',   color: 'purple', route: '/provider-dashboard' },
+    { title: 'Solicitudes',     description: 'Ver solicitudes',       icon: 'heroInbox',           color: 'orange', route: '/provider-requests-service' },
+    { title: 'Perfil público',  description: 'Ver como cliente',      icon: 'heroUser',            color: 'pink',   route: '/provider-dashboard' },
+    { title: 'Mensajes',        description: 'Ver mensajes',          icon: 'heroChatBubbleLeft',  color: 'gray',   route: '/provider-dashboard' }
+  ];
+
+    profileId = '';
+
+    ngOnInit(): void {
+      this.profileId = localStorage.getItem('profile_id') ?? '';
+    }
+
+    navigate(route: string): void {
+      if (route === '/provider-requests-service') {
+        this.router.navigate(['/provider-requests-service', this.profileId]);
+      } else {
+        this.router.navigate([route]);
+      }
+    }
 }
