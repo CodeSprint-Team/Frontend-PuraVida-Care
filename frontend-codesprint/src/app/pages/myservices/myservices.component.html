@@ -1,0 +1,118 @@
+<div class="app-container">
+  <aside class="sidebar">
+    <div class="logo">
+      <h2>PuraVidaCare</h2>
+    </div>
+    <nav class="nav-menu">
+      <ul>
+        <li class="active">
+          <a href="#">
+            <span class="icon"><i class="fa-regular fa-clipboard"></i></span>
+            <span>Mis Servicios</span>
+          </a>
+        </li>
+        <li>
+          <a href="#">
+            <span class="icon"><i class="fa-regular fa-chart-bar"></i></span>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="#">
+            <span class="icon"><i class="fa-regular fa-user"></i></span>
+            <span>Perfil</span>
+          </a>
+        </li>
+        <li>
+          <a href="#">
+            <span class="icon"><i class="fa-solid fa-gear"></i></span>
+            <span>Configuración</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <div class="content-header">
+      <div>
+        <h1>Mis servicios</h1>
+        <p class="subtitle">Gestiona tus servicios publicados</p>
+      </div>
+      <button class="btn-create" (click)="onCreateNew()">
+        <span class="icon"><i class="fa-regular fa-plus"></i></span>
+        Crear nuevo servicio
+      </button>
+    </div>
+
+    <div class="stats-container">
+      <div class="stat-card">
+        <span class="stat-value">{{ totalServices }}</span>
+        <span class="stat-label">Total servicios</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ activeServices }}</span>
+        <span class="stat-label">Servicios activos</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ pausedServices }}</span>
+        <span class="stat-label">Servicios pausados</span>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="loading">Cargando servicios...</div>
+    <div *ngIf="error" class="error">{{ error }}</div>
+
+    <div class="services-list">
+      <div *ngIf="!loading && services.length === 0" class="empty-state">
+        No tienes servicios registrados aún.
+      </div>
+
+      <div *ngFor="let service of services" class="service-card">
+        <div class="service-header">
+          <span
+            class="status-badge"
+            [class.active]="isActive(service)"
+            [class.paused]="!isActive(service)">
+            {{ isActive(service) ? 'Activo' : 'Pausado' }}
+          </span>
+        </div>
+
+        <div class="service-content">
+          <h3 class="service-title">{{ service.title }}</h3>
+          <p class="service-category">{{ service.serviceCategory?.categoryName }}</p>
+
+          <div class="service-price">
+            <span class="price-value">{{ formatPrice(service.basePrice, service.priceMode) }}</span>
+          </div>
+
+          <p class="service-description">{{ service.serviceDescription }}</p>
+
+          <div class="service-actions">
+            <button class="btn-edit" (click)="onEdit(service.id)">
+              <i class="fa-regular fa-pen-to-square"></i> Editar
+            </button>
+
+            <button
+              class="btn-toggle"
+              [class.btn-pause]="isActive(service)"
+              [class.btn-activate]="!isActive(service)"
+              (click)="toggleStatus(service.id)">
+              <i class="fa-regular"
+                 [class.fa-circle-pause]="isActive(service)"
+                 [class.fa-circle-play]="!isActive(service)">
+              </i>
+              {{ isActive(service) ? 'Pausar' : 'Activar' }}
+            </button>
+
+            <button class="btn-view" (click)="onView(service.id)">
+              <i class="fa-regular fa-eye"></i> Ver
+            </button>
+          </div>
+
+          <p class="service-date">Creado el {{ formatDate(service.created!) }}</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { Landing } from './pages/landing/landing';
 import { LoginComponent } from './pages/login/login.component';
 import { HomeComponent } from './pages/client/home-client/home-client';
+import { MyServicesComponent } from './pages/myservices/myservices.component';
 
 // Auth / Registro
 import { Register } from './pages/auth/register/register';
@@ -97,8 +98,12 @@ export const routes: Routes = [
   { path: 'family-tracking/:sessionId',
     component: FamilyTrackingComponent
   },
+  {
+    path: 'my-services',
+    component: MyServicesComponent
+  },
 
-  { path: '**', redirectTo: 'landing' },
+  { path: '**', redirectTo: 'landing' }
 
 ];
 
