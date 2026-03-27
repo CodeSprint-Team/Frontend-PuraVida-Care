@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';  
 import { ServiceService, Service, ServiceStats } from '../../services/service.service';
 
 @Component({
@@ -14,11 +15,12 @@ export class MyServicesComponent implements OnInit {
   stats: ServiceStats = { total: 0, active: 0, paused: 0 };
   loading = true;
   error = '';
-  providerId = 3;
+  providerId = 4;
 
   constructor(
     private serviceService: ServiceService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router  
   ) {
     console.log('Constructor ejecutado');
   }
@@ -36,7 +38,7 @@ export class MyServicesComponent implements OnInit {
         console.log('Datos recibidos:', data);
         this.services = data;
         this.loading = false;
-        this.cdr.detectChanges(); // ← fuerza actualización
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error HTTP:', err);
@@ -52,7 +54,7 @@ export class MyServicesComponent implements OnInit {
       next: (data) => {
         console.log('Stats recibidas:', data);
         this.stats = data;
-        this.cdr.detectChanges(); // ← fuerza actualización
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Error al cargar estadísticas', err)
     });
@@ -72,9 +74,20 @@ export class MyServicesComponent implements OnInit {
     });
   }
 
-  onEdit(serviceId: number): void { console.log('Editar servicio:', serviceId); }
-  onView(serviceId: number): void { console.log('Ver servicio:', serviceId); }
-  onCreateNew(): void { console.log('Crear nuevo servicio'); }
+  // 🔴 MODIFICADO: ahora redirige a edición
+  onEdit(serviceId: number): void {
+    console.log('Editar servicio:', serviceId);
+    this.router.navigate(['/edit-service', serviceId]);
+  }
+
+  onView(serviceId: number): void { 
+    console.log('Ver servicio:', serviceId); 
+  }
+  
+  onCreateNew(): void { 
+    console.log('Crear nuevo servicio');
+    this.router.navigate(['/create-services']);
+  }
 
   get totalServices(): number { return this.stats.total; }
   get activeServices(): number { return this.stats.active; }
