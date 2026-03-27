@@ -1,17 +1,17 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NavbarComponent } from '../../components/navbar/navbar';
 import { AdminService, UserStatus } from '../../services/admin';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { heroUser, heroArrowLeft} from '@ng-icons/heroicons/outline';
 import Swal from 'sweetalert2';
 import { Router } from '@angular/router';
+import {NavbarComponent} from '../../components/navbar/navbar';
 
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, NgIconComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent,NgIconComponent],
   viewProviders: [provideIcons({ heroUser, heroArrowLeft, })],
   templateUrl: './admin-users.html',
 })
@@ -62,7 +62,7 @@ export class AdminUsers implements OnInit {
       cancelButtonColor: '#6b7280',
       confirmButtonText: 'Sí, activar',
       cancelButtonText: 'Cancelar'
-    }).then((result: { isConfirmed: boolean }) => {
+    }).then(result => {
       if (!result.isConfirmed || !this.selectedUser) return;
       const userId = this.selectedUser.userId;
       this.adminService.reviewUser(userId, { action: 'activate' }).subscribe({
