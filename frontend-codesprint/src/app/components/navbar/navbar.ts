@@ -33,7 +33,7 @@ export class NavbarComponent implements OnInit, OnChanges {
   private readonly clientNav: NavItem[] = [
     { label: 'Inicio',   path: '/home',     icon: 'heroHome' },
     { label: 'Explorar', path: '/explorar', icon: 'heroMagnifyingGlass' },
-    { label: 'Agenda',   path: '/agenda',   icon: 'heroCalendarDays' },
+    { label: 'Agenda',   path: '/agenda-cliente',   icon: 'heroCalendarDays' },
     { label: 'Chat IA',  path: '/chat-ia',  icon: 'heroCpuChip' },
     { label: 'Mensajes', path: '/mensajes', icon: 'heroChatBubbleLeftRight' },
   ];

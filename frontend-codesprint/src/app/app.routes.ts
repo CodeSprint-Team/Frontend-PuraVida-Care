@@ -32,6 +32,9 @@ import { SolicitudDetalleComponent } from './pages/solicitudes/solicitud-detalle
 // Cliente / Explorar
 import { ExplorarServiciosComponent } from './pages/explore/explore-services/explore-services';
 import { PublicProviderProfileComponent } from './pages/publicProvider/public-provider-profile/public-provider-profile';
+import {AgendaCliente} from './pages/agenda-cliente/agenda-cliente';
+import {CalendarioCliente} from './pages/calendario-cliente/calendario-cliente';
+import {DetalleCitaCliente} from './pages/detalle-cita-cliente/detalle-cita-cliente';
 
 export const routes: Routes = [
   // General
@@ -70,10 +73,15 @@ export const routes: Routes = [
   { path: 'proveedor/solicitudes/:id', component: SolicitudesProveedorComponent },
   { path: 'proveedor/solicitud/:id',   component: SolicitudDetalleComponent },
 
+  //Cliente
+  { path: 'agenda-cliente', component: AgendaCliente },
+  { path: 'calendario-cliente', component: CalendarioCliente },
+  { path: 'detalle-cita-cliente/:id', component: DetalleCitaCliente },
+
   // Explorar
   { path: 'explorar',      component: ExplorarServiciosComponent },
   { path: 'proveedor/:id', component: PublicProviderProfileComponent },
 
-  // Wildcard (siempre al final)
+  // Wildcard
   { path: '**', redirectTo: 'landing' },
 ];

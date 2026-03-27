@@ -1,10 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@source './**/*.{html,ts}';
 
 /* =========================
    VARIABLES DEL TEMA
@@ -116,9 +113,33 @@ body {
 }
 
 .input {
-  @apply w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100;
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input:focus {
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 2px #ccfbf1;
 }
 .select-input {
-  @apply w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-12 text-sm text-slate-800 outline-none transition duration-200;
-  @apply focus:border-teal-500 focus:ring-4 focus:ring-teal-100;
+  width: 100%;
+  appearance: none;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  padding: 0.75rem 3rem 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: #1e293b;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.select-input:focus {
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 4px #ccfbf1;
 }
