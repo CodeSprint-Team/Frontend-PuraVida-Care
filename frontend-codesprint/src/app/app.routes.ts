@@ -22,12 +22,19 @@ import { FamilyProfileEdit } from './pages/viewProfile/family-profile-edit/famil
 // Admin
 import { AdminDashboard } from './pages/admin-dashboard/admin-dashboard';
 import { ProviderRequests } from './pages/provider-requests/provider-requests';
+
+
+import {ProviderRequestsComponent} from './pages/provider-request-service/provider-request-service';
+import { ProviderBookingDetail } from './pages/provider-booking-detail/provider-booking-detail';
+import { ProviderStartBooking } from './pages/provider-start-booking/provider-start-booking';
+import { ProviderInService } from './pages/provider-in-service/provider-in-service';
+import { FamilyTrackingComponent } from './pages/family-tracking/family-tracking';
+
 import { AdminUsers } from './pages/admin-users/admin-users';
+
 
 // Proveedor
 import { ProviderDashboard } from './pages/provider-dashboard/provider-dashboard';
-import { SolicitudesProveedorComponent } from './pages/solicitudes/solicitudes-proveedor/solicitudes-proveedor';
-import { SolicitudDetalleComponent } from './pages/solicitudes/solicitud-detalle/solicitud-detalle';
 
 // Cliente / Explorar
 import { ExplorarServiciosComponent } from './pages/explore/explore-services/explore-services';
@@ -60,20 +67,40 @@ export const routes: Routes = [
 
   // Admin
   { path: 'admin-dashboard',           component: AdminDashboard },
-  { path: 'admin-dashboard/providers', component: AdminDashboard },
   { path: 'admin/provider-requests',   component: ProviderRequests },
   { path: 'admin/users',               component: AdminUsers },
   { path: 'admin/services',            component: AdminDashboard },
 
   // Proveedor
   { path: 'provider-dashboard',        component: ProviderDashboard },
-  { path: 'proveedor/solicitudes/:id', component: SolicitudesProveedorComponent },
-  { path: 'proveedor/solicitud/:id',   component: SolicitudDetalleComponent },
 
   // Explorar
   { path: 'explorar',      component: ExplorarServiciosComponent },
   { path: 'proveedor/:id', component: PublicProviderProfileComponent },
 
-  // Wildcard (siempre al final)
+
+  { path: 'admin-dashboard/providers',
+    component: AdminDashboard
+  },
+  { path: 'provider-requests-service/:id',
+    component: ProviderRequestsComponent 
+  },
+  { path: 'provider-booking-detail/:id',
+    component: ProviderBookingDetail
+  },
+  { path: 'provider-start-service/:id', 
+    component: ProviderStartBooking 
+  },
+  { path: 'provider-in-service/:id',
+    component: ProviderInService
+  },
+  { path: 'family-tracking/:sessionId',
+    component: FamilyTrackingComponent
+  },
+
   { path: '**', redirectTo: 'landing' },
+
 ];
+
+
+

@@ -48,6 +48,8 @@ export class LoginComponent implements OnInit {
     }).subscribe({
       next: (response) => {
         this.loading = false;
+        localStorage.setItem('user_id', String(response.userId));
+        localStorage.setItem('user_role', response.role);
         this.redirectByRole(response.role, String(response.userId));
       },
       error: (error) => {
@@ -56,7 +58,6 @@ export class LoginComponent implements OnInit {
       }
     });
   }
-
   private redirectByRole(role: string, userId: string): void {
     switch (role) {
       case 'PROVIDER':
