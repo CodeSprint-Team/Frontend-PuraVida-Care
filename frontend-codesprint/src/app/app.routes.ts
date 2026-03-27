@@ -33,6 +33,9 @@ import { SolicitudDetalleComponent } from './pages/solicitudes/solicitud-detalle
 import { ExplorarServiciosComponent } from './pages/explore/explore-services/explore-services';
 import { PublicProviderProfileComponent } from './pages/publicProvider/public-provider-profile/public-provider-profile';
 
+//Bienes de apoyo
+import { CreateSupportProductPostComponent } from './pages/create-support-product-post/create-support-product-post';
+
 export const routes: Routes = [
   // General
   { path: '',        redirectTo: 'landing', pathMatch: 'full' },
@@ -73,6 +76,9 @@ export const routes: Routes = [
   // Explorar
   { path: 'explorar',      component: ExplorarServiciosComponent },
   { path: 'proveedor/:id', component: PublicProviderProfileComponent },
+
+  // Bienes de apoyo
+  { path: 'support-products/create', component: CreateSupportProductPostComponent },
 
   // Wildcard (siempre al final)
   { path: '**', redirectTo: 'landing' },
