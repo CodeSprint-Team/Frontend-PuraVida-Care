@@ -40,6 +40,8 @@ import { ProviderDashboard } from './pages/provider-dashboard/provider-dashboard
 // Cliente / Explorar
 import { ExplorarServiciosComponent } from './pages/explore/explore-services/explore-services';
 import { PublicProviderProfileComponent } from './pages/publicProvider/public-provider-profile/public-provider-profile';
+import { AdminProfileComponent } from './pages/viewProfile/admin-profile/admin-profile';
+import { AdminProfileEditComponent } from './pages/viewProfile/admin-profile-edit/admin-profile-edit';
 
 export const routes: Routes = [
   // General
@@ -71,6 +73,8 @@ export const routes: Routes = [
   { path: 'admin/provider-requests',   component: ProviderRequests },
   { path: 'admin/users',               component: AdminUsers },
   { path: 'admin/services',            component: AdminDashboard },
+  {path: 'admin-profile/:id',          component: AdminProfileComponent},
+  {path: 'admin-profile-edit/:id',     component: AdminProfileEditComponent},
 
   // Proveedor
   { path: 'provider-dashboard',        component: ProviderDashboard },
