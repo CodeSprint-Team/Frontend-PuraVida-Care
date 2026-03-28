@@ -1,9 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth/auth/auth';
+import { AuthService } from '../../services/auth.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -18,10 +19,11 @@ export class LoginComponent implements OnInit {
   loading = false;
   errorMessage = '';
 
-  private readonly router = inject(Router);
-  private readonly authService = inject(AuthService);
-
-  constructor(private formBuilder: FormBuilder) {}
+  constructor(
+    private formBuilder: FormBuilder,
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
     this.loginForm = this.formBuilder.group({
@@ -46,19 +48,62 @@ export class LoginComponent implements OnInit {
       email: this.loginForm.value.email,
       password: this.loginForm.value.password
     }).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         this.loading = false;
-        localStorage.setItem('user_id', String(response.userId));
-        localStorage.setItem('user_role', response.role);
-        this.redirectByRole(response.role, String(response.userId));
+        this.redirectByRole(response.role, String(response.userId), false);
       },
-      error: (error) => {
+      error: (error: any) => {
         this.loading = false;
         this.errorMessage = error?.error?.error || 'Credenciales incorrectas';
       }
     });
   }
-  private redirectByRole(role: string, userId: string): void {
+
+  loginWithGoogle(): void {
+    const google = (window as any).google;
+
+    if (!google) {
+      this.errorMessage = 'Google no está disponible. Recargá la página.';
+      return;
+    }
+
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: environment.googleClientId,
+      scope: 'email profile',
+      callback: (tokenResponse: any) => {
+        if (tokenResponse?.access_token) {
+          this.loading = true;
+          this.errorMessage = '';
+
+          // Enviamos el token sin roleId — el backend usa CLIENT por defecto
+          // Si el usuario es nuevo, lo mandamos a elegir rol
+          this.authService.loginWithGoogle(tokenResponse.access_token).subscribe({
+            next: (response: any) => {
+              this.loading = false;
+              this.redirectByRole(response.role, String(response.userId), response.isNewUser);
+            },
+            error: (error: any) => {
+              this.loading = false;
+              this.errorMessage = error?.error?.error || 'Error al iniciar sesión con Google';
+            }
+          });
+        } else {
+          this.errorMessage = 'No se pudo obtener el token de Google';
+        }
+      }
+    });
+
+    client.requestAccessToken();
+  }
+
+  private redirectByRole(role: string, userId: string, isNewUser: boolean): void {
+    // Usuario nuevo con Google → elegir rol
+    if (isNewUser) {
+      this.router.navigate(['/register/role']);
+      return;
+    }
+
+    // Usuario existente → ir a su perfil según rol
     switch (role) {
       case 'PROVIDER':
         this.router.navigate(['/provider-profile', userId]);
@@ -76,9 +121,5 @@ export class LoginComponent implements OnInit {
         this.router.navigate(['/home']);
         break;
     }
-  }
-
-  loginWithGoogle(): void {
-    window.location.href = 'http://localhost:8081/api/v1/auth/google/url';
   }
 }
