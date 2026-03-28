@@ -8,7 +8,8 @@
         <span class="text-teal-600">Adulto mayor</span>
       </h1>
       <p class="mt-3 text-sm text-slate-500 sm:text-base">
-        Completa la información para continuar
+        Completa la información para continuar.
+        Los campos marcados con <span class="text-red-500">*</span> son obligatorios.
       </p>
     </div>
 
@@ -18,214 +19,251 @@
 
         <!-- Datos personales -->
         <div>
-          <h2 class="mb-6 text-lg font-semibold text-slate-800">
-            Datos personales
-          </h2>
+          <h2 class="mb-6 text-lg font-semibold text-slate-800">Datos personales</h2>
 
           <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+
+            <!-- Nombre -->
             <div>
               <label class="mb-2 block text-sm font-medium text-slate-700">
-                Nombre
+                Nombre <span class="text-red-500">*</span>
               </label>
-              <input type="text" formControlName="userName" class="input" />
+              <input type="text" formControlName="userName"
+                class="w-full rounded-xl border px-4 py-3 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                [ngClass]="isInvalid('userName') ? 'border-red-400 bg-red-50' : 'border-slate-300'" />
+              <div *ngIf="isInvalid('userName')" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+                <i class="fa-solid fa-circle-exclamation"></i> El nombre es obligatorio.
+              </div>
             </div>
 
+            <!-- Apellido -->
             <div>
               <label class="mb-2 block text-sm font-medium text-slate-700">
-                Apellido
+                Apellido <span class="text-red-500">*</span>
               </label>
-              <input type="text" formControlName="lastName" class="input" />
+              <input type="text" formControlName="lastName"
+                class="w-full rounded-xl border px-4 py-3 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                [ngClass]="isInvalid('lastName') ? 'border-red-400 bg-red-50' : 'border-slate-300'" />
+              <div *ngIf="isInvalid('lastName')" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+                <i class="fa-solid fa-circle-exclamation"></i> El apellido es obligatorio.
+              </div>
             </div>
 
+            <!-- Correo -->
             <div class="sm:col-span-2">
               <label class="mb-2 block text-sm font-medium text-slate-700">
-                Correo electrónico
+                Correo electrónico <span class="text-red-500">*</span>
               </label>
-              <input type="email" formControlName="email" class="input" />
+              <input type="email" formControlName="email" placeholder="tu@email.com"
+                class="w-full rounded-xl border px-4 py-3 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                [ngClass]="isInvalid('email') ? 'border-red-400 bg-red-50' : 'border-slate-300'" />
+              <div *ngIf="isInvalid('email')" class="mt-1.5 text-xs text-red-500">
+                <p *ngIf="registerForm.get('email')?.errors?.['required']" class="flex items-center gap-1">
+                  <i class="fa-solid fa-circle-exclamation"></i> El correo es obligatorio.
+                </p>
+                <p *ngIf="registerForm.get('email')?.errors?.['email'] || registerForm.get('email')?.errors?.['pattern']" class="flex items-center gap-1">
+                  <i class="fa-solid fa-circle-exclamation"></i> Ingresá un correo válido (ej: usuario&#64;gmail.com).
+                </p>
+              </div>
             </div>
 
+            <!-- Contraseña -->
             <div class="sm:col-span-2">
               <label class="mb-2 block text-sm font-medium text-slate-700">
-                Contraseña
+                Contraseña <span class="text-red-500">*</span>
               </label>
-              <input type="password" formControlName="password" class="input" />
+              <div class="relative">
+                <input [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="Mínimo 8 caracteres"
+                  class="w-full rounded-xl border px-4 py-3 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent pr-10"
+                  [ngClass]="isInvalid('password') ? 'border-red-400 bg-red-50' : 'border-slate-300'" />
+                <button type="button" (click)="showPassword = !showPassword"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer">
+                  <i [class]="showPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye'"></i>
+                </button>
+              </div>
+              <div *ngIf="isInvalid('password')" class="mt-1.5 text-xs text-red-500">
+                <p *ngIf="registerForm.get('password')?.errors?.['required']" class="flex items-center gap-1">
+                  <i class="fa-solid fa-circle-exclamation"></i> La contraseña es obligatoria.
+                </p>
+                <p *ngIf="registerForm.get('password')?.errors?.['minlength']" class="flex items-center gap-1">
+                  <i class="fa-solid fa-circle-exclamation"></i> Debe tener al menos 8 caracteres.
+                </p>
+              </div>
             </div>
           </div>
         </div>
-        <div class="sm:col-span-2">
-          <label class="mb-2 block text-sm font-medium text-slate-700">
-            Teléfono
-          </label>
-          <input
-            type="text"
-            formControlName="phone"
-            class="input"
-          />
-        </div>
-        <div class="sm:col-span-2">
-          <label class="mb-2 block text-sm font-medium text-slate-700">
-            Dirección
-          </label>
-          <input
-            type="text"
-            formControlName="address"
-            placeholder="Ej: Escazú, San José, Costa Rica"
-            class="input"
-          />
-        </div>
+
+        <!-- Teléfono -->
         <div>
           <label class="mb-2 block text-sm font-medium text-slate-700">
-            Edad
+            Teléfono <span class="text-red-500">*</span>
           </label>
-          <input
-            type="number"
-            formControlName="age"
-            min="0"
-            class="input"
-            placeholder="Ej: 70"
-          />
+          <input type="text" formControlName="phone" placeholder="Ej: 8888-8888"
+            class="w-full rounded-xl border px-4 py-3 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+            [ngClass]="isInvalid('phone') ? 'border-red-400 bg-red-50' : 'border-slate-300'" />
+          <div *ngIf="isInvalid('phone')" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+            <i class="fa-solid fa-circle-exclamation"></i> El teléfono es obligatorio.
+          </div>
         </div>
+
+        <!-- Dirección -->
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-700">
+            Dirección <span class="text-red-500">*</span>
+          </label>
+          <input type="text" formControlName="address" placeholder="Ej: Escazú, San José, Costa Rica"
+            class="w-full rounded-xl border px-4 py-3 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+            [ngClass]="isInvalid('address') ? 'border-red-400 bg-red-50' : 'border-slate-300'" />
+          <div *ngIf="isInvalid('address')" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+            <i class="fa-solid fa-circle-exclamation"></i> La dirección es obligatoria.
+          </div>
+        </div>
+
+        <!-- Edad -->
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-700">
+            Edad <span class="text-red-500">*</span>
+          </label>
+          <input type="number" formControlName="age" min="0" placeholder="Ej: 70"
+            class="w-full rounded-xl border px-4 py-3 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+            [ngClass]="isInvalid('age') ? 'border-red-400 bg-red-50' : 'border-slate-300'" />
+          <div *ngIf="isInvalid('age')" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+            <i class="fa-solid fa-circle-exclamation"></i> La edad es obligatoria.
+          </div>
+        </div>
+
         <!-- Información de cuidado -->
         <div>
-          <h2 class="mb-6 text-lg font-semibold text-slate-800">
-            Información de cuidado
-          </h2>
+          <h2 class="mb-6 text-lg font-semibold text-slate-800">Información de cuidado</h2>
 
           <div class="grid grid-cols-1 gap-5">
 
             <div>
               <label class="mb-2 block text-sm font-medium text-slate-700">
-                Preferencia de cuidado
+                Preferencia de cuidado <span class="text-red-500">*</span>
               </label>
-              <textarea
-                formControlName="carePreference"
-                rows="3"
+              <textarea formControlName="carePreference" rows="3"
                 placeholder="Ej: asistencia diaria, acompañamiento, etc."
-                class="input"
-              ></textarea>
+                class="w-full rounded-xl border px-4 py-3 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                [ngClass]="isInvalid('carePreference') ? 'border-red-400 bg-red-50' : 'border-slate-300'"></textarea>
+              <div *ngIf="isInvalid('carePreference')" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+                <i class="fa-solid fa-circle-exclamation"></i> Este campo es obligatorio.
+              </div>
             </div>
 
             <div>
               <label class="mb-2 block text-sm font-medium text-slate-700">
                 Observaciones de salud
               </label>
-              <textarea
-                formControlName="healthObservation"
-                rows="3"
+              <textarea formControlName="healthObservation" rows="3"
                 placeholder="Condiciones, medicamentos, etc."
-                class="input"
-              ></textarea>
+                class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"></textarea>
             </div>
 
             <div>
               <label class="mb-2 block text-sm font-medium text-slate-700">
                 Notas de movilidad
               </label>
-              <textarea
-                formControlName="mobilityNotes"
-                rows="3"
+              <textarea formControlName="mobilityNotes" rows="3"
                 placeholder="Ej: usa bastón, silla de ruedas, etc."
-                class="input"
-              ></textarea>
+                class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"></textarea>
             </div>
 
-          </div>
-          <div>
-            <label class="mb-2 block text-sm font-medium text-slate-700">
-              Alergias
-            </label>
-            <textarea
-              formControlName="allergies"
-              rows="3"
-              placeholder="Ej: penicilina, mariscos, polvo, etc."
-              class="input"
-            ></textarea>
+            <div>
+              <label class="mb-2 block text-sm font-medium text-slate-700">
+                Alergias
+              </label>
+              <textarea formControlName="allergies" rows="3"
+                placeholder="Ej: penicilina, mariscos, polvo, etc."
+                class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"></textarea>
+            </div>
           </div>
         </div>
 
         <!-- Contacto de emergencia -->
         <div>
-          <label class="mb-2 block text-sm font-medium text-slate-700">
-            Relación con el contacto de emergencia
-          </label>
-
-          <div class="relative">
-            <select formControlName="emergencyRelation" class="select-input">
-              <option value="">Selecciona una opción</option>
-              <option value="Padre">Padre</option>
-              <option value="Madre">Madre</option>
-              <option value="Hijo/a">Hijo/a</option>
-              <option value="Hermano/a">Hermano/a</option>
-              <option value="Cónyuge">Cónyuge</option>
-              <option value="Nieto/a">Nieto/a</option>
-              <option value="Otro familiar">Otro familiar</option>
-              <option value="Amigo/a">Amigo/a</option>
-              <option value="Vecino/a">Vecino/a</option>
-              <option value="Encargado/a">Encargado/a</option>
-              <option value="Otro">Otro</option>
-            </select>
-
-            <div class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-slate-500">
-              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.51a.75.75 0 01-1.08 0l-4.25-4.51a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-              </svg>
-            </div>
-          </div>
-        </div>
-        <div>
-          <h2 class="mb-6 text-lg font-semibold text-slate-800">
-            Contacto de emergencia
-          </h2>
+          <h2 class="mb-6 text-lg font-semibold text-slate-800">Contacto de emergencia</h2>
 
           <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
 
             <div>
               <label class="mb-2 block text-sm font-medium text-slate-700">
-                Nombre del contacto
+                Nombre del contacto <span class="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                formControlName="emergencyContactName"
-                class="input"
-              />
+              <input type="text" formControlName="emergencyContactName"
+                class="w-full rounded-xl border px-4 py-3 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                [ngClass]="isInvalid('emergencyContactName') ? 'border-red-400 bg-red-50' : 'border-slate-300'" />
+              <div *ngIf="isInvalid('emergencyContactName')" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+                <i class="fa-solid fa-circle-exclamation"></i> El nombre del contacto es obligatorio.
+              </div>
             </div>
 
             <div>
               <label class="mb-2 block text-sm font-medium text-slate-700">
-                Teléfono
+                Teléfono <span class="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                formControlName="emergencyContactPhone"
-                class="input"
-              />
+              <input type="text" formControlName="emergencyContactPhone"
+                class="w-full rounded-xl border px-4 py-3 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                [ngClass]="isInvalid('emergencyContactPhone') ? 'border-red-400 bg-red-50' : 'border-slate-300'" />
+              <div *ngIf="isInvalid('emergencyContactPhone')" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+                <i class="fa-solid fa-circle-exclamation"></i> El teléfono de emergencia es obligatorio.
+              </div>
             </div>
+          </div>
 
+          <!-- Relación -->
+          <div class="mt-5">
+            <label class="mb-2 block text-sm font-medium text-slate-700">
+              Relación con el contacto <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <select formControlName="emergencyRelation"
+                class="w-full appearance-none rounded-xl border px-4 py-3 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                [ngClass]="isInvalid('emergencyRelation') ? 'border-red-400 bg-red-50' : 'border-slate-300'">
+                <option value="">Selecciona una opción</option>
+                <option value="Padre">Padre</option>
+                <option value="Madre">Madre</option>
+                <option value="Hijo/a">Hijo/a</option>
+                <option value="Hermano/a">Hermano/a</option>
+                <option value="Cónyuge">Cónyuge</option>
+                <option value="Nieto/a">Nieto/a</option>
+                <option value="Otro familiar">Otro familiar</option>
+                <option value="Amigo/a">Amigo/a</option>
+                <option value="Vecino/a">Vecino/a</option>
+                <option value="Encargado/a">Encargado/a</option>
+                <option value="Otro">Otro</option>
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-slate-500">
+                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.51a.75.75 0 01-1.08 0l-4.25-4.51a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
+            <div *ngIf="isInvalid('emergencyRelation')" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+              <i class="fa-solid fa-circle-exclamation"></i> Seleccioná una relación.
+            </div>
           </div>
         </div>
 
         <!-- Botón -->
         <div class="flex justify-center pt-4">
-          <button
-            type="submit"
-            [disabled]="loading"
-            class="w-full max-w-xs rounded-2xl bg-teal-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:bg-teal-300"
-          >
+          <button type="submit" [disabled]="loading"
+            class="w-full max-w-xs rounded-2xl bg-teal-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:bg-teal-300 cursor-pointer">
             {{ loading ? 'Registrando...' : 'Crear cuenta' }}
           </button>
         </div>
 
         <!-- Mensajes -->
-        <div *ngIf="errorMessage" class="text-center text-sm text-red-500">
-          {{ errorMessage }}
+        <div *ngIf="errorMessage"
+          class="flex items-center justify-center gap-2 p-3 rounded-lg text-sm bg-red-50 text-red-600 border border-red-200">
+          <i class="fa-solid fa-circle-exclamation"></i> {{ errorMessage }}
         </div>
-
-        <div *ngIf="successMessage" class="text-center text-sm text-green-600">
-          {{ successMessage }}
+        <div *ngIf="successMessage"
+          class="flex items-center justify-center gap-2 p-3 rounded-lg text-sm bg-green-50 text-green-600 border border-green-200">
+          <i class="fa-solid fa-circle-check"></i> {{ successMessage }}
         </div>
 
       </form>
     </div>
-
   </div>
 </div>

@@ -96,7 +96,7 @@ export class AdminServices implements OnInit {
 
 
   loadServices(selectId?: number): void {
-    this.adminService.getPendingCareServices().subscribe({
+    this.adminService.getAllCareServices().subscribe({  
       next: (data) => {
         this.services = [...data];
         if (selectId) {

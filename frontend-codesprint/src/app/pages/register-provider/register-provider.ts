@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { switchMap } from 'rxjs';
@@ -20,27 +20,36 @@ export class RegisterProvider {
   private readonly authService = inject(AuthService);
   private readonly profileService = inject(ProfileService);
   private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   loading = false;
   errorMessage = '';
   successMessage = '';
+  showPassword = false;
 
   registerForm = this.fb.group({
-    userName: ['', [Validators.required]],
-    lastName: ['', [Validators.required]],
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
-    providerTypeId: [2, [Validators.required]],
+    userName:              ['', [Validators.required]],
+    lastName:              ['', [Validators.required]],
+    email:                 ['', [Validators.required, Validators.email,
+                                Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]],
+    password:              ['', [Validators.required, Validators.minLength(8)]],
+    providerTypeId:        [2, [Validators.required]],
     experienceDescription: ['', [Validators.required]],
-    experienceYears: [0, [Validators.required, Validators.min(0)]],
-    bio: ['', [Validators.required]],
-    zone: ['', [Validators.required]],
-    phone: ['', [Validators.required]],
+    experienceYears:       [0, [Validators.required, Validators.min(0)]],
+    bio:                   ['', [Validators.required]],
+    zone:                  ['', [Validators.required]],
+    phone:                 ['', [Validators.required]],
   });
+
+  isInvalid(field: string): boolean {
+    const control = this.registerForm.get(field);
+    return !!(control && control.invalid && (control.touched || control.dirty));
+  }
 
   submit(): void {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
+      this.errorMessage = 'Por favor completá todos los campos obligatorios.';
       return;
     }
 
@@ -89,10 +98,23 @@ export class RegisterProvider {
           }
         });
       },
-      error: (error) => {
+     error: (error) => {
         this.loading = false;
-        this.errorMessage = error?.error?.message || 'Ocurrió un error al registrar el proveedor.';
-        console.error(error);
+        const status = error?.status;
+        const msg = error?.error?.error || error?.error?.message || '';
+
+        console.log('Status:', status, 'Msg:', msg);
+
+        if (status === 409 || msg.toLowerCase().includes('ya existe') || msg.toLowerCase().includes('already')) {
+          this.errorMessage = 'Este correo ya está registrado. Intentá con otro.';
+        } else if (status === 0) {
+          this.errorMessage = 'No se pudo conectar con el servidor.';
+        } else {
+          this.errorMessage = msg || 'Ocurrió un error al registrar el perfil.';
+        }
+
+        this.cdr.detectChanges();
+
       }
     });
   }
