@@ -72,6 +72,10 @@ export const routes: Routes = [
   { path: 'admin/provider-requests',   component: ProviderRequests },
   { path: 'admin/users',               component: AdminUsers },
   { path: 'admin/services', component: AdminServices },
+  { path: 'admin-profile/:id',          component: AdminProfileComponent},
+  { path: 'admin-profile-edit/:id',     component: AdminProfileEditComponent},
+
+
 
   // Proveedor
   { path: 'provider-dashboard',        component: ProviderDashboard },
@@ -108,5 +112,9 @@ export const routes: Routes = [
 
 ];
 
+
+
+
+ 
 
 
