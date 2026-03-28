@@ -35,6 +35,7 @@ export interface ProviderProfile {
   services?: CareServiceDTO[];
   totalReviews?: number;
   reviewsList?: ReviewDTO[];
+  ratingDistribution?: { [key: number]: number };
 }
 
 export interface ProviderProfileUpdateDTO {

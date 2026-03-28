@@ -98,4 +98,8 @@ export class AdminService {
   reviewCareService(id: number, dto: ReviewCareServiceDTO): Observable<CareServicePending> {
     return this.http.put<CareServicePending>(`${this.apiUrl}/services/${id}/review`, dto);
   }
+
+  getAllCareServices(): Observable<CareServicePending[]> {
+  return this.http.get<CareServicePending[]>(`${this.apiUrl}/services`);
+}
 }
