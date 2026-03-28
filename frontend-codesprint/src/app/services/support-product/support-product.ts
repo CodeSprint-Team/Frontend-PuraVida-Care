@@ -14,8 +14,8 @@ private apiUrl = 'http://127.0.0.1:8081/api/v1/support-products';
 
   constructor(private http: HttpClient) {}
 
-  createPost(formData: FormData): Observable<any> {
-    return this.http.post(`${this.apiUrl}`, formData);
+  createPost(formData: FormData): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(this.apiUrl, formData);
   }
 
   getAllPosts(): Observable<SupportProductPostResponse[]> {

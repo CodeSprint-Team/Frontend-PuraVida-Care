@@ -112,7 +112,6 @@
           <p *ngIf="campoInvalido('salePrice')" class="mt-1 text-sm text-red-500">
             El precio de venta es obligatorio.
           </p>
-          
         </div>
 
         <div>
@@ -153,44 +152,41 @@
         <div class="md:col-span-2">
           <label class="mb-2 block text-sm font-medium text-slate-700">Imagen</label>
 
-          <label class="flex cursor-pointer items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-center hover:border-emerald-400 hover:bg-emerald-50 transition">
+          <label
+            class="relative flex h-64 cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 hover:border-emerald-400 hover:bg-emerald-50 transition"
+          >
             <input
               type="file"
               accept="image/*"
               (change)="onFileSelected($event)"
               class="hidden"
             />
-            <div>
+
+            <img
+              *ngIf="imagePreview"
+              [src]="imagePreview"
+              class="absolute inset-0 h-full w-full object-cover"
+            />
+
+            <div *ngIf="!imagePreview" class="text-center px-4">
               <p class="text-sm font-medium text-slate-700">
-                {{ selectedImageName || 'Seleccioná una imagen' }}
+                Seleccioná una imagen
               </p>
               <p class="mt-1 text-xs text-slate-500">
-                Formatos recomendados: JPG, PNG o WEBP
+                JPG, PNG o WEBP
               </p>
             </div>
-          </label>
-          <div *ngIf="imagePreview" class="md:col-span-2">
-            <div class="mb-2 flex items-center justify-between">
-              <p class="text-sm font-medium text-slate-700">Vista previa</p>
-              <button
-                type="button"
-                (click)="removeImage()"
-                class="text-sm font-medium text-red-500 hover:text-red-600"
-              >
-                Quitar imagen
-              </button>
-            </div>
 
-            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-              <img
-                [src]="imagePreview"
-                alt="Vista previa de la imagen"
-                class="h-64 w-full object-cover"
-              />
-            </div>
-          </div>
+            <button
+              *ngIf="imagePreview"
+              type="button"
+              (click)="removeImage(); $event.stopPropagation()"
+              class="absolute top-2 right-2 bg-black/60 text-white text-xs px-3 py-1 rounded-lg hover:bg-black/80"
+            >
+              Quitar
+            </button>
+          </label>
         </div>
-        
 
         <div class="md:col-span-2">
           <label class="block text-sm font-medium text-slate-700 mb-2">
@@ -205,7 +201,8 @@
                 'bg-emerald-600 text-white': postForm.get('acceptsOffers')?.value === true,
                 'bg-slate-100 text-slate-700': postForm.get('acceptsOffers')?.value !== true
               }"
-              class="px-8 py-4 text-lg font-semibold rounded-xl border shadow-sm transition"            >
+              class="px-8 py-4 text-lg font-semibold rounded-xl border shadow-sm transition"
+            >
               Sí
             </button>
 
@@ -233,6 +230,9 @@
       </div>
 
       <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+        <div *ngIf="successMessage" class="mb-4 rounded-xl bg-emerald-100 text-emerald-700 px-4 py-3 text-sm font-medium">
+          {{ successMessage }}
+        </div>
         <button
           type="submit"
           [disabled]="loading"
