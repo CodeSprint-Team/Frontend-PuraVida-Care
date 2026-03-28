@@ -48,13 +48,11 @@ export class CreateSupportProductPostComponent implements OnInit,AfterViewInit{
     this.map.on('click', (e: L.LeafletMouseEvent) => {
       const { lat, lng } = e.latlng;
 
-      // 🔥 guardar en el form
       this.postForm.patchValue({
         locationLat: lat,
         locationLng: lng
       });
 
-      // 📍 mover o crear marcador
       if (this.marker) {
         this.marker.setLatLng([lat, lng]);
       } else {
