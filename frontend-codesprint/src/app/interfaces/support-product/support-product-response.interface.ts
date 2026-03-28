@@ -1,9 +1,13 @@
 export interface SupportProductPostResponse {
   id: number;
   userId: number;
+  userName?: string;
+  userLastName?: string;
+  userEmail?: string;
+
   supportProductCatalogId: number;
-  supportProductCategory?: string;
-  supportProductBaseName?: string;
+  supportProductCatalogName?: string;
+
   title: string;
   description: string;
   condition: string;
@@ -11,12 +15,16 @@ export interface SupportProductPostResponse {
   originalPrice: number;
   acceptsOffers: boolean;
   publicationState: string;
+  
   locationLat: number;
   locationLng: number;
   locationText?: string;
+  
   usageTimeText?: string;
+  
   imageUrl?: string;
   imagePath?: string;
+  
   created?: string;
   updated?: string;
 }

@@ -8,7 +8,9 @@ import { SupportProductPostResponse } from '../../interfaces/support-product/sup
 })
 export class SupportProductService {
 
-  private apiUrl = 'http://localhost:8081/api/v1/support-products';
+private apiUrl = 'http://127.0.0.1:8081/api/v1/support-products';
+
+
 
   constructor(private http: HttpClient) {}
 

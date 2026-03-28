@@ -35,6 +35,8 @@ import { PublicProviderProfileComponent } from './pages/publicProvider/public-pr
 
 //Bienes de apoyo
 import { CreateSupportProductPostComponent } from './pages/create-support-product-post/create-support-product-post';
+import { SupportProductsMarketplace } from './pages/support-products-marketplace/support-products-marketplace';
+import { SupportProductDetail } from './pages/support-product-detail/support-product-detail';
 
 export const routes: Routes = [
   // General
@@ -79,6 +81,8 @@ export const routes: Routes = [
 
   // Bienes de apoyo
   { path: 'support-products/create', component: CreateSupportProductPostComponent },
+  { path: 'support-products', component: SupportProductsMarketplace },
+  {path: 'support-products/:id', component: SupportProductDetail },
 
   // Wildcard (siempre al final)
   { path: '**', redirectTo: 'landing' },
