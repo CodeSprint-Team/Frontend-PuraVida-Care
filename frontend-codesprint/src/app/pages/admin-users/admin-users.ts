@@ -75,30 +75,35 @@ export class AdminUsers implements OnInit {
     });
   }
 
-  deactivateUser(): void {
-    if (!this.selectedUser) return;
-    Swal.fire({
-      title: '¿Desactivar usuario?',
-      text: `${this.selectedUser.fullName} no podrá iniciar sesión.`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Sí, desactivar',
-      cancelButtonText: 'Cancelar'
-    }).then((result: { isConfirmed: boolean }) => {
-      if (!result.isConfirmed || !this.selectedUser) return;
-      const userId = this.selectedUser.userId;
-      this.adminService.reviewUser(userId, { action: 'deactivate' }).subscribe({
-        next: (updated) => {
-          Swal.fire({ title: '¡Desactivado!', text: `${updated.fullName} ha sido desactivado.`, icon: 'success', timer: 2000, showConfirmButton: false });
-          this.loadUsers(userId);
-        },
-        error: () => Swal.fire('Error', 'No se pudo desactivar el usuario.', 'error')
-      });
+deactivateUser(): void {
+  if (!this.selectedUser) return;
+  Swal.fire({
+    title: '¿Desactivar usuario?',
+    input: 'textarea',
+    inputLabel: 'Motivo de desactivación',
+    inputPlaceholder: 'Escribe el motivo...',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Sí, desactivar',
+    cancelButtonText: 'Cancelar',
+    inputValidator: (value) => {
+      if (!value?.trim()) return 'Debes indicar un motivo';
+      return null;
+    }
+  }).then((result) => {
+    if (!result.isConfirmed || !this.selectedUser) return;
+    const userId = this.selectedUser.userId;
+    this.adminService.reviewUser(userId, { action: 'deactivate', reason: result.value }).subscribe({
+      next: (updated) => {
+        Swal.fire({ title: '¡Desactivado!', text: `${updated.fullName} ha sido desactivado.`, icon: 'success', timer: 2000, showConfirmButton: false });
+        this.loadUsers(userId);
+      },
+      error: () => Swal.fire('Error', 'No se pudo desactivar el usuario.', 'error')
     });
-  }
-
+  });
+}
   goBack(): void {
     this.router.navigate(['/admin-dashboard']);
   }

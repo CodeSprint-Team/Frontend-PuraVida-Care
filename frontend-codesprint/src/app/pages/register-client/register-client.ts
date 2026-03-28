@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { switchMap } from 'rxjs';
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../../services/auth/auth/auth';
 import { ProfileService } from '../../services/profile/profile';
 import { RegisterUserRequest } from '../../interfaces/auth/register-user-request.interface';
 import { ClientProfileCreateRequest } from '../../interfaces/profile/client-profile-create.interface';
@@ -20,23 +20,26 @@ export class RegisterClient implements OnInit {
   private readonly authService    = inject(AuthService);
   private readonly profileService = inject(ProfileService);
   private readonly router         = inject(Router);
+  private readonly cdr            = inject(ChangeDetectorRef);
 
   loading        = false;
   errorMessage   = '';
   successMessage = '';
+  showPassword   = false;
   isGoogleUser   = false;
 
   registerForm = this.fb.group({
     userName:                 ['', [Validators.required]],
     lastName:                 ['', [Validators.required]],
-    email:                    ['', [Validators.required, Validators.email]],
-    password:                 ['', [Validators.required, Validators.minLength(6)]],
+    email:                    ['', [Validators.required, Validators.email,
+                                   Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]],
+    password:                 ['', [Validators.required, Validators.minLength(8)]],
     phone:                    ['', [Validators.required]],
     notes:                    [''],
-    relationToSenior:         [''],
-    emergencyContactName:     [''],
-    emergencyContactRelation: [''],
-    emergencyContactPhone:    [''],
+    relationToSenior:         ['', [Validators.required]],
+    emergencyContactName:     ['', [Validators.required]],
+    emergencyContactRelation: ['', [Validators.required]],
+    emergencyContactPhone:    ['', [Validators.required]],
     importantNotes:           ['']
   });
 
@@ -58,9 +61,15 @@ export class RegisterClient implements OnInit {
     }
   }
 
+  isInvalid(field: string): boolean {
+    const control = this.registerForm.get(field);
+    return !!(control && control.invalid && (control.touched || control.dirty));
+  }
+
   submit(): void {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
+      this.errorMessage = 'Por favor completá todos los campos obligatorios.';
       return;
     }
 
@@ -71,43 +80,58 @@ export class RegisterClient implements OnInit {
     const formValue      = this.registerForm.getRawValue();
     const existingUserId = localStorage.getItem('user_id');
 
-    const createProfile = (userId: number) => {
-      const profileData: ClientProfileCreateRequest = {
-        userId,
-        phone:                    formValue.phone                    ?? '',
-        notes:                    formValue.notes                    ?? '',
-        relationToSenior:         formValue.relationToSenior         ?? '',
-        emergencyContactName:     formValue.emergencyContactName     ?? '',
-        emergencyContactRelation: formValue.emergencyContactRelation ?? '',
-        emergencyContactPhone:    formValue.emergencyContactPhone    ?? '',
-        importantNotes:           formValue.importantNotes           ?? ''
-      };
-      return this.profileService.createClientProfile(profileData);
+    const buildProfile = (userId: number): ClientProfileCreateRequest => ({
+      userId,
+      phone:                    formValue.phone                    ?? '',
+      notes:                    formValue.notes                    ?? '',
+      relationToSenior:         formValue.relationToSenior         ?? '',
+      emergencyContactName:     formValue.emergencyContactName     ?? '',
+      emergencyContactRelation: formValue.emergencyContactRelation ?? '',
+      emergencyContactPhone:    formValue.emergencyContactPhone    ?? '',
+      importantNotes:           formValue.importantNotes           ?? ''
+    });
+
+    const onSuccess = (userId: number) => {
+      this.loading = false;
+      if (this.isGoogleUser) {
+        localStorage.setItem('user_role', 'CLIENT');
+      }
+      this.router.navigate(['/biometric-verification'], {
+        state: {
+          clientData: {
+            id: userId,
+            fullName: `${formValue.userName} ${formValue.lastName}`
+          },
+          userRole: 'client'
+        }
+      });
+    };
+
+    const onError = (error: any) => {
+      this.loading = false;
+      const status = error?.status;
+      const msg = error?.error?.error || error?.error?.message || '';
+
+      if (status === 409 || msg.toLowerCase().includes('ya existe') || msg.toLowerCase().includes('already')) {
+        this.errorMessage = 'Este correo ya está registrado. Intentá con otro.';
+      } else if (status === 0) {
+        this.errorMessage = 'No se pudo conectar con el servidor.';
+      } else {
+        this.errorMessage = msg || 'Ocurrió un error al registrar.';
+      }
+      this.cdr.detectChanges();
     };
 
     if (existingUserId) {
-      // Usuario de Google: actualizar rol a CLIENT (1) y luego crear perfil
+      // ── Usuario Google: actualizar rol y crear perfil ──
       this.authService.updateUserRole(existingUserId, 1).pipe(
-        switchMap(() => createProfile(Number(existingUserId)))
+        switchMap(() => this.profileService.createClientProfile(buildProfile(Number(existingUserId))))
       ).subscribe({
-        next: () => {
-          this.loading = false;
-          localStorage.setItem('user_role', 'CLIENT');
-          this.router.navigate(['/biometric-verification'], {
-            state: {
-              clientData: { id: Number(existingUserId), fullName: `${formValue.userName} ${formValue.lastName}` },
-              userRole: 'client'
-            }
-          });
-        },
-        error: (error: any) => {
-          this.loading = false;
-          this.errorMessage = error?.error?.message || 'Ocurrió un error al crear el perfil.';
-          console.error(error);
-        }
+        next: () => onSuccess(Number(existingUserId)),
+        error: onError
       });
     } else {
-      // Registro normal
+      // ── Registro normal ──
       let capturedUserId: number;
       const userData: RegisterUserRequest = {
         roleId:   1,
@@ -120,23 +144,11 @@ export class RegisterClient implements OnInit {
       this.authService.register(userData).pipe(
         switchMap((userResponse) => {
           capturedUserId = userResponse.id;
-          return createProfile(userResponse.id);
+          return this.profileService.createClientProfile(buildProfile(userResponse.id));
         })
       ).subscribe({
-        next: () => {
-          this.loading = false;
-          this.router.navigate(['/biometric-verification'], {
-            state: {
-              clientData: { id: capturedUserId, fullName: `${formValue.userName} ${formValue.lastName}` },
-              userRole: 'client'
-            }
-          });
-        },
-        error: (error: any) => {
-          this.loading = false;
-          this.errorMessage = error?.error?.message || 'Ocurrió un error al registrar.';
-          console.error(error);
-        }
+        next: () => onSuccess(capturedUserId),
+        error: onError
       });
     }
   }

@@ -1,11 +1,12 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ServiceService, Service, ServiceStats } from '../../services/service.service';
+import { NavbarComponent } from '../../components/navbar/navbar';
 
 @Component({
   selector: 'app-myservices',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, NavbarComponent],
   templateUrl: './myservices.component.html',
   styleUrls: ['./myservices.component.css']
 })

@@ -1,52 +1,54 @@
-<div class="flex">
+<div class="flex overflow-hidden">
   <app-navbar [role]="role"></app-navbar>
 
-  <div class="flex-1 lg:ml-64 p-8 bg-gray-50 min-h-screen">
-    <div class="flex-1 p-8 bg-gray-50 min-h-screen">
-      <button (click)="goBack()" class="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-6">
+  <div class="flex-1 lg:ml-64 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8 bg-gray-50 min-h-screen overflow-x-hidden">
+    <div class="flex-1">
+      <button (click)="goBack()" class="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-4 sm:mb-6">
         <ng-icon name="heroArrowLeft" size="18"></ng-icon>
         Volver al dashboard
       </button>
-      <h1 class="text-2xl font-bold mb-1">Gestión de Usuarios</h1>
-      <p class="text-gray-500 mb-6">Activa o desactiva usuarios según sea necesario</p>
+      <h1 class="text-xl sm:text-2xl font-bold mb-1">Gestión de Usuarios</h1>
+      <p class="text-gray-500 text-sm sm:text-base mb-4 sm:mb-6">Activa o desactiva usuarios según sea necesario</p>
 
-      <div class="flex gap-6">
+      <div class="flex flex-col lg:flex-row gap-4 sm:gap-6">
 
         <!-- Lista izquierda -->
-        <div class="w-80 flex-shrink-0">
+        <div class="w-full lg:w-80 flex-shrink-0">
           <div class="bg-white rounded-xl shadow-sm overflow-hidden">
 
             <div class="flex items-center justify-between p-4 border-b">
-              <span class="font-semibold">Usuarios</span>
+              <span class="font-semibold text-sm sm:text-base">Usuarios</span>
               <span class="bg-blue-100 text-blue-600 text-xs font-bold px-2 py-1 rounded-full">
               {{ users.length }}
             </span>
             </div>
 
-            <div *ngIf="users.length === 0" class="p-6 text-center text-gray-400">
+            <div *ngIf="users.length === 0" class="p-6 text-center text-gray-400 text-sm">
               No hay usuarios
             </div>
 
-            <div
-              *ngFor="let user of users"
-              (click)="selectUser(user)"
-              class="flex items-center gap-3 p-4 border-b cursor-pointer hover:bg-gray-50 transition"
-              [ngClass]="{
-              'bg-emerald-50 border-l-4 border-l-emerald-500':
-              selectedUser?.userId === user.userId
-            }"
-            >
-              <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                <ng-icon name="heroUser" size="20"></ng-icon>
-              </div>
+            <div class="max-h-64 lg:max-h-[calc(100vh-300px)] overflow-y-auto">
+              <div
+                *ngFor="let user of users"
+                (click)="selectUser(user)"
+                class="flex items-center gap-3 p-3 sm:p-4 border-b cursor-pointer hover:bg-gray-50 transition"
+                [ngClass]="{
+                'bg-emerald-50 border-l-4 border-l-emerald-500':
+                selectedUser?.userId === user.userId
+              }"
+              >
+                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                  <ng-icon name="heroUser" size="20"></ng-icon>
+                </div>
 
-              <div>
-                <p class="font-medium text-sm">{{ user.fullName }}</p>
-                <p class="text-xs text-gray-500">{{ user.email }}</p>
-                <p class="text-xs mt-1"
-                   [ngClass]="user.userState === 'active' ? 'text-emerald-600' : 'text-red-500'">
-                  {{ user.userState === 'active' ? 'Activo' : 'Inactivo' }}
-                </p>
+                <div class="min-w-0">
+                  <p class="font-medium text-sm truncate">{{ user.fullName }}</p>
+                  <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
+                  <p class="text-xs mt-1"
+                     [ngClass]="user.userState === 'active' ? 'text-emerald-600' : 'text-red-500'">
+                    {{ user.userState === 'active' ? 'Activo' : 'Inactivo' }}
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -54,18 +56,18 @@
         </div>
 
         <!-- Detalle -->
-        <div class="flex-1 bg-white rounded-xl shadow-sm p-6">
+        <div class="flex-1 bg-white rounded-xl shadow-sm p-4 sm:p-6 min-w-0">
 
-          <div *ngIf="!selectedUser" class="text-center text-gray-400">
+          <div *ngIf="!selectedUser" class="text-center text-gray-400 text-sm sm:text-base min-h-48 flex items-center justify-center">
             Selecciona un usuario
           </div>
 
           <div *ngIf="selectedUser">
 
-            <h2 class="text-xl font-bold mb-4">{{ selectedUser.fullName }}</h2>
+            <h2 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 break-words">{{ selectedUser.fullName }}</h2>
 
-            <div class="mb-6 text-sm text-gray-600">
-              <p><strong>Email:</strong> {{ selectedUser.email }}</p>
+            <div class="mb-4 sm:mb-6 text-sm text-gray-600 space-y-1">
+              <p class="break-words"><strong>Email:</strong> {{ selectedUser.email }}</p>
               <p>
                 <strong>Estado:</strong>
                 <span [ngClass]="selectedUser.userState === 'active' ? 'text-emerald-600' : 'text-red-500'">
@@ -75,11 +77,11 @@
               <p><strong>Rol:</strong> {{ selectedUser.role }}</p>
             </div>
 
-            <div class="flex gap-3">
+            <div class="flex flex-wrap gap-2 sm:gap-3">
               <button
                 *ngIf="selectedUser.userState !== 'active'"
                 (click)="activateUser()"
-                class="bg-emerald-500 text-white px-6 py-2 rounded-lg hover:bg-emerald-600"
+                class="bg-emerald-500 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-emerald-600 text-sm font-medium"
               >
                 Activar
               </button>
@@ -87,7 +89,7 @@
               <button
                 *ngIf="selectedUser.userState === 'active'"
                 (click)="deactivateUser()"
-                class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600"
+                class="bg-red-500 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-red-600 text-sm font-medium"
               >
                 Desactivar
               </button>

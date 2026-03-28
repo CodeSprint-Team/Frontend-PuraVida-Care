@@ -47,22 +47,24 @@ export class QuickActions {
 
   adminActions = [
     { title: 'Aprobar proveedores', description: '8 pendientes',           icon: 'heroCheckBadge',   color: 'orange', route: '/admin/provider-requests' },
-    { title: 'Gestionar categorías', description: 'Crear y editar categorías', icon: 'heroFolderOpen', color: 'purple', route: '/admin-dashboard' },
+    { title: 'Gestionar categorías', description: 'Crear y editar categorías', icon: 'heroFolderOpen', color: 'purple', route: '/admin/services' },
     { title: 'Configurar comisión', description: 'Ajustar porcentaje',     icon: 'heroCurrencyDollar', color: 'blue',  route: '/admin-dashboard' },
     { title: 'Ver reportes',        description: 'Métricas y estadísticas', icon: 'heroChartBar',     color: 'green',  route: '/admin-dashboard' },
   ];
 
-  get actions() {
-    if (this.role === 'admin') {
-      return [
-        { title: 'Aprobar proveedores',  description: `${this.pendingCount} pendientes`, icon: 'heroCheckBadge',    color: 'orange', route: '/admin/provider-requests' },
-        { title: 'Gestionar categorías', description: 'Crear y editar categorías',       icon: 'heroFolderOpen',    color: 'purple', route: '/admin-dashboard'         },
-        { title: 'Configurar comisión',  description: 'Ajustar porcentaje',              icon: 'heroCurrencyDollar', color: 'blue',  route: '/admin-dashboard'         },
-        { title: 'Ver reportes',         description: 'Métricas y estadísticas',         icon: 'heroChartBar',      color: 'green',  route: '/admin-dashboard'         },
-      ];
+    get actions() {
+      if (this.role === 'admin') {
+        return [
+          { title: 'Aprobar proveedores',  description: `${this.pendingCount} pendientes`, icon: 'heroCheckBadge',     color: 'orange', route: '/admin/provider-requests' },
+          { title: 'Gestionar categorías', description: 'Crear y editar categorías',       icon: 'heroFolderOpen',     color: 'purple', route: '/admin-dashboard'         },
+          { title: 'Configurar comisión',  description: 'Ajustar porcentaje',              icon: 'heroCurrencyDollar', color: 'blue',   route: '/admin-dashboard'         },
+          { title: 'Ver reportes',         description: 'Métricas y estadísticas',         icon: 'heroChartBar',       color: 'green',  route: '/admin-dashboard'         },
+          { title: 'Gestionar usuarios',   description: 'Activar y Desactivar Usuarios',  icon: 'heroUser',           color: 'pink',   route: '/admin/users'             },
+          { title: 'Gestionar Servicios',  description: 'Activar y Desactivar Servicios', icon: 'heroDocumentText',   color: 'yellow', route: '/admin/services'          },
+        ];
+      }
+      return this.providerActions;
     }
-    return this.providerActions;
-  }
 
   providerActions = [
     { title: 'Crear servicio',  description: 'Publicar nueva oferta', icon: 'heroPlus',           color: 'green',  route: '/provider-dashboard' },

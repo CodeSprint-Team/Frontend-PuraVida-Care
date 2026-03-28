@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { switchMap } from 'rxjs';
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../../services/auth/auth/auth';
 import { ProfileService } from '../../services/profile/profile';
 import { RegisterUserRequest } from '../../interfaces/auth/register-user-request.interface';
 import { ProviderProfileCreateRequest } from '../../interfaces/profile/provider-profile-create.interface';
@@ -20,17 +20,20 @@ export class RegisterProvider implements OnInit {
   private readonly authService    = inject(AuthService);
   private readonly profileService = inject(ProfileService);
   private readonly router         = inject(Router);
+  private readonly cdr            = inject(ChangeDetectorRef);
 
   loading        = false;
   errorMessage   = '';
   successMessage = '';
+  showPassword   = false;
   isGoogleUser   = false;
 
   registerForm = this.fb.group({
     userName:              ['', [Validators.required]],
     lastName:              ['', [Validators.required]],
-    email:                 ['', [Validators.required, Validators.email]],
-    password:              ['', [Validators.required, Validators.minLength(6)]],
+    email:                 ['', [Validators.required, Validators.email,
+                                Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]],
+    password:              ['', [Validators.required, Validators.minLength(8)]],
     providerTypeId:        [2, [Validators.required]],
     experienceDescription: ['', [Validators.required]],
     experienceYears:       [0, [Validators.required, Validators.min(0)]],
@@ -57,9 +60,15 @@ export class RegisterProvider implements OnInit {
     }
   }
 
+  isInvalid(field: string): boolean {
+    const control = this.registerForm.get(field);
+    return !!(control && control.invalid && (control.touched || control.dirty));
+  }
+
   submit(): void {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
+      this.errorMessage = 'Por favor completá todos los campos obligatorios.';
       return;
     }
 
@@ -70,45 +79,60 @@ export class RegisterProvider implements OnInit {
     const formValue      = this.registerForm.getRawValue();
     const existingUserId = localStorage.getItem('user_id');
 
-    const createProfile = (userId: number) => {
-      const profileData: ProviderProfileCreateRequest = {
-        userId,
-        providerTypeId:        Number(formValue.providerTypeId ?? 2),
-        experienceDescription: formValue.experienceDescription ?? '',
-        experienceYears:       Number(formValue.experienceYears ?? 0),
-        providerState:         /*'pending'*/ 'active', // Para pruebas, se activa directo
-        bio:                   formValue.bio   ?? '',
-        zone:                  formValue.zone  ?? '',
-        phone:                 formValue.phone ?? '',
-        verified:              false,
-        insuranceActive:       false,
-      };
-      return this.profileService.createProviderProfile(profileData);
+    const buildProfile = (userId: number): ProviderProfileCreateRequest => ({
+      userId,
+      providerTypeId:        Number(formValue.providerTypeId ?? 2),
+      experienceDescription: formValue.experienceDescription ?? '',
+      experienceYears:       Number(formValue.experienceYears ?? 0),
+      providerState:         'active',
+      bio:                   formValue.bio   ?? '',
+      zone:                  formValue.zone  ?? '',
+      phone:                 formValue.phone ?? '',
+      verified:              false,
+      insuranceActive:       false,
+    });
+
+    const onSuccess = (userId: number) => {
+      this.loading = false;
+      if (this.isGoogleUser) {
+        localStorage.setItem('user_role', 'PROVIDER');
+      }
+      this.router.navigate(['/biometric-verification'], {
+        state: {
+          providerData: {
+            id: userId,
+            fullName: `${formValue.userName} ${formValue.lastName}`
+          },
+          userRole: 'provider'
+        }
+      });
+    };
+
+    const onError = (error: any) => {
+      this.loading = false;
+      const status = error?.status;
+      const msg = error?.error?.error || error?.error?.message || '';
+
+      if (status === 409 || msg.toLowerCase().includes('ya existe') || msg.toLowerCase().includes('already')) {
+        this.errorMessage = 'Este correo ya está registrado. Intentá con otro.';
+      } else if (status === 0) {
+        this.errorMessage = 'No se pudo conectar con el servidor.';
+      } else {
+        this.errorMessage = msg || 'Ocurrió un error al registrar el perfil.';
+      }
+      this.cdr.detectChanges();
     };
 
     if (existingUserId) {
-      // Usuario de Google: actualizar rol a PROVIDER (2) y luego crear perfil
+      // ── Usuario Google: actualizar rol y crear perfil ──
       this.authService.updateUserRole(existingUserId, 2).pipe(
-        switchMap(() => createProfile(Number(existingUserId)))
+        switchMap(() => this.profileService.createProviderProfile(buildProfile(Number(existingUserId))))
       ).subscribe({
-        next: () => {
-          this.loading = false;
-          localStorage.setItem('user_role', 'PROVIDER');
-          this.router.navigate(['/biometric-verification'], {
-            state: {
-              providerData: { id: Number(existingUserId), fullName: `${formValue.userName} ${formValue.lastName}` },
-              userRole: 'provider'
-            }
-          });
-        },
-        error: (error: any) => {
-          this.loading = false;
-          this.errorMessage = error?.error?.message || 'Ocurrió un error al crear el perfil.';
-          console.error(error);
-        }
+        next: () => onSuccess(Number(existingUserId)),
+        error: onError
       });
     } else {
-      // Registro normal
+      // ── Registro normal ──
       let capturedUserId: number;
       const userData: RegisterUserRequest = {
         roleId:   2,
@@ -121,23 +145,11 @@ export class RegisterProvider implements OnInit {
       this.authService.register(userData).pipe(
         switchMap((userResponse) => {
           capturedUserId = userResponse.id;
-          return createProfile(userResponse.id);
+          return this.profileService.createProviderProfile(buildProfile(userResponse.id));
         })
       ).subscribe({
-        next: () => {
-          this.loading = false;
-          this.router.navigate(['/biometric-verification'], {
-            state: {
-              providerData: { id: capturedUserId, fullName: `${formValue.userName} ${formValue.lastName}` },
-              userRole: 'provider'
-            }
-          });
-        },
-        error: (error: any) => {
-          this.loading = false;
-          this.errorMessage = error?.error?.message || 'Ocurrió un error al registrar el proveedor.';
-          console.error(error);
-        }
+        next: () => onSuccess(capturedUserId),
+        error: onError
       });
     }
   }
