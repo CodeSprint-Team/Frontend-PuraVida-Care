@@ -123,10 +123,9 @@
             class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
             placeholder="Ej: 80000"
           />
-          <p *ngIf="postForm.get('salePrice')?.errors?.['min'] && postForm.get('salePrice')?.touched"
-          class="mt-1 text-sm text-red-500">
-          El precio debe ser mayor a 0.
-        </p>
+          <p *ngIf="campoInvalido('originalPrice')" class="mt-1 text-sm text-red-500">
+            El precio original es obligatorio y debe ser mayor o igual al precio de venta.
+          </p>
         </div>
 
         <div class="md:col-span-2">
@@ -194,14 +193,34 @@
         
 
         <div class="md:col-span-2">
-          <label class="inline-flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-            <input
-              type="checkbox"
-              formControlName="acceptsOffers"
-              class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-            />
-            Acepta ofertas
+          <label class="block text-sm font-medium text-slate-700 mb-2">
+            ¿Acepta ofertas?
           </label>
+
+          <div class="flex justify-center gap-6">
+            <button
+              type="button"
+              (click)="setAcceptsOffers(true)"
+              [ngClass]="{
+                'bg-emerald-600 text-white': postForm.get('acceptsOffers')?.value === true,
+                'bg-slate-100 text-slate-700': postForm.get('acceptsOffers')?.value !== true
+              }"
+              class="px-8 py-4 text-lg font-semibold rounded-xl border shadow-sm transition"            >
+              Sí
+            </button>
+
+            <button
+              type="button"
+              (click)="setAcceptsOffers(false)"
+              [ngClass]="{
+                'bg-red-500 text-white': postForm.get('acceptsOffers')?.value === false,
+                'bg-slate-100 text-slate-700': postForm.get('acceptsOffers')?.value !== false
+              }"
+              class="px-8 py-4 text-lg font-semibold rounded-xl border shadow-sm transition"
+            >
+              No
+            </button>
+          </div>
         </div>
       </div>
 

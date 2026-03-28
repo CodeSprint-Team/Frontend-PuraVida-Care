@@ -90,12 +90,15 @@ export class CreateSupportProductPostComponent implements OnInit,AfterViewInit{
     condition: ['', [Validators.required]],
     salePrice: [null as number | null, [Validators.required, Validators.min(1)]],
     originalPrice: [null as number | null,[Validators.required, Validators.min(1)]],
-    acceptsOffers: [true],
+    acceptsOffers: [false],
     locationLat: [null as number | null, [Validators.required]],
     locationLng: [null as number | null, [Validators.required]],
     locationText: [''],
     usageTimeText: ['']
   });
+  setAcceptsOffers(value: boolean) {
+  this.postForm.patchValue({ acceptsOffers: value });
+}
 
   onFileSelected(event: Event): void {
   const input = event.target as HTMLInputElement;
@@ -209,4 +212,6 @@ export class CreateSupportProductPostComponent implements OnInit,AfterViewInit{
   this.selectedImageName = '';
   this.imagePreview = null;
 }
+
+
 }
