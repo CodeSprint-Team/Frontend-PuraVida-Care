@@ -51,6 +51,8 @@ export class ProviderProfileComponent implements OnInit {
       next: (data: ProviderProfile) => {
         this.provider  = data;
         this.profileId = String(data.id);
+        localStorage.setItem('profile_id', this.profileId);
+        localStorage.setItem('user_id', this.userId);
         this.cdr.detectChanges();
       },
       error: (err: unknown) => {
@@ -74,7 +76,7 @@ export class ProviderProfileComponent implements OnInit {
   }
 
   goToSolicitudes(): void {
-    this.router.navigate(['/proveedor/solicitudes', this.profileId]);
+    this.router.navigate(['/provider-requests-service', this.profileId]);
   }
 
   hireProvider(): void {

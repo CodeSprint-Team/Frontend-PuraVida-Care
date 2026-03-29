@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { NavbarComponent } from '../../components/navbar/navbar';
 import { StatsCards } from '../../components/stats-cards/stats-cards';
 import { QuickActions } from '../../components/quick-actions/quick-actions';
-import { BookingService } from '../solicitudes/services/booking';
+import { ProviderBookingService } from '../../services/provider-booking-service';
 import { ProfileService } from '../viewProfile/services/profile.services';
 
 @Component({
@@ -15,7 +15,7 @@ import { ProfileService } from '../viewProfile/services/profile.services';
   styleUrl: './provider-dashboard.css'
 })
 export class ProviderDashboard implements OnInit {
-  private bookingService = inject(BookingService);
+  private bookingService = inject(ProviderBookingService);
   private profileService = inject(ProfileService);
   private router         = inject(Router);
   private cdr            = inject(ChangeDetectorRef);
@@ -28,22 +28,30 @@ export class ProviderDashboard implements OnInit {
   loaded            = false;
 
   ngOnInit(): void {
-    const userId = Number(localStorage.getItem('user_id') ?? '0');
+    // Primero intentar con profile_id
+    const storedProfileId = Number(localStorage.getItem('profile_id') ?? 0);
 
-    if (userId > 0) {
-      this.profileService.getProviderProfileByUserId(userId).subscribe({
-        next: (profile) => {
-          this.providerProfileId = profile.id;
-          localStorage.setItem('profileId', String(profile.id));
-          this.loadStats();
-        },
-        error: () => {
-          this.loaded = true;
-          this.cdr.detectChanges();
-        }
-      });
+    if (storedProfileId > 0) {
+      this.providerProfileId = storedProfileId;
+      this.loadStats();
     } else {
-      this.loaded = true;
+      // Fallback: buscar con user_id
+      const userId = localStorage.getItem('user_id') ?? '0';
+      if (Number(userId) > 0) {
+        this.profileService.getProviderProfileByUserId(userId).subscribe({
+          next: (profile) => {
+            this.providerProfileId = profile.id;
+            localStorage.setItem('profile_id', String(profile.id));
+            this.loadStats();
+          },
+          error: () => {
+            this.loaded = true;
+            this.cdr.detectChanges();
+          }
+        });
+      } else {
+        this.loaded = true;
+      }
     }
   }
 
@@ -51,8 +59,8 @@ export class ProviderDashboard implements OnInit {
     this.bookingService.getBookingsByProvider(this.providerProfileId).subscribe({
       next: (bookings) => {
         this.totalCount    = bookings.length;
-        this.pendingCount  = bookings.filter(b => b.bookingStatus === 'pending').length;
-        this.acceptedCount = bookings.filter(b => b.bookingStatus === 'accepted').length;
+        this.pendingCount  = bookings.filter(b => b.bookingStatus === 'PENDIENTE').length;
+        this.acceptedCount = bookings.filter(b => b.bookingStatus === 'ACEPTADA').length;
         this.loaded        = true;
         this.cdr.detectChanges();
       },
@@ -64,7 +72,7 @@ export class ProviderDashboard implements OnInit {
   }
 
   goToSolicitudes(): void {
-    this.router.navigate(['/proveedor/solicitudes', this.providerProfileId]);
+    this.router.navigate(['/provider-requests-service', this.providerProfileId]);
   }
 
   goToProfile(): void {

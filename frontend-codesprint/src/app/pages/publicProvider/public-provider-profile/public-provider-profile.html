@@ -4,9 +4,6 @@
   <main class="lg:ml-64 pb-24 lg:pb-8">
     <div class="container mx-auto px-6 py-8 max-w-5xl">
 
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <!-- SKELETON                                                   -->
-      <!-- ══════════════════════════════════════════════════════════ -->
       <ng-container *ngIf="!provider && !errorMessage">
 
         <div class="h-6 w-36 bg-gray-200 rounded-xl animate-pulse mb-6"></div>
@@ -197,6 +194,43 @@
           <div *ngIf="!provider.reviewsList || provider.reviewsList.length === 0"
                class="bg-white rounded-2xl shadow-sm p-8 text-center text-gray-400 border border-gray-100">
             <p class="text-sm">Aún no hay reseñas para este proveedor.</p>
+          </div>
+
+          <!-- ── Distribución de reseñas ──────────────────────────────── -->
+          <div *ngIf="provider.reviewsList && provider.reviewsList.length > 0"
+              class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 mb-6">
+
+          <div class="flex flex-col md:flex-row gap-8 items-center">
+
+            <!-- Promedio grande -->
+            <div class="text-center md:border-r md:border-gray-200 md:pr-8">
+              <p class="text-5xl font-bold text-gray-900">{{ ratingDisplay }}</p>
+              <div class="flex items-center justify-center gap-1 mt-2 mb-1">
+                <ng-container *ngFor="let star of getStarsArray(provider.averageRating ?? 0)">
+                  <ng-icon name="heroStar" class="text-lg"
+                    [ngClass]="star ? 'text-yellow-500' : 'text-gray-300'">
+                  </ng-icon>
+                </ng-container>
+              </div>
+              <p class="text-sm text-gray-500">{{ provider.totalReviews ?? 0 }} reseñas</p>
+            </div>
+
+            <!-- Barras de porcentaje -->
+            <div class="flex-1 w-full space-y-2">
+              <div *ngFor="let bar of ratingBars"
+                    class="flex items-center gap-3">
+                <span class="text-sm font-medium text-gray-600 w-6 text-right">{{ bar.stars }}</span>
+                <ng-icon name="heroStar" class="text-sm text-yellow-500"></ng-icon>
+                <div class="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                  <div class="bg-yellow-400 h-full rounded-full transition-all duration-500"
+                        [style.width.%]="bar.percentage">
+                  </div>
+                </div>
+                <span class="text-sm text-gray-500 w-12 text-right">{{ bar.percentage }}%</span>
+              </div>
+            </div>
+
+          </div>
           </div>
 
           <div *ngIf="provider.reviewsList && provider.reviewsList.length > 0"
