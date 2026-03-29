@@ -61,15 +61,17 @@ export class PublicProviderProfileComponent implements OnInit {
   }));
 }
 
-  // ✅ Vuelve a explorar, no al perfil del proveedor
+  // Vuelve a explorar, no al perfil del proveedor
   goBack(): void {
     this.router.navigate(['/explorar']);
   }
 
-  hireProvider(): void {
-    this.router.navigate(['/seleccionar-servicio', this.providerId]);
+  hireProvider() {
+    const providerId = this.provider?.id;
+    if (providerId) {
+      this.router.navigate(['/select-service'], { queryParams: { providerId: providerId.toString() } });
+    }
   }
-
   hasProfileImage(): boolean {
     return !!this.provider?.profileImage;
   }
