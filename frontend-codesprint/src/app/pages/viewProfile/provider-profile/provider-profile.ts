@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { NavbarComponent } from '../../../components/navbar/navbar';
 import { ProfileService } from '../services/profile.services';
-import { AuthService } from '../../../services/auth/auth/auth';
+import { AuthService } from '../../../services/auth.service';
 import { ProviderProfile } from '../models/provider-profile.model';
 import {
   heroArrowLeft, heroCheckBadge, heroMapPin, heroShieldCheck,

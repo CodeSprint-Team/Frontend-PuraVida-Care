@@ -3,7 +3,7 @@ import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { switchMap } from 'rxjs';
-import { AuthService } from '../../services/auth/auth/auth';
+import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile/profile';
 import { RegisterUserRequest } from '../../interfaces/auth/register-user-request.interface';
 import { ClientProfileCreateRequest } from '../../interfaces/profile/client-profile-create.interface';
