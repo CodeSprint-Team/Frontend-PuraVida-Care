@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../../../components/navbar/navbar';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { ProfileService } from '../services/profile.services';
-import { AuthService } from '../../../services/auth/auth/auth';
+import { AuthService } from '../../../services/auth.service';
 import { SeniorProfile, FavoriteProviderDTO } from '../models/senior-profile.model';
 import {
   heroPencilSquare, heroUser, heroPhone, heroEnvelope,
@@ -48,11 +48,12 @@ export class ProfileComponent implements OnInit {
     this.errorMessage = '';
     // Carga por userId usando el endpoint by-user
     this.profileService.getSeniorProfileByUserId(this.userId).subscribe({
-      next: (profile) => {
+    next: (profile) => {
         this.profileData = profile;
-        this.profileId   = String(profile.id);
+        this.profileId = String(profile.id);
+        localStorage.setItem('profile_id', this.profileId); // ← Después de asignarlo
         this.cdr.detectChanges();
-      },
+    },
       error: (err) => {
         console.error('Error cargando perfil:', err);
         this.errorMessage = 'No se pudo cargar el perfil. Intenta nuevamente.';
@@ -88,4 +89,8 @@ export class ProfileComponent implements OnInit {
   hasProfileImage(): boolean {
     return !!this.profileData?.profileImage;
   }
+
+  goToMyServices(): void {
+  this.router.navigate(['/my-completed-services']);
+}
 }

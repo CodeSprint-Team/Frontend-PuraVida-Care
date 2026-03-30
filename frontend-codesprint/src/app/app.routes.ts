@@ -41,6 +41,10 @@ import { ProviderDashboard } from './pages/provider-dashboard/provider-dashboard
 import { ExplorarServiciosComponent } from './pages/explore/explore-services/explore-services';
 import { PublicProviderProfileComponent } from './pages/publicProvider/public-provider-profile/public-provider-profile';
 import { AdminServices } from './pages/admin-services/admin-services';
+import { AdminProfileComponent } from './pages/viewProfile/admin-profile/admin-profile';
+import { AdminProfileEditComponent } from './pages/viewProfile/admin-profile-edit/admin-profile-edit';
+import { MyCompletedServicesComponent } from './pages/my-completed-services/my-completed-services';
+import { CreateReviewComponent } from './pages/create-review/create-review';
 
 export const routes: Routes = [
   // General
@@ -107,6 +111,15 @@ export const routes: Routes = [
     path: 'my-services',
     component: MyServicesComponent
   },
+  {
+    path: 'my-completed-services',
+    component: MyCompletedServicesComponent
+  },
+  {
+    path: 'create-review/:providerId',
+    component: CreateReviewComponent
+  },
+
 
   { path: '**', redirectTo: 'landing' }
 
