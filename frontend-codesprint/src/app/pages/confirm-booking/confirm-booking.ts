@@ -31,20 +31,35 @@ export class ConfirmBooking implements OnInit {
   provider: any;
   selectedService: any;
 
-  fecha             = '';
-  hora              = '';
-  origen            = '';
-  destino           = '';
-  notas             = '';
+  fecha              = '';
+  hora               = '';
+  origen             = '';
+  destino            = '';
+  notas              = '';
   contactoEmergencia = '';
-  marcarFavorito    = false;
+  marcarFavorito     = false;
 
   errorMessage = '';
   loading      = false;
   submitted    = false;
 
+  get fechaEsPasada(): boolean {
+    if (!this.fecha) return false;
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const fechaIngresada = new Date(this.fecha + 'T00:00:00');
+    return fechaIngresada < hoy;
+  }
+
   get formValido(): boolean {
-    return !!this.fecha && !!this.hora && !!this.origen && !!this.destino && !!this.contactoEmergencia;
+    return (
+      !!this.fecha &&
+      !!this.hora &&
+      !!this.origen &&
+      !!this.destino &&
+      !!this.contactoEmergencia &&
+      !this.fechaEsPasada
+    );
   }
 
   get totalEstimado(): string {
@@ -84,18 +99,18 @@ export class ConfirmBooking implements OnInit {
     this.loading = true;
 
     const payload = {
-      providerId: this.providerId,
-      serviceId:  this.serviceId,
-      fecha:      this.fecha,
-      hora:       this.hora,
-      origen:     this.origen,
-      destino:    this.destino,
-      notas:      this.notas,
+      providerId:         this.providerId,
+      serviceId:          this.serviceId,
+      fecha:              this.fecha,
+      hora:               this.hora,
+      origen:             this.origen,
+      destino:            this.destino,
+      notas:              this.notas,
       contactoEmergencia: this.contactoEmergencia,
       marcarFavorito:     this.marcarFavorito
     };
 
-//ajustar endpoint para realizar la reserva, actualmente es un placeholder
+    // Ajustar endpoint para realizar la reserva, actualmente es un placeholder
     this.http.post('/api/bookings', payload).subscribe({
       next: () => {
         this.loading = false;
