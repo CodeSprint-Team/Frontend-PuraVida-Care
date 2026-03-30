@@ -3,14 +3,14 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProfileService } from '../services/profile.services';
-import { AuthService } from '../../../services/auth/auth/auth';
+import { AuthService } from '../../../services/auth.service';
 import { FamilyProfile } from '../models/family-profile.model';
 import { NavbarComponent } from '../../../components/navbar/navbar';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   heroPencilSquare, heroUser, heroPhone, heroEnvelope, heroUsers,
   heroExclamationTriangle, heroShieldCheck, heroDocumentText, heroPhoto,
-  heroArrowRightOnRectangle
+  heroArrowRightOnRectangle, heroStar
 } from '@ng-icons/heroicons/outline';
 
 @Component({
@@ -20,7 +20,7 @@ import {
   viewProviders: [provideIcons({
     heroPencilSquare, heroUser, heroPhone, heroEnvelope, heroUsers,
     heroExclamationTriangle, heroShieldCheck, heroDocumentText, heroPhoto,
-    heroArrowRightOnRectangle
+    heroArrowRightOnRectangle, heroStar
   })],
   templateUrl: './family-profile.html',
   styleUrl: './family-profile.css',
@@ -42,7 +42,7 @@ export class FamilyProfileComponent implements OnInit {
     this.loadProfile();
   }
 
-  loadProfile(): void {
+loadProfile(): void {
     this.errorMessage = '';
     this.profileService.getFamilyProfileByUserId(this.userId).subscribe({
       next: (data) => {
@@ -55,6 +55,7 @@ export class FamilyProfileComponent implements OnInit {
           relationToSenior:  data.relationToSenior         ?? '',
         };
         this.profileId = String(data.id);
+        localStorage.setItem('profile_id', this.profileId); // ← Esta línea
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -76,4 +77,8 @@ export class FamilyProfileComponent implements OnInit {
   hasProfileImage(): boolean {
     return !!this.profile?.profileImage;
   }
+
+  goToMyServices(): void {
+  this.router.navigate(['/my-completed-services']);
+}
 }
