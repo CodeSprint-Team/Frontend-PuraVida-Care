@@ -43,8 +43,15 @@ import { PublicProviderProfileComponent } from './pages/publicProvider/public-pr
 import { AdminServices } from './pages/admin-services/admin-services';
 import { AdminProfileComponent } from './pages/viewProfile/admin-profile/admin-profile';
 import { AdminProfileEditComponent } from './pages/viewProfile/admin-profile-edit/admin-profile-edit';
+
+//Bienes de apoyo
+import { CreateSupportProductPostComponent } from './pages/create-support-product-post/create-support-product-post';
+import { SupportProductsMarketplace } from './pages/support-products-marketplace/support-products-marketplace';
+import { SupportProductDetail } from './pages/support-product-detail/support-product-detail';
+=======
 import { MyCompletedServicesComponent } from './pages/my-completed-services/my-completed-services';
 import { CreateReviewComponent } from './pages/create-review/create-review';
+
 
 export const routes: Routes = [
   // General
@@ -88,6 +95,11 @@ export const routes: Routes = [
   { path: 'explorar',      component: ExplorarServiciosComponent },
   { path: 'proveedor/:id', component: PublicProviderProfileComponent },
 
+  { path: 'support-products/create', component: CreateSupportProductPostComponent },
+  { path: 'support-products', component: SupportProductsMarketplace },
+  {path: 'support-products/:id', component: SupportProductDetail },
+
+
 
   { path: 'admin-dashboard/providers',
     component: AdminDashboard
@@ -129,5 +141,6 @@ export const routes: Routes = [
 
 
  
+
 
 

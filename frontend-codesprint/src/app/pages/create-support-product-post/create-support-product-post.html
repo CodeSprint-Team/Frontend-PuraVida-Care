@@ -1,0 +1,246 @@
+<div class="min-h-screen bg-slate-50 py-10 px-4">
+  <div class="mx-auto w-full max-w-4xl rounded-3xl bg-white shadow-xl ring-1 ring-slate-200 overflow-hidden">
+    <div class="bg-emerald-600 px-6 py-5 text-white">
+      <h1 class="text-2xl font-bold">Publicar bien de apoyo</h1>
+      <p class="mt-1 text-sm text-emerald-50">
+        Completá la información del artículo y agregá una imagen.
+      </p>
+    </div>
+
+    <form [formGroup]="postForm" (ngSubmit)="submit()" class="p-6 md:p-8 space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-700">
+            Categoría
+          </label>
+
+          <select
+            formControlName="supportProductCatalogId"
+            class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+          >
+            <option value="">Seleccionar categoría</option>
+
+            <option *ngFor="let cat of categories" [value]="cat.id">
+              {{ cat.name }}
+            </option>
+          </select>
+
+          <p *ngIf="campoInvalido('supportProductCatalogId')" class="mt-1 text-sm text-red-500">
+            La categoría es obligatoria.
+          </p>
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-700">ID del usuario</label>
+          <input
+            type="number"
+            formControlName="userId"
+            class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+            placeholder="Ej: 2"
+          />
+          <p *ngIf="campoInvalido('userId')" class="mt-1 text-sm text-red-500">
+            El usuario es obligatorio.
+          </p>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="mb-2 block text-sm font-medium text-slate-700">Título</label>
+          <input
+            type="text"
+            formControlName="title"
+            class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+            placeholder="Ej: Silla de ruedas en buen estado"
+          />
+          <p *ngIf="campoInvalido('title')" class="mt-1 text-sm text-red-500">
+            El título es obligatorio.
+          </p>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="mb-2 block text-sm font-medium text-slate-700">Descripción</label>
+          <textarea
+            formControlName="description"
+            rows="4"
+            class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+            placeholder="Describí el bien de apoyo, su estado y detalles importantes"
+          ></textarea>
+          <p *ngIf="campoInvalido('description')" class="mt-1 text-sm text-red-500">
+            La descripción es obligatoria.
+          </p>
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-700">Condición</label>
+
+          <select
+            formControlName="condition"
+            class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+          >
+            <option value="">Seleccionar condición</option>
+            <option value="NEW">Nuevo</option>
+            <option value="USED">Usado</option>
+          </select>
+
+          <p *ngIf="campoInvalido('condition')" class="mt-1 text-sm text-red-500">
+            La condición es obligatoria.
+          </p>
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-700">Tiempo de uso</label>
+          <input
+            type="text"
+            formControlName="usageTimeText"
+            [readonly]="isNewCondition"
+            class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 disabled:bg-slate-100 disabled:text-slate-500"
+            placeholder="Ej: 6 meses"
+          />
+
+          <p *ngIf="isNewCondition" class="mt-1 text-xs text-slate-500">
+            Si el artículo es nuevo, el tiempo de uso se fija automáticamente en 0.
+          </p>
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-700">Precio de venta</label>
+          <input
+            type="number"
+            formControlName="salePrice"
+            class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+            placeholder="Ej: 50000"
+          />
+          <p *ngIf="campoInvalido('salePrice')" class="mt-1 text-sm text-red-500">
+            El precio de venta es obligatorio.
+          </p>
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-700">Precio original</label>
+          <input
+            type="number"
+            formControlName="originalPrice"
+            class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+            placeholder="Ej: 80000"
+          />
+          <p *ngIf="campoInvalido('originalPrice')" class="mt-1 text-sm text-red-500">
+            El precio original es obligatorio y debe ser mayor o igual al precio de venta.
+          </p>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="mb-2 block text-sm font-medium text-slate-700">
+            Ubicación (click en el mapa)
+          </label>
+
+          <div id="map" class="w-full h-75 rounded-xl border"></div>
+
+          <p class="mt-2 text-xs text-slate-500">
+            Hacé click en el mapa para seleccionar la ubicación.
+          </p>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="mb-2 block text-sm font-medium text-slate-700">Ubicación</label>
+          <input
+            type="text"
+            formControlName="locationText"
+            class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+            placeholder="Ej: Casa de 2 plantas, color azul, cerca del parque"
+          />
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="mb-2 block text-sm font-medium text-slate-700">Imagen</label>
+
+          <label
+            class="relative flex h-64 cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 hover:border-emerald-400 hover:bg-emerald-50 transition"
+          >
+            <input
+              type="file"
+              accept="image/*"
+              (change)="onFileSelected($event)"
+              class="hidden"
+            />
+
+            <img
+              *ngIf="imagePreview"
+              [src]="imagePreview"
+              class="absolute inset-0 h-full w-full object-cover"
+            />
+
+            <div *ngIf="!imagePreview" class="text-center px-4">
+              <p class="text-sm font-medium text-slate-700">
+                Seleccioná una imagen
+              </p>
+              <p class="mt-1 text-xs text-slate-500">
+                JPG, PNG o WEBP
+              </p>
+            </div>
+
+            <button
+              *ngIf="imagePreview"
+              type="button"
+              (click)="removeImage(); $event.stopPropagation()"
+              class="absolute top-2 right-2 bg-black/60 text-white text-xs px-3 py-1 rounded-lg hover:bg-black/80"
+            >
+              Quitar
+            </button>
+          </label>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-slate-700 mb-2">
+            ¿Acepta ofertas?
+          </label>
+
+          <div class="flex justify-center gap-6">
+            <button
+              type="button"
+              (click)="setAcceptsOffers(true)"
+              [ngClass]="{
+                'bg-emerald-600 text-white': postForm.get('acceptsOffers')?.value === true,
+                'bg-slate-100 text-slate-700': postForm.get('acceptsOffers')?.value !== true
+              }"
+              class="px-8 py-4 text-lg font-semibold rounded-xl border shadow-sm transition"
+            >
+              Sí
+            </button>
+
+            <button
+              type="button"
+              (click)="setAcceptsOffers(false)"
+              [ngClass]="{
+                'bg-red-500 text-white': postForm.get('acceptsOffers')?.value === false,
+                'bg-slate-100 text-slate-700': postForm.get('acceptsOffers')?.value !== false
+              }"
+              class="px-8 py-4 text-lg font-semibold rounded-xl border shadow-sm transition"
+            >
+              No
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="errorMessage" class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        {{ errorMessage }}
+      </div>
+
+      <div *ngIf="successMessage" class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+        {{ successMessage }}
+      </div>
+
+      <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+        <div *ngIf="successMessage" class="mb-4 rounded-xl bg-emerald-100 text-emerald-700 px-4 py-3 text-sm font-medium">
+          {{ successMessage }}
+        </div>
+        <button
+          type="submit"
+          [disabled]="loading"
+          class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {{ loading ? 'Publicando...' : 'Crear publicación' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
