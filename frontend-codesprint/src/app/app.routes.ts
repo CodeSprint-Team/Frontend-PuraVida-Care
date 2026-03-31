@@ -52,6 +52,7 @@ import { SupportProductDetail } from './pages/support-product-detail/support-pro
 import { MyCompletedServicesComponent } from './pages/my-completed-services/my-completed-services';
 import { CreateReviewComponent } from './pages/create-review/create-review';
 import { AdminProductSupportCatalog } from './pages/admin-product-support-catalog/admin-product-support-catalog';
+import { AdminServiceCategory } from './pages/admin-service-category/admin-service-category';
 
 
 export const routes: Routes = [
@@ -134,6 +135,10 @@ export const routes: Routes = [
   },
   {path: 'admin/product-support-catalog',
     component: AdminProductSupportCatalog      
+  },
+  {
+    path: 'admin/service-categories',
+    component: AdminServiceCategory
   },
 
 
