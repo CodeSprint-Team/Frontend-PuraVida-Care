@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, AfterViewInit, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, AfterViewInit, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { SupportProductService } from '../../services/support-product/support-product';
 import { SupportProductPostRequest } from '../../interfaces/support-product/support-product.interface';
 import * as L from 'leaflet';
+import { SupportProductCatalogResponse, SupportProductCatalogService } from '../../services/support-product/SupportProductCatalogService';
 
 @Component({
   selector: 'app-create-support-product-post',
@@ -17,10 +18,13 @@ export class CreateSupportProductPostComponent implements OnInit, AfterViewInit,
   private readonly fb = inject(FormBuilder);
   private readonly supportProductService = inject(SupportProductService);
   private readonly router = inject(Router);
+  private readonly catalogService = inject(SupportProductCatalogService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   map!: L.Map;
   marker!: L.Marker;
   loading = false;
+  loadingCategories = true;
   errorMessage = '';
   successMessage = '';
   selectedImage: File | null = null;
@@ -28,16 +32,7 @@ export class CreateSupportProductPostComponent implements OnInit, AfterViewInit,
   isNewCondition = false;
   imagePreview: string | null = null;
 
-  categories = [
-    { id: 1, name: 'Movilidad' },
-    { id: 2, name: 'Ayuda para el hogar' },
-    { id: 3, name: 'Salud y monitoreo' },
-    { id: 4, name: 'Rehabilitación' },
-    { id: 5, name: 'Cuidado personal' },
-    { id: 6, name: 'Tecnología asistiva' },
-    { id: 7, name: 'Ortopedia' },
-    { id: 8, name: 'Otros' }
-  ];
+  categories: SupportProductCatalogResponse[] = [];
 
   postForm = this.fb.group({
     supportProductCatalogId: [null as number | null, [Validators.required]],
@@ -59,6 +54,18 @@ export class CreateSupportProductPostComponent implements OnInit, AfterViewInit,
     if (userId) {
       this.postForm.patchValue({ userId: Number(userId) });
     }
+
+    this.catalogService.getAllActive().subscribe({
+      next: (data) => {
+        this.categories = data;
+        this.loadingCategories = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error cargando categorías:', err);
+        this.loadingCategories = false;
+      }
+    });
 
     this.postForm.get('condition')?.valueChanges.subscribe((value) => {
       const usageTimeControl = this.postForm.get('usageTimeText');
@@ -205,49 +212,53 @@ export class CreateSupportProductPostComponent implements OnInit, AfterViewInit,
       formData.append('image', this.selectedImage);
     }
 
-   this.supportProductService.createPost(formData).subscribe({
-  next: (response) => {
-    this.loading = false;
-    this.successMessage = response.message || 'Publicación creada correctamente.';
+    this.supportProductService.createPost(formData).subscribe({
+      next: (response) => {
+        this.loading = false;
+        this.successMessage = response.message || 'Publicación creada correctamente.';
 
-    this.postForm.reset({
-      supportProductCatalogId: null,
-      userId: localStorage.getItem('user_id') ? Number(localStorage.getItem('user_id')) : null,
-      title: '',
-      description: '',
-      condition: '',
-      salePrice: null,
-      originalPrice: null,
-      acceptsOffers: false,
-      locationLat: null,
-      locationLng: null,
-      locationText: '',
-      usageTimeText: ''
+        this.postForm.reset({
+          supportProductCatalogId: null,
+          userId: localStorage.getItem('user_id') ? Number(localStorage.getItem('user_id')) : null,
+          title: '',
+          description: '',
+          condition: '',
+          salePrice: null,
+          originalPrice: null,
+          acceptsOffers: false,
+          locationLat: null,
+          locationLng: null,
+          locationText: '',
+          usageTimeText: ''
+        });
+
+        this.isNewCondition = false;
+
+        if (this.marker) {
+          this.map.removeLayer(this.marker);
+        }
+
+        this.removeImage();
+
+        setTimeout(() => {
+          this.router.navigate(['/support-products']);
+        }, 1500);
+      },
+      error: (error) => {
+        this.loading = false;
+        this.errorMessage =
+          error?.error?.message || 'Ocurrió un error al crear la publicación.';
+        console.error(error);
+      }
     });
-
-    this.isNewCondition = false;
-
-    if (this.marker) {
-      this.map.removeLayer(this.marker);
-    }
-
-    this.removeImage();
-
-    setTimeout(() => {
-      this.router.navigate(['/support-products']);
-    }, 1500);
-  },
-  error: (error) => {
-    this.loading = false;
-    this.errorMessage =
-      error?.error?.message || 'Ocurrió un error al crear la publicación.';
-    console.error(error);
-  }
-});
   }
 
   campoInvalido(nombre: string): boolean {
     const control = this.postForm.get(nombre);
     return !!control && control.touched && control.invalid;
+  }
+
+  goBack(): void {
+    this.router.navigate(['/support-products']);
   }
 }

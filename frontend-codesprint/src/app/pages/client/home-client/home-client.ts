@@ -94,7 +94,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       description: 'Sillas, camas, equipos médicos nuevos y usados',
       color: 'bg-orange-50',
       iconColor: 'text-orange-600',
-      path: '/bienes-de-apoyo',
+      path: 'support-products',
       featured: true,
     },
   ];
