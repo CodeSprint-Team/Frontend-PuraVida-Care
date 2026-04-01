@@ -40,6 +40,11 @@ import { ProviderDashboard } from './pages/provider-dashboard/provider-dashboard
 // Cliente / Explorar
 import { ExplorarServiciosComponent } from './pages/explore/explore-services/explore-services';
 import { PublicProviderProfileComponent } from './pages/publicProvider/public-provider-profile/public-provider-profile';
+
+import {AgendaCliente} from './pages/agenda-cliente/agenda-cliente';
+import {CalendarioCliente} from './pages/calendario-cliente/calendario-cliente';
+import {DetalleCitaCliente} from './pages/detalle-cita-cliente/detalle-cita-cliente';
+
 import { AdminServices } from './pages/admin-services/admin-services';
 
 import {AdminProfileComponent} from './pages/viewProfile/admin-profile/admin-profile';
@@ -101,10 +106,14 @@ export const routes: Routes = [
   // Proveedor
   { path: 'provider-dashboard',        component: ProviderDashboard },
 
+  //Cliente
+  { path: 'agenda-cliente', component: AgendaCliente },
+  { path: 'calendario-cliente', component: CalendarioCliente },
+  { path: 'detalle-cita-cliente/:id', component: DetalleCitaCliente },
+
   // Explorar
   { path: 'explorar',      component: ExplorarServiciosComponent },
   { path: 'proveedor/:id', component: PublicProviderProfileComponent },
-
   { path: 'support-products/create', component: CreateSupportProductPostComponent },
   { path: 'support-products', component: SupportProductsMarketplace },
   {path: 'support-products/:id', component: SupportProductDetail },
@@ -153,11 +162,4 @@ export const routes: Routes = [
   { path: '**', redirectTo: 'landing' }
 
 ];
-
-
-
-
-
-
-
 
