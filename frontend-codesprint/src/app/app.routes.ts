@@ -41,6 +41,12 @@ import { ProviderDashboard } from './pages/provider-dashboard/provider-dashboard
 import { ExplorarServiciosComponent } from './pages/explore/explore-services/explore-services';
 import { PublicProviderProfileComponent } from './pages/publicProvider/public-provider-profile/public-provider-profile';
 import { AdminServices } from './pages/admin-services/admin-services';
+
+import {AdminProfileComponent} from './pages/viewProfile/admin-profile/admin-profile';
+import {AdminProfileEditComponent} from './pages/viewProfile/admin-profile-edit/admin-profile-edit';
+import {SelectService} from './pages/select-service/select-service';
+import {ConfirmBooking} from './pages/confirm-booking/confirm-booking';
+
 import { AdminProfileComponent } from './pages/viewProfile/admin-profile/admin-profile';
 import { AdminProfileEditComponent } from './pages/viewProfile/admin-profile-edit/admin-profile-edit';
 
@@ -53,6 +59,7 @@ import { MyCompletedServicesComponent } from './pages/my-completed-services/my-c
 import { CreateReviewComponent } from './pages/create-review/create-review';
 import { AdminProductSupportCatalog } from './pages/admin-product-support-catalog/admin-product-support-catalog';
 import { AdminServiceCategory } from './pages/admin-service-category/admin-service-category';
+
 
 
 export const routes: Routes = [
@@ -89,6 +96,10 @@ export const routes: Routes = [
   { path: 'admin-profile-edit/:id',     component: AdminProfileEditComponent},
 
 
+  //Cliente
+  { path: 'select-service', component: SelectService },
+  { path: 'confirm-booking', component: ConfirmBooking },
+
 
   // Proveedor
   { path: 'provider-dashboard',        component: ProviderDashboard },
@@ -107,13 +118,13 @@ export const routes: Routes = [
     component: AdminDashboard
   },
   { path: 'provider-requests-service/:id',
-    component: ProviderRequestsComponent 
+    component: ProviderRequestsComponent
   },
   { path: 'provider-booking-detail/:id',
     component: ProviderBookingDetail
   },
-  { path: 'provider-start-service/:id', 
-    component: ProviderStartBooking 
+  { path: 'provider-start-service/:id',
+    component: ProviderStartBooking
   },
   { path: 'provider-in-service/:id',
     component: ProviderInService
@@ -149,7 +160,7 @@ export const routes: Routes = [
 
 
 
- 
+
 
 
 

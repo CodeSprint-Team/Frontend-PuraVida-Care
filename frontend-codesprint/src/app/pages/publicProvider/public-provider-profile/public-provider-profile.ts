@@ -56,6 +56,21 @@ export class PublicProviderProfileComponent implements OnInit {
     return this.favoritesService.canUseFavorites;
   }
 
+
+  // Vuelve a explorar, no al perfil del proveedor
+  goBack(): void {
+    this.router.navigate(['/explorar']);
+  }
+
+  hireProvider() {
+    const providerId = this.provider?.id;
+    if (providerId) {
+      this.router.navigate(['/select-service'], { queryParams: { providerId: providerId.toString() } });
+    }
+  }
+  hasProfileImage(): boolean {
+    return !!this.provider?.profileImage;
+
   get isFavorite(): boolean {
     return this.favoritesService.isFavorite(Number(this.providerId));
   }
@@ -71,6 +86,7 @@ export class PublicProviderProfileComponent implements OnInit {
   get ratingBars(): { stars: number; percentage: number }[] {
     const dist = (this.provider as any)?.ratingDistribution ?? {};
     return [5, 4, 3, 2, 1].map(stars => ({ stars, percentage: dist[stars] ?? 0 }));
+
   }
 
   goBack(): void { this.router.navigate(['/explorar']); }
