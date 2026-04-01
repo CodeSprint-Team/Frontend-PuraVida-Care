@@ -15,14 +15,13 @@
 
     <app-stats-cards
       [role]="role"
-      [providerPendingCount]="pendingCount"
       [providerTotalCount]="totalCount"
-      [providerAcceptedCount]="acceptedCount">
-    </app-stats-cards>
+      [providerPendingCount]="pendingCount"
+      [providerAcceptedCount]="acceptedCount"
+    ></app-stats-cards>
 
     <div class="mt-8">
       <app-quick-actions [role]="role"></app-quick-actions>
     </div>
-
   </div>
 </div>

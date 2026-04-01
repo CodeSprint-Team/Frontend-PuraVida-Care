@@ -1,120 +1,184 @@
-<div class="flex">
+<div class="flex overflow-hidden">
   <app-navbar [role]="role"></app-navbar>
 
-  <div class="flex-1 lg:ml-64 p-8 bg-gray-50 min-h-screen">
+  <div class="flex-1 lg:ml-64 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8 bg-gray-50 min-h-screen overflow-x-hidden">
 
-    <!-- Header -->
-    <button (click)="goBack()" class="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-6">
+    <button (click)="goBack()" class="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-4 sm:mb-6">
       <ng-icon name="heroArrowLeft" size="18"></ng-icon>
       Volver al dashboard
     </button>
 
-    <h1 class="text-2xl font-bold mb-1">Aprobar Proveedores</h1>
-    <p class="text-gray-500 mb-6">Revisa y aprueba las solicitudes de nuevos proveedores</p>
+    <h1 class="text-xl sm:text-2xl font-bold mb-1">Aprobar Proveedores</h1>
+    <p class="text-gray-500 text-sm sm:text-base mb-4 sm:mb-6">Revisa y aprueba las solicitudes de nuevos proveedores</p>
 
-    <!-- Layout dos columnas -->
-    <div class="flex gap-6">
+    <div class="flex flex-col lg:flex-row gap-4 sm:gap-6">
 
-      <!-- Lista izquierda -->
-      <div class="w-80 flex-shrink-0">
+      <!-- Sidebar lista -->
+      <div class="w-full lg:w-80 flex-shrink-0">
         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
           <div class="flex items-center justify-between p-4 border-b">
-            <span class="font-semibold">Solicitudes pendientes</span>
+            <span class="font-semibold text-sm sm:text-base">Solicitudes pendientes</span>
             <span class="bg-orange-100 text-orange-600 text-xs font-bold px-2 py-1 rounded-full">
               {{ providers.length }}
             </span>
           </div>
 
-          <div *ngIf="providers.length === 0" class="p-6 text-center text-gray-400">
+          <div *ngIf="providers.length === 0" class="p-6 text-center text-gray-400 text-sm">
             No hay solicitudes pendientes
           </div>
 
-          <div
-            *ngFor="let provider of providers"
-            (click)="selectProvider(provider)"
-            class="flex items-center gap-3 p-4 border-b cursor-pointer hover:bg-gray-50 transition"
-            [ngClass]="{ 'bg-emerald-50 border-l-4 border-l-emerald-500': selectedProvider?.providerProfileId === provider.providerProfileId }"
-          >
-            <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-              <ng-icon name="heroUser" size="20" class="text-emerald-600"></ng-icon>
-            </div>
-            <div>
-              <p class="font-medium text-sm">{{ provider.fullName }}</p>
-              <p class="text-xs text-gray-500">{{ provider.providerType }}</p>
-              <p class="text-xs text-gray-400 flex items-center gap-1 mt-1">
-                <ng-icon name="heroClock" size="12"></ng-icon>
-                Pendiente
-              </p>
+          <div class="max-h-64 lg:max-h-[calc(100vh-300px)] overflow-y-auto">
+            <div
+              *ngFor="let provider of providers"
+              (click)="selectProvider(provider)"
+              class="flex items-center gap-3 p-3 sm:p-4 border-b cursor-pointer hover:bg-gray-50 transition"
+              [ngClass]="{ 'bg-teal-50 border-l-4 border-l-teal-600': selectedProvider?.providerProfileId === provider.providerProfileId }"
+            >
+              <div class="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center flex-shrink-0">
+                <ng-icon name="heroUser" size="20" class="text-teal-600"></ng-icon>
+              </div>
+              <div class="min-w-0">
+                <p class="font-medium text-sm truncate">{{ provider.fullName }}</p>
+                <p class="text-xs text-gray-500 truncate">{{ provider.providerType }}</p>
+                <p class="text-xs text-gray-400 flex items-center gap-1 mt-1">
+                  <ng-icon name="heroClock" size="12"></ng-icon>
+                  {{ provider.createdAt ? (provider.createdAt | date:'d/M/yyyy') : 'Pendiente' }}
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Detalle derecha -->
-      <div class="flex-1 bg-white rounded-xl shadow-sm p-6">
+      <!-- Detalle -->
+      <div class="flex-1 min-w-0">
 
-        <!-- Sin selección -->
-        <div *ngIf="!selectedProvider" class="h-full flex flex-col items-center justify-center text-gray-400">
+        <div *ngIf="!selectedProvider" class="bg-white rounded-xl shadow-sm p-6 flex flex-col items-center justify-center text-gray-400 min-h-48 sm:min-h-64">
           <ng-icon name="heroUser" size="48" class="mb-4"></ng-icon>
-          <p class="font-medium">Selecciona un proveedor</p>
-          <p class="text-sm">Selecciona una solicitud de la lista para ver los detalles</p>
+          <p class="font-medium text-sm sm:text-base">Selecciona un proveedor</p>
+          <p class="text-xs sm:text-sm text-center">Selecciona una solicitud de la lista para ver los detalles</p>
         </div>
 
-        <!-- Con selección -->
-        <div *ngIf="selectedProvider">
+        <div *ngIf="selectedProvider" class="flex flex-col gap-3 sm:gap-4">
 
-          <!-- Avatar y nombre -->
-          <div class="flex items-center gap-4 mb-6">
-            <div class="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center">
-              <ng-icon name="heroUser" size="32" class="text-emerald-600"></ng-icon>
+          <!-- Card: Información del proveedor -->
+          <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+            <h3 class="text-sm sm:text-base font-semibold text-gray-800 mb-3 sm:mb-4">Información del proveedor</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+              <div>
+                <p class="text-xs text-gray-400 mb-1">Nombre completo</p>
+                <div class="flex items-center gap-2 text-sm text-gray-700">
+                  <ng-icon name="heroUser" size="16" class="text-gray-400 flex-shrink-0"></ng-icon>
+                  <span class="break-words">{{ selectedProvider.fullName }}</span>
+                </div>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 mb-1">Correo electrónico</p>
+                <div class="flex items-center gap-2 text-sm text-gray-700 min-w-0">
+                  <ng-icon name="heroEnvelope" size="16" class="text-gray-400 flex-shrink-0"></ng-icon>
+                  <span class="truncate">{{ selectedProvider.email }}</span>
+                </div>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 mb-1">Teléfono</p>
+                <div class="flex items-center gap-2 text-sm text-gray-700">
+                  <ng-icon name="heroPhone" size="16" class="text-gray-400 flex-shrink-0"></ng-icon>
+                  {{ selectedProvider.phone || 'No especificado' }}
+                </div>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 mb-1">Ubicación</p>
+                <div class="flex items-center gap-2 text-sm text-gray-700">
+                  <ng-icon name="heroMapPin" size="16" class="text-gray-400 flex-shrink-0"></ng-icon>
+                  <span class="break-words">{{ selectedProvider.zone || 'No especificado' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card: Servicios y experiencia -->
+          <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+            <h3 class="text-sm sm:text-base font-semibold text-gray-800 mb-3 sm:mb-4">Servicios y experiencia</h3>
+            <div class="mb-4">
+              <p class="text-xs text-gray-400 mb-2">Categorías solicitadas</p>
+              <div class="flex flex-wrap gap-2">
+                <span
+                  *ngFor="let cat of getCategories(selectedProvider)"
+                  class="bg-teal-50 text-teal-700 text-xs px-3 py-1 rounded-full border border-teal-100"
+                >{{ cat }}</span>
+              </div>
             </div>
             <div>
-              <h2 class="text-xl font-bold">{{ selectedProvider.fullName }}</h2>
-              <p class="text-gray-500">{{ selectedProvider.providerType }}</p>
+              <p class="text-xs text-gray-400 mb-1">Experiencia</p>
+              <p class="text-sm text-gray-700 break-words">
+                {{ selectedProvider.experienceDescription || (selectedProvider.experienceYears + ' años de experiencia') }}
+              </p>
             </div>
           </div>
 
-          <!-- Info -->
-          <div class="grid grid-cols-2 gap-4 mb-6">
-            <div class="flex items-center gap-2 text-sm text-gray-600">
-              <ng-icon name="heroEnvelope" size="16" class="text-gray-400"></ng-icon>
-              {{ selectedProvider.email }}
+          <!-- Card: Documentos adjuntos -->
+          <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+            <h3 class="text-sm sm:text-base font-semibold text-gray-800 mb-3 sm:mb-4">Documentos adjuntos</h3>
+
+            <div *ngIf="!selectedProvider.documents?.length" class="text-sm text-gray-400 text-center py-4">
+              No hay documentos adjuntos
             </div>
-            <div class="flex items-center gap-2 text-sm text-gray-600">
-              <ng-icon name="heroPhone" size="16" class="text-gray-400"></ng-icon>
-              {{ selectedProvider.phone || 'No especificado' }}
-            </div>
-            <div class="flex items-center gap-2 text-sm text-gray-600">
-              <ng-icon name="heroMapPin" size="16" class="text-gray-400"></ng-icon>
-              {{ selectedProvider.zone || 'No especificado' }}
-            </div>
-            <div class="flex items-center gap-2 text-sm text-gray-600">
-              <ng-icon name="heroBriefcase" size="16" class="text-gray-400"></ng-icon>
-              {{ selectedProvider.experienceYears }} años de experiencia
+
+            <div class="flex flex-col gap-3" *ngIf="selectedProvider.documents?.length">
+              <div
+                *ngFor="let doc of selectedProvider.documents"
+                class="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-9 h-9 bg-teal-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <ng-icon name="heroDocument" size="18" class="text-teal-600"></ng-icon>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-sm font-medium text-gray-700 truncate">{{ doc.fileName }}</p>
+                    <p class="text-xs text-gray-400">{{ doc.fileType | uppercase }}</p>
+                  </div>
+                </div>
+
+                <a 
+                  [href]="doc.fileUrl"
+                  target="_blank"
+                  class="text-gray-400 hover:text-teal-600 transition cursor-pointer flex-shrink-0 ml-2"
+                  title="Descargar"
+                  download
+                >
+                  <ng-icon name="heroArrowDownTray" size="18"></ng-icon>
+                </a>
+              </div>
             </div>
           </div>
 
-          <!-- Descripción -->
-          <div class="bg-gray-50 rounded-lg p-4 mb-6">
-            <p class="text-sm font-medium text-gray-700 mb-1">Descripción</p>
-            <p class="text-sm text-gray-600">{{ selectedProvider.experienceDescription }}</p>
-          </div>
-
-          <!-- Botones -->
-          <div class="flex gap-3">
-            <button
-              (click)="approve()"
-              class="flex items-center gap-2 bg-emerald-500 text-white px-6 py-2 rounded-lg hover:bg-emerald-600 transition"
-            >
-              <ng-icon name="heroCheckCircle" size="18"></ng-icon>
-              Aprobar
-            </button>
+          <!-- Botones acción -->
+          <div class="bg-white rounded-xl shadow-sm p-3 sm:p-4 flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
             <button
               (click)="openRejectModal()"
-              class="flex items-center gap-2 bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition"
+              class="flex items-center justify-center gap-2 text-white px-4 sm:px-6 py-2.5 rounded-lg transition font-medium text-sm"
+              style="background-color: rgb(0,150,137);"
+              onmouseover="this.style.backgroundColor='rgb(0,120,110)'"
+              onmouseout="this.style.backgroundColor='rgb(0,150,137)'"
             >
               <ng-icon name="heroXCircle" size="18"></ng-icon>
               Rechazar
+            </button>
+            <button
+              (click)="openInfoModal()"
+              class="flex items-center justify-center gap-2 border border-gray-300 text-gray-600 px-4 sm:px-6 py-2.5 rounded-lg hover:bg-gray-50 transition font-medium text-sm"
+            >
+              <ng-icon name="heroChatBubbleOvalLeft" size="18"></ng-icon>
+              Solicitar info
+            </button>
+            <button
+              (click)="openApproveModal()"
+              class="flex items-center justify-center gap-2 text-white px-4 sm:px-6 py-2.5 rounded-lg transition font-medium text-sm"
+              style="background-color: rgb(0,150,137);"
+              onmouseover="this.style.backgroundColor='rgb(0,120,110)'"
+              onmouseout="this.style.backgroundColor='rgb(0,150,137)'"
+            >
+              <ng-icon name="heroCheckCircle" size="18"></ng-icon>
+              Aprobar
             </button>
           </div>
 
@@ -124,11 +188,45 @@
   </div>
 </div>
 
-<!-- Modal rechazo -->
-<div *ngIf="showRejectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-  <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-    <h3 class="text-lg font-semibold mb-4">Rechazar proveedor</h3>
-    <p class="text-gray-600 mb-4">
+<!-- ─── Modal: Aprobar ─────────────────────────────────── -->
+<div *ngIf="showApproveModal" class="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
+  <div class="bg-white rounded-xl p-4 sm:p-6 w-full max-w-md shadow-xl pointer-events-auto">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center flex-shrink-0">
+        <ng-icon name="heroCheckCircle" size="22" class="text-teal-600"></ng-icon>
+      </div>
+      <h3 class="text-base sm:text-lg font-semibold">Aprobar proveedor</h3>
+    </div>
+    <p class="text-gray-600 text-sm sm:text-base mb-4 sm:mb-6">
+      ¿Estás seguro que deseas aprobar a <strong>{{ selectedProvider?.fullName }}</strong>?
+      El proveedor podrá empezar a ofrecer sus servicios en la plataforma.
+    </p>
+    <div class="flex gap-3 justify-end">
+      <button
+        (click)="showApproveModal = false"
+        class="px-4 py-2 rounded-lg border hover:bg-gray-50 transition text-gray-600 text-sm"
+      >Cancelar</button>
+      <button
+        (click)="confirmApprove()"
+        class="text-white px-4 py-2 rounded-lg transition font-medium text-sm"
+        style="background-color: rgb(0,150,137);"
+        onmouseover="this.style.backgroundColor='rgb(0,120,110)'"
+        onmouseout="this.style.backgroundColor='rgb(0,150,137)'"
+      >Aprobar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Modal: Rechazar ────────────────────────────────── -->
+<div *ngIf="showRejectModal" class="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
+  <div class="bg-white rounded-xl p-4 sm:p-6 w-full max-w-md shadow-xl pointer-events-auto">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+        <ng-icon name="heroXCircle" size="22" class="text-red-500"></ng-icon>
+      </div>
+      <h3 class="text-base sm:text-lg font-semibold">Rechazar proveedor</h3>
+    </div>
+    <p class="text-gray-600 text-sm mb-4">
       ¿Estás seguro que deseas rechazar a <strong>{{ selectedProvider?.fullName }}</strong>?
     </p>
     <div class="mb-4">
@@ -136,23 +234,58 @@
       <textarea
         [(ngModel)]="rejectionReason"
         rows="3"
-        class="w-full border rounded-lg p-2 text-sm"
+        class="w-full border rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
         placeholder="Explica el motivo del rechazo..."
       ></textarea>
     </div>
     <div class="flex gap-3 justify-end">
       <button
         (click)="showRejectModal = false"
-        class="px-4 py-2 rounded-lg border hover:bg-gray-50 transition"
-      >
-        Cancelar
-      </button>
+        class="px-4 py-2 rounded-lg border hover:bg-gray-50 transition text-gray-600 text-sm"
+      >Cancelar</button>
       <button
         (click)="confirmReject()"
-        class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
-      >
-        Rechazar
-      </button>
+        class="text-white px-4 py-2 rounded-lg transition font-medium text-sm"
+        style="background-color: rgb(0,150,137);"
+        onmouseover="this.style.backgroundColor='rgb(0,120,110)'"
+        onmouseout="this.style.backgroundColor='rgb(0,150,137)'"
+      >Rechazar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Modal: Solicitar info ──────────────────────────── -->
+<div *ngIf="showInfoModal" class="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
+  <div class="bg-white rounded-xl p-4 sm:p-6 w-full max-w-md shadow-xl pointer-events-auto">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+        <ng-icon name="heroChatBubbleOvalLeft" size="22" class="text-blue-500"></ng-icon>
+      </div>
+      <h3 class="text-base sm:text-lg font-semibold">Solicitar información adicional</h3>
+    </div>
+    <p class="text-gray-600 text-sm mb-4">
+      Especifica qué información adicional necesitas de <strong>{{ selectedProvider?.fullName }}</strong>:
+    </p>
+    <div class="mb-4">
+      <textarea
+        [(ngModel)]="infoRequest"
+        rows="4"
+        class="w-full border rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+        placeholder="Ej: Necesitamos una copia actualizada de tu licencia de conducir..."
+      ></textarea>
+    </div>
+    <div class="flex gap-3 justify-end">
+      <button
+        (click)="showInfoModal = false"
+        class="px-4 py-2 rounded-lg border hover:bg-gray-50 transition text-gray-600 text-sm"
+      >Cancelar</button>
+      <button
+        (click)="confirmRequestInfo()"
+        class="text-white px-4 py-2 rounded-lg transition font-medium text-sm"
+        style="background-color: rgb(0,150,137);"
+        onmouseover="this.style.backgroundColor='rgb(0,120,110)'"
+        onmouseout="this.style.backgroundColor='rgb(0,150,137)'"
+      >Enviar solicitud</button>
     </div>
   </div>
 </div>

@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { NavbarComponent } from '../../../components/navbar/navbar';
 import { ProfileService } from '../services/profile.services';
-import { AuthService } from '../../../services/auth/auth/auth';
+import { AuthService } from '../../../services/auth.service';
 import { ProviderProfile } from '../models/provider-profile.model';
 import {
   heroArrowLeft, heroCheckBadge, heroMapPin, heroShieldCheck,
@@ -51,6 +51,8 @@ export class ProviderProfileComponent implements OnInit {
       next: (data: ProviderProfile) => {
         this.provider  = data;
         this.profileId = String(data.id);
+        localStorage.setItem('profile_id', this.profileId);
+        localStorage.setItem('user_id', this.userId);
         this.cdr.detectChanges();
       },
       error: (err: unknown) => {
@@ -74,7 +76,7 @@ export class ProviderProfileComponent implements OnInit {
   }
 
   goToSolicitudes(): void {
-    this.router.navigate(['/proveedor/solicitudes', this.profileId]);
+    this.router.navigate(['/provider-requests-service', this.profileId]);
   }
 
   hireProvider(): void {

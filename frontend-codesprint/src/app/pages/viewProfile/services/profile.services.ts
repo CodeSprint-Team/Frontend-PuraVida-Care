@@ -1,13 +1,17 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
+
 import { SeniorProfile, SeniorProfileUpdateDTO } from '../models/senior-profile.model';
 import { ProviderProfile, ProviderProfileUpdateDTO } from '../models/provider-profile.model';
 import { FamilyProfile } from '../models/family-profile.model';
+import { AdminProfile, AdminProfileUpdateDTO } from '../models/admin-profile.model';
 
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
-  private http    = inject(HttpClient);
+  private http = inject(HttpClient);
+
+  // ✅ Base URL unificada
   private baseUrl = 'http://localhost:8081/api/v1/profiles';
 
   // ═══════════════════════════════════════════════════════════════
@@ -28,7 +32,8 @@ export class ProfileService {
 
   addFavoriteProvider(seniorId: number, providerProfileId: number): Observable<SeniorProfile> {
     return this.http.post<SeniorProfile>(
-      `${this.baseUrl}/senior/${seniorId}/favorites/${providerProfileId}`, {}
+      `${this.baseUrl}/senior/${seniorId}/favorites/${providerProfileId}`,
+      {}
     );
   }
 
@@ -55,7 +60,7 @@ export class ProfileService {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // CLIENT
+  // CLIENT / FAMILY
   // ═══════════════════════════════════════════════════════════════
 
   getFamilyProfile(id: string | number): Observable<FamilyProfile> {
@@ -78,20 +83,20 @@ export class ProfileService {
     const spaceIdx = fullName.indexOf(' ');
 
     const username = spaceIdx > -1 ? fullName.substring(0, spaceIdx) : fullName;
-    const lastname = spaceIdx > -1 ? fullName.substring(spaceIdx + 1) : fullName;
+    const lastname = spaceIdx > -1 ? fullName.substring(spaceIdx + 1) : '';
 
     const payload = {
       username,
       lastname,
-      email:                    data.email             ?? '',
-      phone:                    data.phone             ?? '',
-      notes:                    '',
-      profileImage:             data.profileImage      ?? null,
-      relationToSenior:         data.relationToSenior  ?? '',
-      emergencyContactName:     data.emergencyName     ?? '',
+      email: data.email ?? '',
+      phone: data.phone ?? '',
+      notes: '',
+      profileImage: data.profileImage ?? null,
+      relationToSenior: data.relationToSenior ?? '',
+      emergencyContactName: data.emergencyName ?? '',
       emergencyContactRelation: data.emergencyRelation ?? '',
-      emergencyContactPhone:    data.emergencyPhone    ?? '',
-      importantNotes:           data.importantNotes    ?? '',
+      emergencyContactPhone: data.emergencyPhone ?? '',
+      importantNotes: data.importantNotes ?? '',
     };
 
     return this.http.put<any>(`${this.baseUrl}/client/${id}`, payload)
@@ -99,26 +104,41 @@ export class ProfileService {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // MAPPER
+  // ADMIN
+  // ═══════════════════════════════════════════════════════════════
+
+  getAdminProfile(userId: string | number): Observable<AdminProfile> {
+    return this.http.get<AdminProfile>(`${this.baseUrl}/admin/by-user/${userId}`);
+  }
+
+  updateAdminProfile(userId: string | number, dto: AdminProfileUpdateDTO): Observable<AdminProfile> {
+    return this.http.put<AdminProfile>(`${this.baseUrl}/admin/by-user/${userId}`, dto);
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // HELPERS / MAPPERS
   // ═══════════════════════════════════════════════════════════════
 
   private mapClientResponse(raw: any): FamilyProfile {
     return {
-      id:               String(raw.id),
-      fullName:         raw.fullName          ?? '',
-      email:            raw.email             ?? '',
-      phone:            raw.phone             ?? '',
-      profileImage:     raw.profileImage      ?? null,
-      memberSince:      raw.memberSince       ?? '',
-      address:          raw.address           ?? '',
-      relationToSenior: raw.relationToSenior  ?? '',
-      importantNotes:   raw.importantNotes    ?? raw.notes ?? '',
-      emergencyName:              raw.emergencyContactName     ?? '',
-      emergencyRelation:          raw.emergencyContactRelation ?? '',
-      emergencyPhone:             raw.emergencyContactPhone    ?? '',
-      emergencyContactName:       raw.emergencyContactName     ?? '',
-      emergencyContactRelation:   raw.emergencyContactRelation ?? '',
-      emergencyContactPhone:      raw.emergencyContactPhone    ?? '',
+      id: String(raw.id),
+      fullName: raw.fullName ?? '',
+      email: raw.email ?? '',
+      phone: raw.phone ?? '',
+      profileImage: raw.profileImage ?? null,
+      memberSince: raw.memberSince ?? '',
+      address: raw.address ?? '',
+      relationToSenior: raw.relationToSenior ?? '',
+      importantNotes: raw.importantNotes ?? raw.notes ?? '',
+
+      emergencyName: raw.emergencyContactName ?? '',
+      emergencyRelation: raw.emergencyContactRelation ?? '',
+      emergencyPhone: raw.emergencyContactPhone ?? '',
+
+      // Compatibilidad con componentes viejos
+      emergencyContactName: raw.emergencyContactName ?? '',
+      emergencyContactRelation: raw.emergencyContactRelation ?? '',
+      emergencyContactPhone: raw.emergencyContactPhone ?? '',
     };
   }
 }

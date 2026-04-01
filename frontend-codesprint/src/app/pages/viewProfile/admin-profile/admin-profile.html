@@ -1,0 +1,195 @@
+<!-- src/app/viewProfile/admin-profile/admin-profile.html -->
+
+<div class="min-h-screen bg-gray-50">
+  <app-navbar>[Role: admin]</app-navbar>
+
+  <main class="lg:ml-64 pb-24 lg:pb-8">
+    <div class="container mx-auto px-6 py-8 max-w-4xl">
+
+      <!-- ── Skeleton ──────────────────────────────────────────────── -->
+      <ng-container *ngIf="!profileData && !errorMessage">
+        <div class="flex items-center justify-between mb-8">
+          <div class="space-y-2">
+            <div class="h-8 w-44 bg-gray-200 rounded-xl animate-pulse"></div>
+            <div class="h-4 w-56 bg-gray-100 rounded-xl animate-pulse"></div>
+          </div>
+          <div class="flex gap-3">
+            <div class="h-12 w-36 bg-gray-200 rounded-xl animate-pulse"></div>
+            <div class="h-12 w-36 bg-gray-200 rounded-xl animate-pulse"></div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div class="flex items-center gap-6">
+            <div class="w-24 h-24 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+            <div class="flex-1 space-y-3">
+              <div class="h-6 w-48 bg-gray-200 rounded-xl animate-pulse"></div>
+              <div class="h-4 w-32 bg-gray-100 rounded-xl animate-pulse"></div>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="h-16 bg-gray-100 rounded-xl animate-pulse"></div>
+                <div class="h-16 bg-gray-100 rounded-xl animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          <div *ngFor="let _ of [1,2,3,4]" class="bg-white rounded-2xl shadow-sm p-5 animate-pulse">
+            <div class="h-8 w-10 bg-gray-200 rounded-xl mb-2"></div>
+            <div class="h-4 w-20 bg-gray-100 rounded-xl"></div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ── Error ─────────────────────────────────────────────────── -->
+      <div *ngIf="errorMessage"
+           class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+        <p class="text-red-700 font-medium">{{ errorMessage }}</p>
+        <button (click)="loadProfile()"
+                class="mt-4 text-sm text-indigo-600 hover:underline">
+          Intentar nuevamente
+        </button>
+      </div>
+
+      <!-- ── Contenido ─────────────────────────────────────────────── -->
+      <ng-container *ngIf="profileData as admin">
+
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row items-start md:items-center
+                    justify-between mb-8 gap-4">
+          <div>
+            <h1 class="text-3xl font-bold mb-2">Mi Perfil</h1>
+            <p class="text-gray-600">Panel de administrador</p>
+          </div>
+          <div class="flex gap-3">
+            <button type="button" (click)="navigateToEdit()"
+              class="bg-indigo-600 text-white px-6 py-3 rounded-xl flex items-center
+                     gap-2 hover:bg-indigo-700 transition">
+              <ng-icon name="heroPencilSquare" class="text-xl"></ng-icon>
+              Editar perfil
+            </button>
+            <button type="button" (click)="logout()"
+              class="inline-flex items-center gap-2 px-5 py-3 border border-red-200
+                     text-red-600 rounded-xl hover:bg-red-50 transition font-medium">
+              <ng-icon name="heroArrowRightOnRectangle" class="text-lg"></ng-icon>
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+
+        <!-- Tarjeta identidad -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div class="flex flex-col md:flex-row md:items-center gap-6">
+
+            <div class="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br
+                        from-indigo-100 to-indigo-200 flex items-center justify-center
+                        border border-indigo-100 flex-shrink-0">
+              <img *ngIf="hasPhoto()" [src]="admin.photoUrl!"
+                   [alt]="admin.fullName" class="w-full h-full object-cover" />
+              <ng-icon *ngIf="!hasPhoto()" name="heroPhoto"
+                       class="text-5xl text-indigo-700"></ng-icon>
+            </div>
+
+            <div class="flex-1">
+              <div class="flex items-center gap-3 flex-wrap">
+                <h2 class="text-2xl font-bold text-gray-900">{{ admin.fullName }}</h2>
+                <span class="inline-flex items-center gap-1 bg-indigo-100 text-indigo-700
+                             text-xs font-semibold px-3 py-1 rounded-full">
+                  <ng-icon name="heroShieldCheck" class="text-sm"></ng-icon>
+                  {{ admin.role }}
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
+                <div class="bg-gray-50 rounded-xl p-4">
+                  <p class="text-sm text-gray-500">Correo electrónico</p>
+                  <a [href]="'mailto:' + admin.email"
+                     class="text-base font-semibold text-indigo-600 hover:underline truncate block">
+                    {{ admin.email }}
+                  </a>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-4">
+                  <p class="text-sm text-gray-500">Miembro desde</p>
+                  <p class="text-base font-semibold text-gray-900">
+                    {{ admin.createdAt | date:'mediumDate' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+
+          <div class="bg-white rounded-2xl shadow-sm p-5 flex flex-col gap-1">
+            <div class="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center mb-2">
+              <ng-icon name="heroUsers" class="text-teal-600 text-xl"></ng-icon>
+            </div>
+            <p class="text-2xl font-bold text-gray-900">
+              {{ admin.systemStats.totalUsers }}
+            </p>
+            <p class="text-xs text-gray-500">Usuarios registrados</p>
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-sm p-5 flex flex-col gap-1">
+            <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center mb-2">
+              <ng-icon name="heroUser" class="text-blue-600 text-xl"></ng-icon>
+            </div>
+            <p class="text-2xl font-bold text-gray-900">
+              {{ admin.systemStats.totalProviders }}
+            </p>
+            <p class="text-xs text-gray-500">Proveedores</p>
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-sm p-5 flex flex-col gap-1">
+            <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center mb-2">
+              <ng-icon name="heroArrowTrendingUp" class="text-green-600 text-xl"></ng-icon>
+            </div>
+            <p class="text-2xl font-bold text-gray-900">
+              {{ admin.systemStats.activeServices }}
+            </p>
+            <p class="text-xs text-gray-500">Servicios activos</p>
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-sm p-5 flex flex-col gap-1">
+            <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center mb-2">
+              <ng-icon name="heroStar" class="text-amber-600 text-xl"></ng-icon>
+            </div>
+            <p class="text-2xl font-bold text-gray-900">
+              {{ admin.systemStats.totalReviews }}
+            </p>
+            <p class="text-xs text-gray-500">Reseñas totales</p>
+          </div>
+
+        </div>
+
+        <!-- Acciones rápidas -->
+        <div class="bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-2xl
+                    shadow-lg p-6 text-white">
+          <div class="flex items-center gap-2 mb-2">
+            <ng-icon name="heroCog6Tooth" class="text-xl"></ng-icon>
+            <h3 class="font-bold text-lg">Acciones del sistema</h3>
+          </div>
+          <p class="text-indigo-100 mb-6 text-sm">
+            Accede rápidamente a las áreas de gestión del sistema.
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button type="button" (click)="navigateToEdit()"
+              class="flex items-center justify-center gap-2 bg-white text-indigo-700
+                     font-bold py-3 rounded-xl hover:bg-indigo-50 transition">
+              <ng-icon name="heroPencilSquare" class="text-lg"></ng-icon>
+              Editar mi perfil
+            </button>
+            <button type="button" (click)="logout()"
+              class="flex items-center justify-center gap-2 bg-indigo-500 text-white
+                     font-bold py-3 rounded-xl hover:bg-indigo-400 transition
+                     border border-indigo-400">
+              <ng-icon name="heroArrowRightOnRectangle" class="text-lg"></ng-icon>
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+
+      </ng-container>
+    </div>
+  </main>
+</div>

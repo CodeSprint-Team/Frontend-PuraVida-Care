@@ -1,60 +1,83 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { RegisterUserRequest } from '../interfaces/auth/register-user-request.interface';
+import { UserResponse } from '../interfaces/auth/user-response.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8081/api/v1/auth';
-  private tokenKey = 'auth_token';
-  private userSubject = new BehaviorSubject<any>(null);
+  private readonly http    = inject(HttpClient);
+  private readonly router  = inject(Router);
+  private readonly apiUrl  = `${environment.apiUrl}/users`;
+  private readonly authUrl = `${environment.apiUrl}/auth`;
 
-  constructor(private http: HttpClient, private router: Router) {
-    this.loadUser();
+  register(data: RegisterUserRequest): Observable<UserResponse> {
+    return this.http.post<UserResponse>(`${this.apiUrl}/register`, data);
   }
 
-  loginWithGoogle() {
-    this.http.get<{ url: string }>(`${this.apiUrl}/google/url`).subscribe({
-      next: (response) => {
-        window.location.href = response.url;
-      },
-      error: (error) => {
-        console.error('Error obteniendo URL de Google', error);
-      }
-    });
+  login(credentials: { email: string; password: string }): Observable<any> {
+    return this.http.post<any>(`${this.authUrl}/login`, credentials).pipe(
+      tap((response) => {
+        if (response?.token) {
+          this.saveSession(response);
+        }
+      })
+    );
   }
 
-  handleAuthCallback(token: string) {
-    localStorage.setItem(this.tokenKey, token);
-    this.loadUser();
-    this.router.navigate(['/home']);
+  loginWithGoogle(accessToken: string): Observable<any> {
+    return this.http.post<any>(`${this.authUrl}/google/callback`, { token: accessToken }).pipe(
+      tap((response) => {
+        if (response?.token) {
+          this.saveSession(response);
+        }
+      })
+    );
   }
 
-  private loadUser() {
-    const token = this.getToken();
-    if (token) {
-      this.http.get(`${this.apiUrl}/verify`, {
-        headers: { Authorization: `Bearer ${token}` }
-      }).subscribe({
-        next: (response: any) => this.userSubject.next(response.user),
-        error: () => this.logout()
-      });
-    }
+  updateUserRole(userId: string, roleId: number): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/${userId}/role`, { roleId });
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+    return localStorage.getItem('auth_token');
+  }
+
+  getUserId(): string | null {
+    return localStorage.getItem('user_id');
+  }
+
+  getUserName(): string | null {
+    return localStorage.getItem('user_name');
+  }
+
+  getUserRole(): string | null {
+    return localStorage.getItem('user_role');
   }
 
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
 
-  logout() {
-    localStorage.removeItem(this.tokenKey);
-    this.userSubject.next(null);
+  logout(): void {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('user_role');
+    localStorage.removeItem('user_name');
+    localStorage.removeItem('user_email');
+    localStorage.removeItem('user_data');
     this.router.navigate(['/login']);
+  }
+
+  private saveSession(response: any): void {
+    localStorage.setItem('auth_token', response.token);
+    localStorage.setItem('user_id', String(response.userId));
+    localStorage.setItem('user_role', response.role);
+    localStorage.setItem('user_name', response.name ?? '');
+    localStorage.setItem('user_email', response.email ?? '');
   }
 }

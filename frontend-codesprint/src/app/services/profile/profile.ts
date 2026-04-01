@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 import { ClientProfileCreateRequest } from '../../interfaces/profile/client-profile-create.interface';
 import { ProviderProfileCreateRequest } from '../../interfaces/profile/provider-profile-create.interface';
 import { SeniorProfileCreateRequest } from '../../interfaces/profile/senior-profile-create.interface';
+import {ProviderProfile} from '../../pages/viewProfile/models/provider-profile.model';
 
 @Injectable({
   providedIn: 'root'
@@ -23,5 +24,9 @@ export class ProfileService {
 
   createSeniorProfile(data: SeniorProfileCreateRequest): Observable<any> {
     return this.http.post(`${this.apiUrl}/senior`, data);
+  }
+
+  getProviderProfile(providerId: string): Observable<ProviderProfile> {
+    return this.http.get<ProviderProfile>(`${this.apiUrl}/provider/${providerId}`);
   }
 }

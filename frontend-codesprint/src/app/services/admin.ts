@@ -13,14 +13,17 @@ export interface ProviderPending {
   zone: string;
   providerState: string;
   profileImage: string;
+  createdAt?: string;
+  documents?: { fileName: string; fileType: string; fileUrl: string }[];
+  categories?: string[];
 }
 
 export interface ReviewProviderDTO {
-  action: 'approve' | 'reject';
+  action: 'approve' | 'reject' | 'request_info';
   rejectionReason?: string;
+  infoMessage?: string;
 }
 
-// ── interfaces para usuarios
 export interface UserStatus {
   userId: number;
   fullName: string;
@@ -34,6 +37,27 @@ export interface UserStatus {
 export interface ReviewUserDTO {
   action: 'activate' | 'deactivate';
   reason?: string;
+}
+
+export type ServiceModerationAction = 'approve' | 'reject';
+export type ServicePublicationState = 'pending' | 'published' | 'rejected';
+
+export interface CareServicePending {
+  careServiceId: number;
+  title: string;
+  serviceDescription: string;
+  serviceCategory: string;
+  basePrice: number;
+  priceMode: string;
+  providerName: string;
+  providerEmail: string;
+  publicationState: ServicePublicationState;
+  rejectionReason?: string;
+}
+
+export interface ReviewCareServiceDTO {
+  action: ServiceModerationAction;
+  rejectionReason?: string;
 }
 
 @Injectable({
@@ -52,7 +76,13 @@ export class AdminService {
     return this.http.put<ProviderPending>(`${this.apiUrl}/providers/${id}/review`, dto);
   }
 
-  // ── métodos para usuarios
+  requestProviderInfo(id: number, infoMessage: string): Observable<ProviderPending> {
+    return this.http.put<ProviderPending>(`${this.apiUrl}/providers/${id}/review`, {
+      action: 'request_info',
+      infoMessage
+    });
+  }
+
   getAllUsers(): Observable<UserStatus[]> {
     return this.http.get<UserStatus[]>(`${this.apiUrl}/users`);
   }
@@ -60,4 +90,16 @@ export class AdminService {
   reviewUser(id: number, dto: ReviewUserDTO): Observable<UserStatus> {
     return this.http.put<UserStatus>(`${this.apiUrl}/users/${id}/review`, dto);
   }
+
+  getPendingCareServices(): Observable<CareServicePending[]> {
+    return this.http.get<CareServicePending[]>(`${this.apiUrl}/services/pending`);
+  }
+
+  reviewCareService(id: number, dto: ReviewCareServiceDTO): Observable<CareServicePending> {
+    return this.http.put<CareServicePending>(`${this.apiUrl}/services/${id}/review`, dto);
+  }
+
+  getAllCareServices(): Observable<CareServicePending[]> {
+  return this.http.get<CareServicePending[]>(`${this.apiUrl}/services`);
+}
 }

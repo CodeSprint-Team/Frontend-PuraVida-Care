@@ -25,6 +25,7 @@ interface NavItem {
   })],
   templateUrl: './navbar.html',
 })
+
 export class NavbarComponent implements OnInit, OnChanges {
   @Input() role: 'client' | 'admin' | 'provider' | 'senior' | null = null;
   navItems: NavItem[] = [];
@@ -38,11 +39,6 @@ export class NavbarComponent implements OnInit, OnChanges {
     { label: 'Mensajes', path: '/mensajes', icon: 'heroChatBubbleLeftRight' },
   ];
 
-  private readonly adminNav: NavItem[] = [
-    { label: 'Dashboard', path: '/admin-dashboard', icon: 'heroCog6Tooth' },
-    { label: 'Perfil',    path: '/admin-profile',   icon: 'heroUser' },
-  ];
-
   ngOnInit(): void {
     this.resolveRole();
   }
@@ -54,40 +50,41 @@ export class NavbarComponent implements OnInit, OnChanges {
   }
 
   private resolveRole(): void {
-    // Usa user_role (clave que guarda el AuthService)
     const currentRole = this.role
-      ?? localStorage.getItem('user_role')?.toLowerCase() as 'client' | 'admin' | 'provider' | 'senior'
+      ?? localStorage.getItem('user_role')?.toLowerCase() as any
       ?? 'client';
     this.loadNav(currentRole);
   }
 
   private loadNav(role: string): void {
-    // Usa user_id (clave que guarda el AuthService)
     const userId = localStorage.getItem('user_id') ?? '1';
 
     switch (role) {
       case 'admin':
-        this.navItems   = this.adminNav;
+        this.navItems = [
+          { label: 'Dashboard', path: '/admin-dashboard', icon: 'heroCog6Tooth' },
+          { label: 'Perfil',    path: `/admin-profile/${userId}`, icon: 'heroUser' },
+        ];
         this.panelLabel = 'Panel Admin';
         break;
 
       case 'provider':
         this.navItems = [
-          { label: 'Dashboard', path: '/provider-dashboard',          icon: 'heroClipboardDocumentList' },
-          { label: 'Mensajes',  path: '/provider-messages',           icon: 'heroChatBubbleLeftRight'   },
-          { label: 'Agenda',    path: '/provider-agenda',             icon: 'heroCalendarDays'          },
-          { label: 'Perfil',    path: `/provider-profile/${userId}`,  icon: 'heroUser'                  },
+          { label: 'Dashboard', path: '/provider-dashboard', icon: 'heroClipboardDocumentList' },
+          { label: 'Mensajes',  path: '/provider-messages',  icon: 'heroChatBubbleLeftRight'   },
+          { label: 'Agenda',    path: '/provider-agenda',    icon: 'heroCalendarDays'          },
+          { label: 'Perfil',    path: `/provider-profile/${userId}`, icon: 'heroUser'          },
         ];
         this.panelLabel = 'Panel Proveedor';
         break;
 
       case 'senior':
         this.navItems = [
-          { label: 'Inicio',   path: '/home',               icon: 'heroHome'                },
-          { label: 'Explorar', path: '/explorar',           icon: 'heroMagnifyingGlass'     },
-          { label: 'Agenda',   path: '/agenda',             icon: 'heroCalendarDays'        },
-          { label: 'Mensajes', path: '/mensajes',           icon: 'heroChatBubbleLeftRight' },
-          { label: 'Perfil',   path: `/profile/${userId}`,  icon: 'heroUser'                },
+          { label: 'Inicio',   path: '/home',     icon: 'heroHome'                },
+          { label: 'Explorar', path: '/explorar', icon: 'heroMagnifyingGlass'     },
+          { label: 'Agenda',   path: '/agenda',   icon: 'heroCalendarDays'        },
+          { label: 'Mensajes', path: '/mensajes', icon: 'heroChatBubbleLeftRight' },
+          { label: 'Perfil',   path: `/profile/${userId}`, icon: 'heroUser'       },
         ];
         this.panelLabel = '';
         break;

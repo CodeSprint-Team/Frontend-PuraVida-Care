@@ -171,17 +171,9 @@ constructor(
   
 
 handleContinue(): void {
-  if (this.userRole === 'provider') {
-    this.router.navigate(['/provider-dashboard']).then(result => {
-    }).catch(err => {
-    });
-  } else {
-    this.router.navigate(['/home']).then(result => {
-    }).catch(err => {
-    });
-  }
-}
 
+  this.router.navigate(['/login']);
+}
 
   navigateToClient(): void {
     this.router.navigate(["/create-profile-client"]);
