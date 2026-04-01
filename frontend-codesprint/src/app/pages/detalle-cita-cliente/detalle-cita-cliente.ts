@@ -9,7 +9,7 @@ import {
   RescheduleRequestDTO
 } from '../../interfaces/client/agenda-booking.interface';
 import { AgendaClienteService } from '../../services/agenda-cliente/agenda-cliente.service';
-import { AuthService } from '../../services/auth/auth/auth';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-detalle-cita-cliente',

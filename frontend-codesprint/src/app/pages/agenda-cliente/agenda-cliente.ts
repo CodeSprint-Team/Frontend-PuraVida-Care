@@ -6,7 +6,7 @@ import { NavbarComponent } from '../../components/navbar/navbar';
 import { ServiceCard } from '../../interfaces/client/service-card-client.interface';
 import { AgendaBookingResponseDTO } from '../../interfaces/client/agenda-booking.interface';
 import { AgendaClienteService } from '../../services/agenda-cliente/agenda-cliente.service';
-import { AuthService } from '../../services/auth/auth/auth';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-agenda-cliente',

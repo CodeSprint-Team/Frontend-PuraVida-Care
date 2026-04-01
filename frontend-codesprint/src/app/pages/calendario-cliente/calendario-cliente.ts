@@ -5,7 +5,7 @@ import { ServiceCard } from '../../interfaces/client/service-card-client.interfa
 import { NavbarComponent } from '../../components/navbar/navbar';
 import { AgendaClienteService } from '../../services/agenda-cliente/agenda-cliente.service';
 import { AgendaBookingResponseDTO } from '../../interfaces/client/agenda-booking.interface';
-import { AuthService } from '../../services/auth/auth/auth';
+import { AuthService } from '../../services/auth.service';
 import { timeout } from 'rxjs';
 
 @Component({
