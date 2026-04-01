@@ -14,6 +14,7 @@ import {
 import { NavbarComponent } from '../../components/navbar/navbar';
 import { SupportProductService } from '../../services/support-product/support-product';
 import { SupportProductPostResponse } from '../../interfaces/support-product/support-product-response.interface';
+import { SupportProductCatalogService, SupportProductCatalogResponse } from '../../services/support-product/SupportProductCatalogService';
 
 @Component({
   selector: 'app-support-products-marketplace',
@@ -54,29 +55,25 @@ export class SupportProductsMarketplace implements OnInit {
 
   loadingProducts = true;
 
-  categories: string[] = [
-    'Movilidad',
-    'Ayuda para el hogar',
-    'Salud y monitoreo',
-    'Rehabilitación',
-    'Cuidado personal',
-    'Tecnología asistiva',
-    'Ortopedia',
-    'Otros',
-  ];
+  categories: SupportProductCatalogResponse[] = [];
 
   products: SupportProductPostResponse[] = [];
 
   constructor(
     private router: Router,
     private supportProductService: SupportProductService,
+    private catalogService: SupportProductCatalogService,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
     this.loadProducts();
-    
+
+    this.catalogService.getAllActive().subscribe({
+      next: (data) => this.categories = data,
+      error: (err) => console.error('Error cargando categorías', err)
+    });
   }
 
   loadProducts(): void {
@@ -128,7 +125,7 @@ export class SupportProductsMarketplace implements OnInit {
 
   get filteredProducts(): SupportProductPostResponse[] {
     let filtered = this.products.filter((product) => {
-      
+
       const title = this.normalizeText(product.title);
       const categoryName = this.normalizeText(product.supportProductCatalogName);
       const locationText = this.normalizeText(product.locationText);

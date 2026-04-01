@@ -51,6 +51,7 @@ import { SupportProductDetail } from './pages/support-product-detail/support-pro
 
 import { MyCompletedServicesComponent } from './pages/my-completed-services/my-completed-services';
 import { CreateReviewComponent } from './pages/create-review/create-review';
+import { AdminProductSupportCatalog } from './pages/admin-product-support-catalog/admin-product-support-catalog';
 
 
 export const routes: Routes = [
@@ -130,6 +131,9 @@ export const routes: Routes = [
   {
     path: 'create-review/:providerId',
     component: CreateReviewComponent
+  },
+  {path: 'admin/product-support-catalog',
+    component: AdminProductSupportCatalog      
   },
 
 
