@@ -1,0 +1,304 @@
+<div class="min-h-screen bg-gray-50">
+  <app-navbar></app-navbar>
+
+  <main class="lg:ml-64 pb-24">
+    <div class="container mx-auto px-6 py-8 max-w-5xl">
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- SKELETON                                                   -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <ng-container *ngIf="!profile && !errorMessage">
+
+        <div class="bg-white rounded-3xl shadow-sm p-6 md:p-8 mb-6 border border-gray-100">
+          <div class="flex flex-col lg:flex-row lg:items-center gap-6">
+            <div class="w-28 h-28 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+            <div class="flex-1 space-y-3">
+              <div class="h-7 w-56 bg-gray-200 rounded-xl animate-pulse"></div>
+              <div class="h-4 w-72 bg-gray-100 rounded-xl animate-pulse"></div>
+              <div class="flex gap-3">
+                <div class="h-9 w-36 bg-gray-100 rounded-xl animate-pulse"></div>
+                <div class="h-9 w-44 bg-gray-100 rounded-xl animate-pulse"></div>
+              </div>
+            </div>
+            <div class="h-12 w-36 bg-gray-200 rounded-2xl animate-pulse"></div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-sm p-6 md:p-8 border border-gray-100 mb-6">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-xl bg-gray-100 animate-pulse"></div>
+            <div class="space-y-1">
+              <div class="h-5 w-40 bg-gray-200 rounded-xl animate-pulse"></div>
+              <div class="h-3 w-56 bg-gray-100 rounded-xl animate-pulse"></div>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="h-20 bg-gray-100 rounded-2xl animate-pulse"></div>
+            <div class="h-20 bg-gray-100 rounded-2xl animate-pulse"></div>
+            <div class="h-20 bg-gray-100 rounded-2xl animate-pulse"></div>
+            <div class="h-20 bg-gray-100 rounded-2xl animate-pulse"></div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-sm p-6 md:p-8 border border-gray-100 mb-6">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-xl bg-amber-50 animate-pulse"></div>
+            <div class="space-y-1">
+              <div class="h-5 w-44 bg-gray-200 rounded-xl animate-pulse"></div>
+              <div class="h-3 w-52 bg-gray-100 rounded-xl animate-pulse"></div>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div class="h-20 bg-gray-100 rounded-2xl animate-pulse"></div>
+            <div class="h-20 bg-gray-100 rounded-2xl animate-pulse"></div>
+            <div class="h-20 bg-gray-100 rounded-2xl animate-pulse"></div>
+          </div>
+        </div>
+
+      </ng-container>
+
+      <!-- ── Error ─────────────────────────────────────────────────── -->
+      <div *ngIf="errorMessage"
+           class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+        <p class="text-red-700 font-medium">{{ errorMessage }}</p>
+        <button (click)="loadProfile()"
+                class="mt-4 text-sm text-teal-600 hover:underline">
+          Intentar nuevamente
+        </button>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- CONTENIDO REAL                                             -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <ng-container *ngIf="profile">
+
+        <!-- Header principal -->
+        <div class="bg-white rounded-3xl shadow-sm p-6 md:p-8 mb-6 border border-gray-100">
+          <div class="flex flex-col lg:flex-row lg:items-center gap-6">
+
+            <div class="w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden
+                        bg-gradient-to-br from-teal-50 to-teal-100 flex items-center
+                        justify-center flex-shrink-0 border-4 border-white shadow-sm">
+              <img *ngIf="hasProfileImage()"
+                   [src]="profile.profileImage!"
+                   [alt]="profile.fullName"
+                   class="w-full h-full object-cover" />
+              <ng-icon *ngIf="!hasProfileImage()" name="heroUser"
+                       class="text-teal-600 text-5xl"></ng-icon>
+            </div>
+
+            <div class="flex-1 text-center lg:text-left">
+              <div class="flex flex-col lg:flex-row lg:items-center gap-3 mb-3">
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
+                  {{ profile.fullName }}
+                </h1>
+                <span class="inline-flex items-center justify-center gap-2 px-3 py-1
+                             rounded-full bg-teal-50 text-teal-700 text-sm font-semibold
+                             border border-teal-100">
+                  <ng-icon name="heroShieldCheck" class="text-base"></ng-icon>
+                  Familiar principal
+                </span>
+              </div>
+              <p class="text-gray-600 mb-4">
+                Perfil del familiar responsable del adulto mayor dentro de la plataforma.
+              </p>
+              <div class="flex flex-wrap justify-center lg:justify-start gap-3">
+                <div class="inline-flex items-center gap-2 px-3 py-2 rounded-xl
+                            bg-gray-50 text-gray-700 text-sm border border-gray-100">
+                  <ng-icon name="heroPhone" class="text-teal-600"></ng-icon>
+                  <span>{{ profile.phone }}</span>
+                </div>
+                <div *ngIf="profile.email"
+                     class="inline-flex items-center gap-2 px-3 py-2 rounded-xl
+                            bg-gray-50 text-gray-700 text-sm border border-gray-100">
+                  <ng-icon name="heroEnvelope" class="text-teal-600"></ng-icon>
+                  <span>{{ profile.email }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="w-full lg:w-auto">
+              <button type="button" (click)="editProfile()"
+                class="w-full lg:w-auto inline-flex items-center justify-center gap-2
+                       px-5 py-3 bg-teal-600 text-white rounded-2xl font-semibold
+                       hover:bg-teal-700 transition shadow-sm">
+                <ng-icon name="heroPencilSquare" class="text-lg"></ng-icon>
+                Editar perfil
+              </button>
+              <button (click)="logout()"
+                class="inline-flex items-center justify-center gap-2 px-5 py-3
+                      bg-white border border-red-200 text-red-600 rounded-xl
+                      hover:bg-red-50 transition font-medium">
+                <ng-icon name="heroArrowRightOnRectangle" class="text-lg"></ng-icon>
+                Cerrar sesión
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Información principal -->
+        <section class="bg-white rounded-3xl shadow-sm p-6 md:p-8 border border-gray-100 mb-6">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
+              <ng-icon name="heroUser" class="text-teal-600 text-xl"></ng-icon>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-gray-900">Información principal</h2>
+              <p class="text-sm text-gray-500">Datos generales del familiar responsable</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+              <p class="text-sm text-gray-500 mb-1">Nombre completo</p>
+              <p class="font-semibold text-gray-900">{{ profile.fullName }}</p>
+            </div>
+            <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+              <p class="text-sm text-gray-500 mb-1">Teléfono</p>
+              <p class="font-semibold text-gray-900">{{ profile.phone }}</p>
+            </div>
+            <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+              <p class="text-sm text-gray-500 mb-1">Correo electrónico</p>
+              <p class="font-semibold text-gray-900 break-all">{{ profile.email }}</p>
+            </div>
+            <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+              <p class="text-sm text-gray-500 mb-1">Relación con el adulto mayor</p>
+              <p class="font-semibold text-gray-900">{{ profile.relationToSenior }}</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Contacto de emergencia -->
+        <section class="bg-white rounded-3xl shadow-sm p-6 md:p-8 border border-gray-100 mb-6">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+              <ng-icon name="heroExclamationTriangle"
+                       class="text-amber-600 text-xl"></ng-icon>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-gray-900">Contacto de emergencia</h2>
+              <p class="text-sm text-gray-500">Persona a contactar en caso necesario</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+              <p class="text-sm text-gray-500 mb-1">Nombre</p>
+              <p class="font-semibold text-gray-900">{{ profile.emergencyName }}</p>
+            </div>
+            <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+              <p class="text-sm text-gray-500 mb-1">Relación</p>
+              <p class="font-semibold text-gray-900">{{ profile.emergencyRelation }}</p>
+            </div>
+            <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+              <p class="text-sm text-gray-500 mb-1">Teléfono</p>
+              <p class="font-semibold text-gray-900">{{ profile.emergencyPhone }}</p>
+            </div>
+          </div>
+        </section>
+          <section class="bg-white rounded-3xl shadow-sm p-6 md:p-8 border border-gray-100 mt-6">
+            <div class="flex items-center justify-between mb-6">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
+                  <ng-icon name="heroHeart" class="text-red-500 text-xl"></ng-icon>
+                </div>
+                <div>
+                  <h2 class="text-lg font-bold text-gray-900">Proveedores favoritos</h2>
+                  <p class="text-sm text-gray-500">Proveedores que has guardado</p>
+                </div>
+              </div>
+              <span class="text-sm text-gray-400 font-medium">
+                {{ favorites.length }} guardados
+              </span>
+            </div>
+
+            <!-- Sin favoritos -->
+            <div *ngIf="favorites.length === 0"
+                class="text-center py-10 text-gray-400">
+              <ng-icon name="heroHeart" class="text-5xl mb-3 text-gray-300"></ng-icon>
+              <p class="text-sm">Aún no tienes proveedores favoritos.</p>
+              <button (click)="goToMyServices()"
+                      class="mt-3 text-sm text-teal-600 hover:underline">
+                Explorar proveedores
+              </button>
+            </div>
+
+            <!-- Lista de favoritos -->
+            <div *ngIf="favorites.length > 0" class="space-y-3">
+              <div *ngFor="let fav of favorites"
+                  class="flex items-center justify-between bg-gray-50
+                          rounded-2xl p-4 border border-gray-100
+                          hover:border-teal-200 transition cursor-pointer"
+                  (click)="goToProvider(fav.providerProfileId)">
+
+                <div class="flex items-center gap-3">
+                  <div class="w-11 h-11 rounded-full bg-teal-100 flex items-center
+                              justify-center flex-shrink-0">
+                    <ng-icon name="heroUser" class="text-teal-700 text-lg"></ng-icon>
+                  </div>
+                  <div>
+                    <p class="font-semibold text-gray-900 text-sm">{{ fav.fullName }}</p>
+                    <p class="text-xs text-gray-500">{{ fav.providerType ?? 'Proveedor' }}</p>
+                    <div class="flex items-center gap-0.5 mt-1">
+                      <ng-icon *ngFor="let star of getStars(fav.averageRating)"
+                              name="heroStar"
+                              [ngClass]="star <= fav.averageRating
+                                ? 'text-yellow-400' : 'text-gray-200'"
+                              class="text-xs">
+                      </ng-icon>
+                      <span class="text-xs text-gray-500 ml-1">
+                        {{ fav.averageRating | number:'1.1-1' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <button (click)="$event.stopPropagation(); removeFavorite(fav.providerProfileId)"
+                        class="text-red-400 hover:text-red-600 transition p-2
+                              rounded-xl hover:bg-red-50 flex-shrink-0"
+                        title="Eliminar de favoritos">
+                  <ng-icon name="heroTrash" class="text-lg"></ng-icon>
+                </button>
+
+              </div>
+            </div>
+          </section>
+        <!-- Notas importantes -->
+        <section *ngIf="profile.importantNotes"
+                 class="bg-white rounded-3xl shadow-sm p-6 md:p-8 border border-gray-100">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+              <ng-icon name="heroDocumentText" class="text-blue-600 text-xl"></ng-icon>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-gray-900">Notas importantes</h2>
+              <p class="text-sm text-gray-500">Información adicional relevante</p>
+            </div>
+          </div>
+          <div class="bg-gray-50 rounded-2xl p-5 border border-gray-100">
+            <p class="text-gray-700 leading-relaxed">{{ profile.importantNotes }}</p>
+          </div>
+        </section>
+        <!-- ── Mis servicios completados ─────────────────────────────── -->
+        <section class="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-3xl
+                        shadow-sm p-6 md:p-8 border border-amber-100 mt-6">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+              <ng-icon name="heroStar" class="text-amber-600 text-xl"></ng-icon>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-gray-900">Mis servicios</h2>
+              <p class="text-sm text-gray-600">Revisá tus servicios completados y dejá reseñas</p>
+            </div>
+          </div>
+          <button (click)="goToMyServices()"
+            class="w-full mt-4 py-3.5 bg-amber-500 text-white rounded-2xl font-semibold
+                  hover:bg-amber-600 transition flex items-center justify-center gap-2">
+            <ng-icon name="heroStar" class="text-lg"></ng-icon>
+            Ver mis servicios y dejar reseñas
+          </button>
+        </section>
+
+      </ng-container>
+      
+    </div>
+  </main>
+</div>

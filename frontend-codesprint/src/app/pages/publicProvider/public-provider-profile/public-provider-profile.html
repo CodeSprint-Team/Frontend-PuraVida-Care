@@ -1,0 +1,185 @@
+<div class="min-h-screen bg-gray-50">
+  <app-navbar></app-navbar>
+
+  <main class="lg:ml-64 pb-24 lg:pb-8">
+    <div class="container mx-auto px-6 py-8 max-w-5xl">
+
+      <!-- ERROR -->
+      <div *ngIf="errorMessage"
+           class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+        <p class="text-red-700 font-medium">{{ errorMessage }}</p>
+        <button (click)="loadProfile()"
+                class="mt-4 text-sm text-teal-600 hover:underline">
+          Intentar nuevamente
+        </button>
+      </div>
+
+      <ng-container *ngIf="provider">
+
+        <!-- VOLVER -->
+        <button (click)="goBack()"
+                class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition">
+          <ng-icon name="heroArrowLeft" class="text-xl"></ng-icon>
+          <span class="font-medium">Volver a explorar</span>
+        </button>
+
+        <!-- HEADER CARD -->
+        <div class="bg-white rounded-2xl shadow-sm p-8 mb-6 relative">
+          <!-- BOTÓN FAVORITO — esquina superior derecha de la tarjeta -->
+          <div *ngIf="canUseFavorites" class="absolute top-5 right-5">
+            <button
+              (click)="toggleFavorite()"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-xl
+                    font-medium transition border text-sm"
+              [ngClass]="isFavorite
+                ? 'bg-red-50 border-red-200 text-red-500 hover:bg-red-100'
+                : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'"
+              [title]="isFavorite ? 'Quitar de favoritos' : 'Guardar en favoritos'">
+              <ng-icon name="heroHeart" class="text-base"></ng-icon>
+              {{ isFavorite ? 'Guardado' : 'Guardar' }}
+            </button>
+          </div>
+
+          <div class="flex flex-col md:flex-row gap-6">
+            <!-- FOTO -->
+            <div class="w-32 h-32 rounded-2xl overflow-hidden bg-gradient-to-br
+                        from-teal-100 to-teal-200 flex-shrink-0 flex items-center
+                        justify-center border border-teal-100">
+              <img *ngIf="hasProfileImage()"
+                   [src]="provider.profileImage"
+                   [alt]="provider.fullName"
+                   class="w-full h-full object-cover" />
+              <ng-icon *ngIf="!hasProfileImage()"
+                       name="heroUserCircle"
+                       class="text-7xl text-teal-700">
+              </ng-icon>
+            </div>
+
+            <!-- INFO -->
+            <div class="flex-1">
+
+              <!-- Nombre + badge verificado -->
+              <div class="flex flex-wrap items-center gap-3 mb-1">
+                <h1 class="text-2xl font-bold text-gray-900">{{ provider.fullName }}</h1>
+                <span *ngIf="provider.verified"
+                      class="inline-flex items-center gap-1 px-3 py-1 rounded-full
+                             bg-teal-50 text-teal-700 text-sm font-semibold">
+                  <ng-icon name="heroCheckBadge"></ng-icon>
+                  Verificado
+                </span>
+              </div>
+
+              <p *ngIf="provider.providerType" class="text-gray-500 text-sm mb-3">
+                {{ provider.providerType }}
+              </p>
+
+              <!-- Rating -->
+              <div class="flex items-center gap-2 bg-yellow-50 px-4 py-2 rounded-xl w-fit mb-4">
+                <ng-icon name="heroStar" class="text-yellow-500"></ng-icon>
+                <span class="text-lg font-semibold">{{ ratingDisplay }}</span>
+                <span class="text-gray-600 text-sm">({{ provider.totalReviews ?? 0 }} reseñas)</span>
+              </div>
+
+              <!-- Bio -->
+              <p *ngIf="provider.bio" class="text-gray-700 mb-5 leading-relaxed">
+                {{ provider.bio }}
+              </p>
+              <p *ngIf="!provider.bio" class="text-gray-400 mb-5 text-sm italic">
+                Sin descripción registrada.
+              </p>
+
+              <!-- Info grid -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="flex items-center gap-3 text-gray-700 bg-gray-50 rounded-xl px-4 py-3">
+                  <ng-icon name="heroMapPin" class="text-teal-600 flex-shrink-0"></ng-icon>
+                  <span class="text-sm truncate">{{ provider.zone ?? 'Zona no especificada' }}</span>
+                </div>
+                <div class="flex items-center gap-3 text-gray-700 bg-gray-50 rounded-xl px-4 py-3">
+                  <ng-icon name="heroBriefcase" class="text-teal-600 flex-shrink-0"></ng-icon>
+                  <span class="text-sm">{{ provider.experienceYears }} años de exp.</span>
+                </div>
+                <div class="flex items-center gap-3 text-gray-700 bg-gray-50 rounded-xl px-4 py-3">
+                  <ng-icon name="heroShieldCheck" class="text-teal-600 flex-shrink-0"></ng-icon>
+                  <span class="text-sm">{{ provider.insuranceActive ? 'Seguro activo' : 'Sin seguro' }}</span>
+                </div>
+              </div>
+
+              <!-- Contacto -->
+              <div class="mt-5 pt-5 border-t border-gray-100 flex flex-col md:flex-row gap-4">
+                <div *ngIf="provider.phone" class="flex items-center gap-2 text-gray-700">
+                  <ng-icon name="heroPhone" class="text-teal-600"></ng-icon>
+                  <a [href]="'tel:' + provider.phone" class="text-sm hover:text-teal-600">
+                    {{ provider.phone }}
+                  </a>
+                </div>
+                <div class="flex items-center gap-2 text-gray-700">
+                  <ng-icon name="heroEnvelope" class="text-teal-600"></ng-icon>
+                  <a [href]="'mailto:' + provider.email" class="text-sm hover:text-teal-600">
+                    {{ provider.email }}
+                  </a>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- SERVICIOS -->
+        <div *ngIf="provider.services?.length"
+             class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <h2 class="text-lg font-bold text-gray-900 mb-4">Servicios ofrecidos</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div *ngFor="let svc of provider.services"
+                 class="border border-gray-100 rounded-xl p-4 hover:border-teal-200 transition">
+              <p class="font-semibold text-gray-800 text-sm mb-1">{{ svc.name }}</p>
+              <p *ngIf="svc.description" class="text-xs text-gray-500 mb-2 line-clamp-2">
+                {{ svc.description }}
+              </p>
+              <span class="text-teal-600 font-semibold text-sm">{{ svc.price }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RESEÑAS -->
+        <div *ngIf="provider.reviewsList?.length"
+             class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <h2 class="text-lg font-bold text-gray-900 mb-4">Reseñas</h2>
+          <div class="space-y-4">
+            <div *ngFor="let review of provider.reviewsList"
+                 class="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+              <div class="flex items-center justify-between mb-1">
+                <p class="font-semibold text-sm text-gray-800">{{ review.author }}</p>
+                <span class="text-xs text-gray-400">{{ review.date }}</span>
+              </div>
+              <div class="flex items-center gap-1 mb-2">
+                <ng-icon *ngFor="let s of getStarsArray(review.rating)"
+                         name="heroStar"
+                         [ngClass]="s ? 'text-yellow-400' : 'text-gray-200'"
+                         class="text-sm">
+                </ng-icon>
+              </div>
+              <p class="text-sm text-gray-600">{{ review.comment }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA CONTRATAR -->
+        <div class="bg-white rounded-2xl p-6 border border-gray-200">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+            <div>
+              <p class="text-xs text-gray-400">Precio desde</p>
+              <p class="text-3xl font-semibold text-gray-900">{{ startingPrice }}</p>
+              <p class="text-xs text-gray-500">por hora</p>
+            </div>
+            <button (click)="hireProvider()"
+                    class="px-8 py-3.5 bg-teal-700 text-white rounded-xl
+                           font-medium hover:opacity-85 transition">
+              Contratar
+            </button>
+          </div>
+        </div>
+
+      </ng-container>
+    </div>
+  </main>
+</div>
