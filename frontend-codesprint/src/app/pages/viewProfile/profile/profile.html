@@ -1,0 +1,317 @@
+<div class="min-h-screen bg-gray-50">
+  <app-navbar></app-navbar>
+
+  <main class="lg:ml-64 pb-24 lg:pb-8">
+    <div class="container mx-auto px-6 py-8 max-w-4xl">
+      <ng-container *ngIf="!profileData && !errorMessage">
+
+        <div class="flex items-center justify-between mb-8">
+          <div class="space-y-2">
+            <div class="h-8 w-36 bg-gray-200 rounded-xl animate-pulse"></div>
+            <div class="h-4 w-52 bg-gray-100 rounded-xl animate-pulse"></div>
+          </div>
+          <div class="h-12 w-36 bg-gray-200 rounded-xl animate-pulse"></div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div class="flex items-center gap-6">
+            <div class="w-24 h-24 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+            <div class="flex-1 space-y-3">
+              <div class="h-6 w-44 bg-gray-200 rounded-xl animate-pulse"></div>
+              <div class="h-4 w-20 bg-gray-100 rounded-xl animate-pulse"></div>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="h-16 bg-gray-100 rounded-xl animate-pulse"></div>
+                <div class="h-16 bg-gray-100 rounded-xl animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div class="h-5 w-44 bg-gray-200 rounded-xl animate-pulse mb-4"></div>
+          <div class="space-y-4">
+            <div class="h-10 bg-gray-100 rounded-xl animate-pulse"></div>
+            <div class="h-10 bg-gray-100 rounded-xl animate-pulse"></div>
+            <div class="h-10 bg-gray-100 rounded-xl animate-pulse"></div>
+          </div>
+        </div>
+
+        <div class="bg-red-50 border-2 border-red-100 rounded-2xl p-6 mb-6">
+          <div class="h-5 w-48 bg-red-100 rounded-xl animate-pulse mb-4"></div>
+          <div class="space-y-2">
+            <div class="h-4 w-36 bg-red-100 rounded-xl animate-pulse"></div>
+            <div class="h-4 w-28 bg-red-100 rounded-xl animate-pulse"></div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div class="h-5 w-40 bg-gray-200 rounded-xl animate-pulse mb-4"></div>
+          <div class="space-y-3">
+            <div class="h-16 bg-blue-50 rounded-xl animate-pulse"></div>
+            <div class="h-16 bg-amber-50 rounded-xl animate-pulse"></div>
+            <div class="h-16 bg-red-50 rounded-xl animate-pulse"></div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div class="h-5 w-44 bg-gray-200 rounded-xl animate-pulse mb-4"></div>
+          <div class="space-y-3">
+            <div class="h-16 bg-gray-100 rounded-xl animate-pulse"></div>
+            <div class="h-16 bg-gray-100 rounded-xl animate-pulse"></div>
+          </div>
+        </div>
+
+        <div class="bg-purple-100 rounded-2xl p-6 animate-pulse">
+          <div class="h-5 w-36 bg-purple-200 rounded-xl mb-3"></div>
+          <div class="h-4 w-full bg-purple-200 rounded-xl mb-2"></div>
+          <div class="h-12 bg-purple-200 rounded-xl mt-4"></div>
+        </div>
+
+      </ng-container>
+
+      <!-- ── Error ────────────────────────────────────────────────── -->
+      <div *ngIf="errorMessage"
+           class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+        <p class="text-red-700 font-medium">{{ errorMessage }}</p>
+        <button (click)="loadProfile()"
+                class="mt-4 text-sm text-teal-600 hover:underline">
+          Intentar nuevamente
+        </button>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- CONTENIDO REAL                                             -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <ng-container *ngIf="profileData as profile">
+
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+          <div>
+            <h1 class="text-3xl font-bold mb-2">Mi Perfil</h1>
+            <p class="text-gray-600">Información del adulto mayor</p>
+          </div>
+          <button type="button" (click)="navigateToEdit()"
+            class="bg-teal-600 text-white px-6 py-3 rounded-xl flex items-center gap-2
+                   hover:bg-teal-700 transition">
+            <ng-icon name="heroPencilSquare" class="text-xl"></ng-icon>
+            <span>Editar perfil</span>
+          </button>
+          <button type="button" (click)="logout()"
+            class="inline-flex items-center gap-2 px-5 py-3 border border-red-200
+                  text-red-600 rounded-xl hover:bg-red-50 transition font-medium">
+            <ng-icon name="heroArrowRightOnRectangle" class="text-lg"></ng-icon>
+            Cerrar sesión
+          </button>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div class="flex flex-col md:flex-row md:items-center gap-6">
+            <div class="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-teal-100
+                        to-teal-200 flex items-center justify-center border border-teal-100 flex-shrink-0">
+              <img *ngIf="hasProfileImage()" [src]="profile.profileImage!"
+                   [alt]="'Foto de ' + profile.fullName" class="w-full h-full object-cover" />
+              <ng-icon *ngIf="!hasProfileImage()" name="heroPhoto"
+                       class="text-5xl text-teal-700"></ng-icon>
+            </div>
+            <div class="flex-1">
+              <h2 class="text-2xl font-bold text-gray-900">{{ profile.fullName }}</h2>
+              <p class="text-gray-500 mt-1" *ngIf="profile.age">{{ profile.age }} años</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5" *ngIf="profile.age">
+                <div class="bg-gray-50 rounded-xl p-4">
+                  <p class="text-sm text-gray-500">Edad</p>
+                  <p class="text-lg font-semibold text-gray-900">{{ profile.age }} años</p>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-4">
+                  <p class="text-sm text-gray-500">Correo</p>
+                  <p class="text-lg font-semibold text-gray-900 truncate">{{ profile.email }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <h3 class="font-bold text-lg mb-4">Información de contacto</h3>
+          <div class="space-y-4">
+            <div class="flex items-start gap-3" *ngIf="profile.familyMember">
+              <ng-icon name="heroUser" class="text-xl text-gray-600 mt-0.5"></ng-icon>
+              <div>
+                <p class="text-sm text-gray-600">Familiar responsable</p>
+                <p class="text-gray-900">{{ profile.familyMember }}
+                  <span *ngIf="profile.familyRelation" class="text-gray-500">
+                    ({{ profile.familyRelation }})
+                  </span>
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3" *ngIf="profile.phone">
+              <ng-icon name="heroPhone" class="text-xl text-gray-600 mt-0.5"></ng-icon>
+              <div>
+                <p class="text-sm text-gray-600">Teléfono</p>
+                <a [href]="'tel:' + profile.phone" class="text-teal-600 hover:underline">
+                  {{ profile.phone }}
+                </a>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <ng-icon name="heroEnvelope" class="text-xl text-gray-600 mt-0.5"></ng-icon>
+              <div>
+                <p class="text-sm text-gray-600">Correo electrónico</p>
+                <a [href]="'mailto:' + profile.email" class="text-teal-600 hover:underline">
+                  {{ profile.email }}
+                </a>
+              </div>
+            </div>
+            <div class="flex items-start gap-3" *ngIf="profile.address">
+              <ng-icon name="heroMapPin" class="text-xl text-gray-600 mt-0.5"></ng-icon>
+              <div>
+                <p class="text-sm text-gray-600">Dirección</p>
+                <p class="text-gray-900">{{ profile.address }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-red-50 border-2 border-red-200 rounded-2xl p-6 mb-6">
+          <div class="flex items-start gap-3 mb-4">
+            <ng-icon name="heroShieldCheck" class="text-2xl text-red-600 flex-shrink-0"></ng-icon>
+            <div>
+              <h3 class="text-red-900 font-bold mb-1">Contacto de emergencia</h3>
+              <p class="text-sm text-red-800">
+                Visible solo para proveedores cuando el servicio está activo
+              </p>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <p class="text-sm text-red-900 font-medium">
+              Nombre: {{ profile.emergencyContactName }}
+            </p>
+            <p class="text-sm text-red-900 font-medium" *ngIf="profile.emergencyRelation">
+              Relación: {{ profile.emergencyRelation }}
+            </p>
+            <a [href]="'tel:' + profile.emergencyContactPhone"
+               class="text-sm text-red-600 font-medium hover:underline block">
+              Teléfono: {{ profile.emergencyContactPhone }}
+            </a>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <h3 class="font-bold text-lg mb-4">Notas importantes</h3>
+          <div class="space-y-4">
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex gap-3">
+              <ng-icon name="heroInformationCircle"
+                       class="text-xl text-blue-600 flex-shrink-0 mt-0.5"></ng-icon>
+              <div>
+                <p class="text-sm text-blue-900 font-medium">Movilidad</p>
+                <p class="text-sm text-blue-800">
+                  {{ profile.mobilityNotes || 'No se ha especificado información de movilidad.' }}
+                </p>
+              </div>
+            </div>
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3">
+              <ng-icon name="heroDocumentText"
+                       class="text-xl text-amber-600 flex-shrink-0 mt-0.5"></ng-icon>
+              <div>
+                <p class="text-sm text-amber-900 font-medium">Condiciones médicas</p>
+                <p class="text-sm text-amber-800">
+                  {{ profile.healthObservation || 'No se han registrado condiciones médicas.' }}
+                </p>
+              </div>
+            </div>
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4 flex gap-3">
+              <ng-icon name="heroHeart" class="text-xl text-red-600 flex-shrink-0 mt-0.5"></ng-icon>
+              <div>
+                <p class="text-sm text-red-900 font-medium">Alergias</p>
+                <p class="text-sm text-red-800">
+                  {{ profile.allergies || 'No se han registrado alergias.' }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-lg">Proveedores favoritos</h3>
+            <span class="text-sm text-gray-500">
+              {{ profile.favoriteProviders?.length ?? 0 }} guardados
+            </span>
+          </div>
+          <div *ngIf="!profile.favoriteProviders || profile.favoriteProviders.length === 0"
+               class="text-center py-8 text-gray-400">
+            <ng-icon name="heroStar" class="text-4xl mb-2"></ng-icon>
+            <p class="text-sm">Aún no tienes proveedores favoritos.</p>
+          </div>
+          <div *ngIf="profile.favoriteProviders && profile.favoriteProviders.length > 0"
+               class="space-y-3">
+            <div *ngFor="let fav of profile.favoriteProviders"
+                 class="flex items-center justify-between bg-gray-50 rounded-xl p-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center
+                            justify-center flex-shrink-0">
+                  <ng-icon name="heroUser" class="text-teal-700 text-lg"></ng-icon>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900 text-sm">{{ fav.fullName }}</p>
+                  <p class="text-xs text-gray-500">{{ fav.providerType ?? 'Proveedor' }}</p>
+                  <div class="flex items-center gap-0.5 mt-1">
+                    <ng-icon *ngFor="let star of getStars(fav.averageRating)" name="heroStar"
+                      [class]="star <= fav.averageRating
+                        ? 'text-yellow-400 text-xs' : 'text-gray-300 text-xs'">
+                    </ng-icon>
+                    <span class="text-xs text-gray-500 ml-1">
+                      {{ fav.averageRating | number:'1.1-1' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button type="button" (click)="removeFavorite(fav)"
+                      class="text-red-400 hover:text-red-600 transition p-1
+                             rounded-lg hover:bg-red-50" title="Eliminar de favoritos">
+                <ng-icon name="heroTrash" class="text-lg"></ng-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl
+                    shadow-lg p-6 text-white">
+          <div class="flex items-center gap-2 mb-2">
+            <ng-icon name="heroUsers" class="text-xl"></ng-icon>
+            <h3 class="font-bold text-lg">Perfil de cuidado</h3>
+          </div>
+          <p class="text-purple-100 mb-6 text-sm">
+            Mantén esta información actualizada para que los proveedores puedan brindar
+            una atención más segura y personalizada.
+          </p>
+          <button type="button" (click)="navigateToEdit()"
+            class="w-full bg-white text-purple-600 font-bold py-3 rounded-xl
+                   hover:bg-purple-50 transition">
+            Actualizar información del perfil
+          </button>
+        </div>
+
+                <!-- ── Mis servicios completados ─────────────────────────────── -->
+        <section class="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-3xl
+                        shadow-sm p-6 md:p-8 border border-amber-100 mt-6">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+              <ng-icon name="heroStar" class="text-amber-600 text-xl"></ng-icon>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-gray-900">Mis servicios</h2>
+              <p class="text-sm text-gray-600">Revisá tus servicios completados y dejá reseñas</p>
+            </div>
+          </div>
+          <button (click)="goToMyServices()"
+            class="w-full mt-4 py-3.5 bg-amber-500 text-white rounded-2xl font-semibold
+                  hover:bg-amber-600 transition flex items-center justify-center gap-2">
+            <ng-icon name="heroStar" class="text-lg"></ng-icon>
+            Ver mis servicios y dejar reseñas
+          </button>
+        </section>
+
+      </ng-container>
+    </div>
+  </main>
+</div>
