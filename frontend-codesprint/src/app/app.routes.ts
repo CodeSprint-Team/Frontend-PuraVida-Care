@@ -47,9 +47,6 @@ import {AdminProfileEditComponent} from './pages/viewProfile/admin-profile-edit/
 import {SelectService} from './pages/select-service/select-service';
 import {ConfirmBooking} from './pages/confirm-booking/confirm-booking';
 
-import { AdminProfileComponent } from './pages/viewProfile/admin-profile/admin-profile';
-import { AdminProfileEditComponent } from './pages/viewProfile/admin-profile-edit/admin-profile-edit';
-
 //Bienes de apoyo
 import { CreateSupportProductPostComponent } from './pages/create-support-product-post/create-support-product-post';
 import { SupportProductsMarketplace } from './pages/support-products-marketplace/support-products-marketplace';

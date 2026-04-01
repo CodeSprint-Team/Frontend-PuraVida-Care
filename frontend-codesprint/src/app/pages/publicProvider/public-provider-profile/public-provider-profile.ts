@@ -70,6 +70,7 @@ export class PublicProviderProfileComponent implements OnInit {
   }
   hasProfileImage(): boolean {
     return !!this.provider?.profileImage;
+  }
 
   get isFavorite(): boolean {
     return this.favoritesService.isFavorite(Number(this.providerId));
@@ -89,9 +90,6 @@ export class PublicProviderProfileComponent implements OnInit {
 
   }
 
-  goBack(): void { this.router.navigate(['/explorar']); }
-  hireProvider(): void { this.router.navigate(['/seleccionar-servicio', this.providerId]); }
-  hasProfileImage(): boolean { return !!this.provider?.profileImage; }
 
   getStarsArray(rating: number): number[] {
     return Array.from({ length: 5 }, (_, i) => (i < Math.round(rating) ? 1 : 0));
