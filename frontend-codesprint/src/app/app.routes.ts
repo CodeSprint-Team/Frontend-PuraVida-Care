@@ -61,6 +61,7 @@ import { MyCompletedServicesComponent } from './pages/my-completed-services/my-c
 import { CreateReviewComponent } from './pages/create-review/create-review';
 import { AdminProductSupportCatalog } from './pages/admin-product-support-catalog/admin-product-support-catalog';
 import { AdminServiceCategory } from './pages/admin-service-category/admin-service-category';
+import { CreateServicesComponent } from './pages/createServices/create-services/create-services';
 
 
 
@@ -141,6 +142,10 @@ export const routes: Routes = [
   {
     path: 'my-services',
     component: MyServicesComponent
+  },
+  {
+    path: 'create-service',
+    component: CreateServicesComponent
   },
   {
     path: 'my-completed-services',
