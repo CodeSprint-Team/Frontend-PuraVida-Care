@@ -146,4 +146,11 @@ export class FamilyProfileComponent implements OnInit {
   goToMyServices(): void {
     this.router.navigate(['/my-completed-services']);
   }
+  verOfertasRecibidas(): void {
+  this.router.navigate(['/support-products/received-offers']);
+}
+
+verOfertasRealizadas(): void {
+  this.router.navigate(['/support-products/made-offers']);
+}
 }

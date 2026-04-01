@@ -1,0 +1,115 @@
+<div class="min-h-screen bg-gray-50">
+  <app-navbar></app-navbar>
+
+  <main class="lg:ml-64 pb-24 lg:pb-8">
+    <div class="container mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-8">
+      <a
+        routerLink="/support-products"
+        class="inline-flex items-center gap-2 text-sm text-teal-700 hover:text-teal-800 mb-6"
+      >
+        <ng-icon name="heroArrowLeft" size="18"></ng-icon>
+        Volver a bienes de apoyo
+      </a>
+
+      <div class="mb-6">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Mis ofertas realizadas</h1>
+        <p class="text-gray-600 mt-2">
+          Aquí podés ver las ofertas que has hecho y revisar si están pendientes, aceptadas o rechazadas.
+        </p>
+      </div>
+
+      @if (errorMessage) {
+        <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {{ errorMessage }}
+        </div>
+      }
+
+      @if (loading) {
+        <div class="bg-white rounded-2xl shadow-sm p-8 text-center">
+          <h2 class="text-xl font-semibold text-gray-900">Cargando ofertas...</h2>
+          <p class="text-gray-600 mt-2">Esperá un momento.</p>
+        </div>
+      } @else if (offers.length === 0) {
+        <div class="bg-white rounded-2xl shadow-sm p-10 text-center">
+          <div class="flex justify-center mb-4">
+            <ng-icon name="heroInbox" size="36" class="text-gray-400"></ng-icon>
+          </div>
+          <h2 class="text-xl font-semibold text-gray-900">No has realizado ofertas</h2>
+          <p class="text-gray-600 mt-2">
+            Cuando hagás una oferta por un producto, la podrás ver aquí con su estado.
+          </p>
+        </div>
+      } @else {
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          @for (offer of offers; track offer.id) {
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+              @if (getImageUrl(offer)) {
+                <img
+                  [src]="getImageUrl(offer)!"
+                  [alt]="offer.supportProductTitle"
+                  class="w-full h-52 object-cover"
+                />
+              } @else {
+                <div class="w-full h-52 bg-gray-100 flex items-center justify-center text-gray-400">
+                  Sin imagen
+                </div>
+              }
+
+              <div class="p-6">
+                <div class="flex items-start justify-between gap-3 mb-4">
+                  <div>
+                    <p class="text-sm text-gray-500">Producto</p>
+                    <h2 class="text-xl font-bold text-gray-900">
+                      {{ offer.supportProductTitle }}
+                    </h2>
+                  </div>
+
+                  <span
+                    class="px-3 py-1 rounded-full text-sm font-medium"
+                    [ngClass]="getStateClasses(offer.offerState)"
+                  >
+                    {{ getStateLabel(offer.offerState) }}
+                  </span>
+                </div>
+
+                <div class="space-y-3 text-sm text-gray-700">
+                  <div class="flex items-center gap-2">
+                    <ng-icon name="heroTag" size="16"></ng-icon>
+                    <span>
+                      <span class="font-semibold">Tu oferta:</span>
+                      ₡{{ offer.amount.toLocaleString() }}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span class="font-semibold">Mensaje enviado:</span>
+                    <p class="mt-1 text-gray-600">
+                      {{ offer.message || 'Sin mensaje' }}
+                    </p>
+                  </div>
+
+                  @if (offer.sellerName) {
+                    <div>
+                      <span class="font-semibold">Vendedor:</span>
+                      {{ offer.sellerName }}
+                    </div>
+                  }
+
+                  @if (offer.created) {
+                    <div class="flex items-center gap-2">
+                      <ng-icon name="heroClock" size="16"></ng-icon>
+                      <span>
+                        <span class="font-semibold">Fecha:</span>
+                        {{ offer.created | date:'dd/MM/yyyy HH:mm' }}
+                      </span>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </main>
+</div>
