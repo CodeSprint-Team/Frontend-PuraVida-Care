@@ -48,7 +48,7 @@ export class QuickActions {
   adminActions = [
     { title: 'Aprobar proveedores', description: '8 pendientes',           icon: 'heroCheckBadge',   color: 'orange', route: '/admin/provider-requests' },
     { title: 'Gestionar categorías Marketplace', description: 'Crear y editar categorías', icon: 'heroFolderOpen', color: 'purple', route: '/admin/product-support-catalog' },
-    { title: 'Gestionar categorías Servicios', description: 'Crear y editar categorías', icon: 'heroFolderOpen', color: 'purple', route: '' },
+    { title: 'Gestionar categorías Servicios', description: 'Crear y editar categorías', icon: 'heroFolderOpen', color: 'purple', route: '/admin/service-categories' },
     { title: 'Configurar comisión', description: 'Ajustar porcentaje',     icon: 'heroCurrencyDollar', color: 'blue',  route: '/admin-dashboard' },
     { title: 'Ver reportes',        description: 'Métricas y estadísticas', icon: 'heroChartBar',     color: 'green',  route: '/admin-dashboard' },
   ];
@@ -58,7 +58,7 @@ export class QuickActions {
         return [
           { title: 'Aprobar proveedores',  description: `${this.pendingCount} pendientes`, icon: 'heroCheckBadge',     color: 'orange', route: '/admin/provider-requests' },
           { title: 'Gestionar categorías Marketplace', description: 'Crear y editar categorías',       icon: 'heroFolderOpen',     color: 'purple', route: '/admin/product-support-catalog'         },
-          { title: 'Gestionar categorías Servicios', description: 'Crear y editar categorías', icon: 'heroFolderOpen', color: 'purple', route: '' },
+          { title: 'Gestionar categorías Servicios', description: 'Crear y editar categorías', icon: 'heroFolderOpen', color: 'purple', route: '/admin/service-categories' },
           { title: 'Configurar comisión',  description: 'Ajustar porcentaje',              icon: 'heroCurrencyDollar', color: 'blue',   route: '/admin-dashboard'         },
           { title: 'Ver reportes',         description: 'Métricas y estadísticas',         icon: 'heroChartBar',       color: 'green',  route: '/admin-dashboard'         },
           { title: 'Gestionar usuarios',   description: 'Activar y Desactivar Usuarios',  icon: 'heroUser',           color: 'pink',   route: '/admin/users'             },
