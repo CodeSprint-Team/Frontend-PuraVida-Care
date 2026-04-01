@@ -194,7 +194,73 @@
             </div>
           </div>
         </section>
+          <section class="bg-white rounded-3xl shadow-sm p-6 md:p-8 border border-gray-100 mt-6">
+            <div class="flex items-center justify-between mb-6">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
+                  <ng-icon name="heroHeart" class="text-red-500 text-xl"></ng-icon>
+                </div>
+                <div>
+                  <h2 class="text-lg font-bold text-gray-900">Proveedores favoritos</h2>
+                  <p class="text-sm text-gray-500">Proveedores que has guardado</p>
+                </div>
+              </div>
+              <span class="text-sm text-gray-400 font-medium">
+                {{ favorites.length }} guardados
+              </span>
+            </div>
 
+            <!-- Sin favoritos -->
+            <div *ngIf="favorites.length === 0"
+                class="text-center py-10 text-gray-400">
+              <ng-icon name="heroHeart" class="text-5xl mb-3 text-gray-300"></ng-icon>
+              <p class="text-sm">Aún no tienes proveedores favoritos.</p>
+              <button (click)="goToMyServices()"
+                      class="mt-3 text-sm text-teal-600 hover:underline">
+                Explorar proveedores
+              </button>
+            </div>
+
+            <!-- Lista de favoritos -->
+            <div *ngIf="favorites.length > 0" class="space-y-3">
+              <div *ngFor="let fav of favorites"
+                  class="flex items-center justify-between bg-gray-50
+                          rounded-2xl p-4 border border-gray-100
+                          hover:border-teal-200 transition cursor-pointer"
+                  (click)="goToProvider(fav.providerProfileId)">
+
+                <div class="flex items-center gap-3">
+                  <div class="w-11 h-11 rounded-full bg-teal-100 flex items-center
+                              justify-center flex-shrink-0">
+                    <ng-icon name="heroUser" class="text-teal-700 text-lg"></ng-icon>
+                  </div>
+                  <div>
+                    <p class="font-semibold text-gray-900 text-sm">{{ fav.fullName }}</p>
+                    <p class="text-xs text-gray-500">{{ fav.providerType ?? 'Proveedor' }}</p>
+                    <div class="flex items-center gap-0.5 mt-1">
+                      <ng-icon *ngFor="let star of getStars(fav.averageRating)"
+                              name="heroStar"
+                              [ngClass]="star <= fav.averageRating
+                                ? 'text-yellow-400' : 'text-gray-200'"
+                              class="text-xs">
+                      </ng-icon>
+                      <span class="text-xs text-gray-500 ml-1">
+                        {{ fav.averageRating | number:'1.1-1' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <button (click)="$event.stopPropagation(); removeFavorite(fav.providerProfileId)"
+                        class="text-red-400 hover:text-red-600 transition p-2
+                              rounded-xl hover:bg-red-50 flex-shrink-0"
+                        title="Eliminar de favoritos">
+                  <ng-icon name="heroTrash" class="text-lg"></ng-icon>
+                </button>
+
+              </div>
+            </div>
+          </section>
         <!-- Notas importantes -->
         <section *ngIf="profile.importantNotes"
                  class="bg-white rounded-3xl shadow-sm p-6 md:p-8 border border-gray-100">
@@ -210,6 +276,25 @@
           <div class="bg-gray-50 rounded-2xl p-5 border border-gray-100">
             <p class="text-gray-700 leading-relaxed">{{ profile.importantNotes }}</p>
           </div>
+        </section>
+        <!-- ── Mis servicios completados ─────────────────────────────── -->
+        <section class="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-3xl
+                        shadow-sm p-6 md:p-8 border border-amber-100 mt-6">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+              <ng-icon name="heroStar" class="text-amber-600 text-xl"></ng-icon>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-gray-900">Mis servicios</h2>
+              <p class="text-sm text-gray-600">Revisá tus servicios completados y dejá reseñas</p>
+            </div>
+          </div>
+          <button (click)="goToMyServices()"
+            class="w-full mt-4 py-3.5 bg-amber-500 text-white rounded-2xl font-semibold
+                  hover:bg-amber-600 transition flex items-center justify-center gap-2">
+            <ng-icon name="heroStar" class="text-lg"></ng-icon>
+            Ver mis servicios y dejar reseñas
+          </button>
         </section>
 
       </ng-container>

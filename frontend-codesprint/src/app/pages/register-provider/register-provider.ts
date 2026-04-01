@@ -3,7 +3,7 @@ import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { switchMap } from 'rxjs';
-import { AuthService } from '../../services/auth/auth/auth';
+import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile/profile';
 import { RegisterUserRequest } from '../../interfaces/auth/register-user-request.interface';
 import { ProviderProfileCreateRequest } from '../../interfaces/profile/provider-profile-create.interface';
@@ -84,7 +84,7 @@ export class RegisterProvider implements OnInit {
       providerTypeId:        Number(formValue.providerTypeId ?? 2),
       experienceDescription: formValue.experienceDescription ?? '',
       experienceYears:       Number(formValue.experienceYears ?? 0),
-      providerState:         'active',
+      providerState:         'pending',
       bio:                   formValue.bio   ?? '',
       zone:                  formValue.zone  ?? '',
       phone:                 formValue.phone ?? '',

@@ -1,4 +1,3 @@
-// src/app/pages/explore/explore-services/explore-services.ts
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,10 +6,11 @@ import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   heroMagnifyingGlass, heroAdjustmentsHorizontal, heroStar,
   heroMapPin, heroXMark, heroCheckBadge, heroShieldCheck,
-  heroInformationCircle
+  heroInformationCircle, heroHeart
 } from '@ng-icons/heroicons/outline';
 import { NavbarComponent } from '../../../components/navbar/navbar';
 import { ProviderSearchService } from '../services/provider-search';
+import { FavoritesService } from '../../../services/favorite.services';
 import {
   ProviderSearchResult, ProviderSearchFilters, EMPTY_FILTERS
 } from '../models/ProviderSearchResult';
@@ -22,22 +22,23 @@ import {
   viewProviders: [provideIcons({
     heroMagnifyingGlass, heroAdjustmentsHorizontal, heroStar,
     heroMapPin, heroXMark, heroCheckBadge, heroShieldCheck,
-    heroInformationCircle
+    heroInformationCircle, heroHeart
   })],
   templateUrl: './explore-services.html',
   styleUrl: './explore-services.css',
 })
 export class ExplorarServiciosComponent implements OnInit {
-  private searchService = inject(ProviderSearchService);
-  private router        = inject(Router);
-  private cdr           = inject(ChangeDetectorRef);
+  private searchService     = inject(ProviderSearchService);
+  readonly favoritesService = inject(FavoritesService);
+  private router            = inject(Router);
+  private cdr               = inject(ChangeDetectorRef);
 
   providers: ProviderSearchResult[] = [];
   errorMessage = '';
   loaded       = false;
   showFilters  = false;
 
-  searchQuery = '';
+  searchQuery    = '';
   filters:       ProviderSearchFilters = { ...EMPTY_FILTERS };
   activeFilters: ProviderSearchFilters = { ...EMPTY_FILTERS };
 
@@ -59,23 +60,47 @@ export class ExplorarServiciosComponent implements OnInit {
   priceMode: 'slider' | 'preset' = 'slider';
 
   readonly pricePresets = [
-    { label: 'Hasta ₡13,000',            desc: 'Servicios económicos', min: 5000,  max: 13000 },
-    { label: 'Entre ₡13,000 y ₡18,000',  desc: 'Rango intermedio',    min: 13000, max: 18000 },
-    { label: 'Más de ₡18,000',           desc: 'Servicios premium',   min: 18000, max: 70000 },
+    { label: 'Hasta ₡13,000',           desc: 'Servicios económicos', min: 5000,  max: 13000 },
+    { label: 'Entre ₡13,000 y ₡18,000', desc: 'Rango intermedio',    min: 13000, max: 18000 },
+    { label: 'Más de ₡18,000',          desc: 'Servicios premium',   min: 18000, max: 70000 },
   ];
   selectedPreset = -1;
 
-  ngOnInit(): void { this.doSearch(); }
+  ngOnInit(): void {
+    this.favoritesService.loadFavorites();
+    this.doSearch();
+  }
+
+  get canUseFavorites(): boolean {
+    return this.favoritesService.canUseFavorites;
+  }
+
+  isFavorite(providerId: number): boolean {
+    return this.favoritesService.isFavorite(providerId);
+  }
+
+  toggleFavorite(event: Event, providerId: number): void {
+    event.stopPropagation();
+    if (!this.canUseFavorites) return;
+    this.favoritesService.toggleFavorite(providerId).subscribe({
+      next: () => this.cdr.detectChanges(),
+      error: (err) => console.error('Error al actualizar favorito:', err)
+    });
+  }
 
   doSearch(): void {
-    this.loaded       = false;
+    this.loaded = false;
     this.errorMessage = '';
     const f: Partial<ProviderSearchFilters> = { ...this.activeFilters };
     if (this.searchQuery.trim()) f.name = this.searchQuery.trim();
 
     this.searchService.search(f).subscribe({
       next: (data) => { this.providers = data; this.loaded = true; this.cdr.detectChanges(); },
-      error: () => { this.errorMessage = 'No se pudieron cargar los proveedores.'; this.loaded = true; this.cdr.detectChanges(); }
+      error: () => {
+        this.errorMessage = 'No se pudieron cargar los proveedores.';
+        this.loaded = true;
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -152,11 +177,11 @@ export class ExplorarServiciosComponent implements OnInit {
 
   get activeFilterCount(): number {
     let c = 0;
-    if (this.activeFilters.zone)         c++;
+    if (this.activeFilters.zone)                                   c++;
     if (this.activeFilters.minPrice || this.activeFilters.maxPrice) c++;
-    if (this.activeFilters.minRating)    c++;
-    if (this.activeFilters.category)     c++;
-    if (this.activeFilters.verifiedOnly) c++;
+    if (this.activeFilters.minRating)                              c++;
+    if (this.activeFilters.category)                               c++;
+    if (this.activeFilters.verifiedOnly)                           c++;
     return c;
   }
 
@@ -167,10 +192,7 @@ export class ExplorarServiciosComponent implements OnInit {
     return `₡${lo.toLocaleString('es-CR')} – ₡${hi.toLocaleString('es-CR')}`;
   }
 
-  // ✅ Navega a la vista pública del proveedor (cliente)
-  goToProvider(id: number): void {
-    this.router.navigate(['/proveedor', id]);
-  }
+  goToProvider(id: number): void { this.router.navigate(['/proveedor', id]); }
 
   formatPrice(price: number | null, mode: string | null): string {
     if (!price) return 'Consultar';

@@ -3,7 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../../../components/navbar/navbar';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { AuthService } from '../../../services/auth/auth/auth';
+import { AuthService } from '../../../services/auth.service';
 import { ProfileService } from '../services/profile.services'; 
 import { AdminProfile } from '../models/admin-profile.model';
 import {

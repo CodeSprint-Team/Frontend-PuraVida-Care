@@ -41,10 +41,26 @@ import { ProviderDashboard } from './pages/provider-dashboard/provider-dashboard
 import { ExplorarServiciosComponent } from './pages/explore/explore-services/explore-services';
 import { PublicProviderProfileComponent } from './pages/publicProvider/public-provider-profile/public-provider-profile';
 import { AdminServices } from './pages/admin-services/admin-services';
+
 import {AdminProfileComponent} from './pages/viewProfile/admin-profile/admin-profile';
 import {AdminProfileEditComponent} from './pages/viewProfile/admin-profile-edit/admin-profile-edit';
 import {SelectService} from './pages/select-service/select-service';
 import {ConfirmBooking} from './pages/confirm-booking/confirm-booking';
+
+import { AdminProfileComponent } from './pages/viewProfile/admin-profile/admin-profile';
+import { AdminProfileEditComponent } from './pages/viewProfile/admin-profile-edit/admin-profile-edit';
+
+//Bienes de apoyo
+import { CreateSupportProductPostComponent } from './pages/create-support-product-post/create-support-product-post';
+import { SupportProductsMarketplace } from './pages/support-products-marketplace/support-products-marketplace';
+import { SupportProductDetail } from './pages/support-product-detail/support-product-detail';
+
+import { MyCompletedServicesComponent } from './pages/my-completed-services/my-completed-services';
+import { CreateReviewComponent } from './pages/create-review/create-review';
+import { AdminProductSupportCatalog } from './pages/admin-product-support-catalog/admin-product-support-catalog';
+import { AdminServiceCategory } from './pages/admin-service-category/admin-service-category';
+
+
 
 export const routes: Routes = [
   // General
@@ -92,6 +108,11 @@ export const routes: Routes = [
   { path: 'explorar',      component: ExplorarServiciosComponent },
   { path: 'proveedor/:id', component: PublicProviderProfileComponent },
 
+  { path: 'support-products/create', component: CreateSupportProductPostComponent },
+  { path: 'support-products', component: SupportProductsMarketplace },
+  {path: 'support-products/:id', component: SupportProductDetail },
+
+
 
   { path: 'admin-dashboard/providers',
     component: AdminDashboard
@@ -115,10 +136,27 @@ export const routes: Routes = [
     path: 'my-services',
     component: MyServicesComponent
   },
+  {
+    path: 'my-completed-services',
+    component: MyCompletedServicesComponent
+  },
+  {
+    path: 'create-review/:providerId',
+    component: CreateReviewComponent
+  },
+  {path: 'admin/product-support-catalog',
+    component: AdminProductSupportCatalog      
+  },
+  {
+    path: 'admin/service-categories',
+    component: AdminServiceCategory
+  },
+
 
   { path: '**', redirectTo: 'landing' }
 
 ];
+
 
 
 

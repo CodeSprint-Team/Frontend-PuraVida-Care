@@ -1,15 +1,15 @@
-// src/app/public-provider-profile/public-provider-profile.ts
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { NavbarComponent } from '../../../components/navbar/navbar';
 import { ProfileService } from '../../viewProfile/services/profile.services';
+import { FavoritesService } from '../../../services/favorite.services';
 import { ProviderProfile } from '../../viewProfile/models/provider-profile.model';
 import {
   heroArrowLeft, heroCheckBadge, heroMapPin, heroShieldCheck,
-  heroPhone, heroEnvelope, heroClock, heroStar, heroBriefcase,
-  heroUserCircle
+  heroPhone, heroEnvelope, heroStar, heroBriefcase,
+  heroUserCircle, heroHeart
 } from '@ng-icons/heroicons/outline';
 
 @Component({
@@ -18,17 +18,18 @@ import {
   imports: [CommonModule, NgIconComponent, NavbarComponent],
   viewProviders: [provideIcons({
     heroArrowLeft, heroCheckBadge, heroMapPin, heroShieldCheck,
-    heroPhone, heroEnvelope, heroClock, heroStar, heroBriefcase,
-    heroUserCircle
+    heroPhone, heroEnvelope, heroStar, heroBriefcase,
+    heroUserCircle, heroHeart
   })],
   templateUrl: './public-provider-profile.html',
   styleUrl: './public-provider-profile.css',
 })
 export class PublicProviderProfileComponent implements OnInit {
-  private route          = inject(ActivatedRoute);
-  private router         = inject(Router);
-  private profileService = inject(ProfileService);
-  private cdr            = inject(ChangeDetectorRef);
+  private route             = inject(ActivatedRoute);
+  private router            = inject(Router);
+  private profileService    = inject(ProfileService);
+  readonly favoritesService = inject(FavoritesService);
+  private cdr               = inject(ChangeDetectorRef);
 
   provider: ProviderProfile | null = null;
   errorMessage = '';
@@ -36,16 +37,14 @@ export class PublicProviderProfileComponent implements OnInit {
 
   ngOnInit(): void {
     this.providerId = this.route.snapshot.paramMap.get('id') ?? '1';
+    this.favoritesService.loadFavorites();
     this.loadProfile();
   }
 
   loadProfile(): void {
     this.errorMessage = '';
     this.profileService.getProviderProfile(this.providerId).subscribe({
-      next: (data) => {
-        this.provider = data;
-        this.cdr.detectChanges();
-      },
+      next: (data) => { this.provider = data; this.cdr.detectChanges(); },
       error: () => {
         this.errorMessage = 'No se pudo cargar el perfil del proveedor.';
         this.cdr.detectChanges();
@@ -53,13 +52,10 @@ export class PublicProviderProfileComponent implements OnInit {
     });
   }
 
-  get ratingBars(): { stars: number; percentage: number }[] {
-  const dist = this.provider?.ratingDistribution ?? {};
-  return [5, 4, 3, 2, 1].map(stars => ({
-    stars,
-    percentage: dist[stars] ?? 0
-  }));
-}
+  get canUseFavorites(): boolean {
+    return this.favoritesService.canUseFavorites;
+  }
+
 
   // Vuelve a explorar, no al perfil del proveedor
   goBack(): void {
@@ -74,7 +70,28 @@ export class PublicProviderProfileComponent implements OnInit {
   }
   hasProfileImage(): boolean {
     return !!this.provider?.profileImage;
+
+  get isFavorite(): boolean {
+    return this.favoritesService.isFavorite(Number(this.providerId));
   }
+
+  toggleFavorite(): void {
+    if (!this.canUseFavorites) return;
+    this.favoritesService.toggleFavorite(Number(this.providerId)).subscribe({
+      next: () => this.cdr.detectChanges(),
+      error: (err) => console.error('Error al actualizar favorito:', err)
+    });
+  }
+
+  get ratingBars(): { stars: number; percentage: number }[] {
+    const dist = (this.provider as any)?.ratingDistribution ?? {};
+    return [5, 4, 3, 2, 1].map(stars => ({ stars, percentage: dist[stars] ?? 0 }));
+
+  }
+
+  goBack(): void { this.router.navigate(['/explorar']); }
+  hireProvider(): void { this.router.navigate(['/seleccionar-servicio', this.providerId]); }
+  hasProfileImage(): boolean { return !!this.provider?.profileImage; }
 
   getStarsArray(rating: number): number[] {
     return Array.from({ length: 5 }, (_, i) => (i < Math.round(rating) ? 1 : 0));
@@ -85,8 +102,6 @@ export class PublicProviderProfileComponent implements OnInit {
   }
 
   get startingPrice(): string {
-    return this.provider?.services?.length
-      ? this.provider.services[0].price
-      : 'Consultar';
+    return this.provider?.services?.length ? this.provider.services[0].price : 'Consultar';
   }
 }
