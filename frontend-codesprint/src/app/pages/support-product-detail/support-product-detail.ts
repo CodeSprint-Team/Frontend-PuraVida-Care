@@ -53,6 +53,9 @@ export class SupportProductDetail implements OnInit {
   offerError = '';
   offerSuccess = '';
 
+  hasCurrentUserOffer = false;
+  userOfferMessage = '';
+
   private offerSuccessTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
@@ -84,17 +87,47 @@ export class SupportProductDetail implements OnInit {
       next: (data) => {
         this.ngZone.run(() => {
           this.product = data;
-          this.loading = false;
-          this.cdr.detectChanges();
+          this.checkIfCurrentUserAlreadyOffered();
         });
       },
       error: () => {
         this.ngZone.run(() => {
           this.product = null;
           this.loading = false;
+          this.hasCurrentUserOffer = false;
+          this.userOfferMessage = '';
           this.cdr.detectChanges();
         });
       },
+    });
+  }
+
+  checkIfCurrentUserAlreadyOffered(): void {
+    if (!this.product || !this.currentUserId) {
+      this.hasCurrentUserOffer = false;
+      this.userOfferMessage = '';
+      this.loading = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.supportProductService.getOffersByPostId(this.product.id).subscribe({
+      next: (offers: ArticleOfferResponse[]) => {
+        const myOffer = offers.find(
+          (offer) => offer.buyerUserId === this.currentUserId
+        );
+
+        this.hasCurrentUserOffer = !!myOffer;
+        this.userOfferMessage = myOffer ? 'Oferta ya realizada' : '';
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.hasCurrentUserOffer = false;
+        this.userOfferMessage = '';
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -177,8 +210,9 @@ export class SupportProductDetail implements OnInit {
     return !!this.product &&
       !!this.currentUserId &&
       this.product.acceptsOffers === true &&
-      this.product.publicationState === 'ACTIVE' &&
-      this.product.userId !== this.currentUserId;
+      (this.product.publicationState === 'ACTIVE' || this.product.publicationState === 'RESERVED') &&
+      this.product.userId !== this.currentUserId &&
+      !this.hasCurrentUserOffer;
   }
 
   openOfferModal(): void {
@@ -247,6 +281,8 @@ export class SupportProductDetail implements OnInit {
         this.offerAmount = null;
         this.offerMessage = '';
         this.offerSuccess = '¡Oferta realizada con éxito! El vendedor ya puede verla.';
+        this.hasCurrentUserOffer = true;
+        this.userOfferMessage = 'Oferta ya realizada';
         this.clearOfferSuccessAfterDelay();
         this.cdr.detectChanges();
       },

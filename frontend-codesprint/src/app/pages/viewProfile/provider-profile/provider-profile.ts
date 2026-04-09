@@ -100,4 +100,11 @@ export class ProviderProfileComponent implements OnInit {
       ? this.provider.services[0].price
       : 'Consultar';
   }
+    verOfertasRecibidas(): void {
+  this.router.navigate(['/support-products/received-offers']);
+}
+
+  verOfertasRealizadas(): void {
+  this.router.navigate(['/support-products/made-offers']);
+}
 }

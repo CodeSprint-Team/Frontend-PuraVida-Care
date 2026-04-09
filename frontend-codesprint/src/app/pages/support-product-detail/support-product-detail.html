@@ -190,16 +190,28 @@
               }
             </div>
 
-            @if (canMakeOffer()) {
-              <div class="mb-6">
+            <div class="mb-6">
+              @if (hasCurrentUserOffer) {
+                <div
+                  class="w-full sm:w-auto rounded-xl border border-amber-200 bg-amber-50 px-5 py-3 text-amber-800 font-semibold"
+                >
+                  Ya ofertaste por este artículo
+                </div>
+              } @else if (canMakeOffer()) {
                 <button
                   class="w-full sm:w-auto rounded-xl bg-emerald-600 px-5 py-3 text-white font-semibold hover:bg-emerald-700 transition"
                   (click)="openOfferModal()"
                 >
                   Hacer oferta
                 </button>
-              </div>
-            }
+              } @else {
+                <div
+                  class="w-full sm:w-auto rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 text-slate-600 font-medium"
+                >
+                  Este artículo no está disponible para nuevas ofertas
+                </div>
+              }
+            </div>
 
             <div class="border-t pt-6">
               <h2 class="text-lg font-semibold text-gray-900 mb-3">Información del propietario</h2>
