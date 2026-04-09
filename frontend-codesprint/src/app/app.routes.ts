@@ -56,6 +56,9 @@ import {ConfirmBooking} from './pages/confirm-booking/confirm-booking';
 import { CreateSupportProductPostComponent } from './pages/create-support-product-post/create-support-product-post';
 import { SupportProductsMarketplace } from './pages/support-products-marketplace/support-products-marketplace';
 import { SupportProductDetail } from './pages/support-product-detail/support-product-detail';
+import { SupportProductReceivedOffers } from './pages/support-product-received-offers/support-product-received-offers';
+import { SupportProductMadeOffers } from './pages/support-product-made-offers/support-product-made-offers';
+
 
 import { MyCompletedServicesComponent } from './pages/my-completed-services/my-completed-services';
 import { CreateReviewComponent } from './pages/create-review/create-review';
@@ -117,7 +120,11 @@ export const routes: Routes = [
   { path: 'proveedor/:id', component: PublicProviderProfileComponent },
   { path: 'support-products/create', component: CreateSupportProductPostComponent },
   { path: 'support-products', component: SupportProductsMarketplace },
+  {path: 'support-products/received-offers', component: SupportProductReceivedOffers },
+  {path: 'support-products/made-offers', component: SupportProductMadeOffers },
   {path: 'support-products/:id', component: SupportProductDetail },
+
+
 
 
 
