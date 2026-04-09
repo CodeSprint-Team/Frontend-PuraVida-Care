@@ -73,6 +73,26 @@
           <span>Acepta ofertas</span>
         </button>
 
+        <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+        <button
+          type="button"
+          (click)="verOfertasRecibidas()"
+          class="min-h-11 rounded-xl border border-emerald-200 bg-emerald-50 px-4 sm:px-5 py-2 text-xs sm:text-sm font-semibold text-emerald-700 transition-all hover:bg-emerald-100 hover:border-emerald-300 hover:shadow-sm flex items-center gap-2"
+        >
+          <span class="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+          <span>Ofertas recibidas</span>
+        </button>
+
+        <button
+          type="button"
+          (click)="verOfertasRealizadas()"
+          class="min-h-11 rounded-xl border border-teal-200 bg-teal-50 px-4 sm:px-5 py-2 text-xs sm:text-sm font-semibold text-teal-700 transition-all hover:bg-teal-100 hover:border-teal-300 hover:shadow-sm flex items-center gap-2"
+        >
+          <span class="inline-flex h-2.5 w-2.5 rounded-full bg-teal-500"></span>
+          <span>Mis ofertas</span>
+        </button>
+      </div>
+
         <button
           type="button"
           (click)="toggleFilters()"

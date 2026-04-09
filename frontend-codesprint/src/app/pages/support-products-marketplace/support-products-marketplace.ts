@@ -242,4 +242,12 @@ export class SupportProductsMarketplace implements OnInit {
 
     return null;
   }
+
+    verOfertasRecibidas(): void {
+  this.router.navigate(['/support-products/received-offers']);
+}
+
+verOfertasRealizadas(): void {
+  this.router.navigate(['/support-products/made-offers']);
+}
 }
