@@ -62,7 +62,7 @@ import { CreateReviewComponent } from './pages/create-review/create-review';
 import { AdminProductSupportCatalog } from './pages/admin-product-support-catalog/admin-product-support-catalog';
 import { AdminServiceCategory } from './pages/admin-service-category/admin-service-category';
 import { CreateServicesComponent } from './pages/createServices/create-services/create-services';
-
+import { MyProductsComponent } from './pages/my-products/my-products';
 
 
 export const routes: Routes = [
@@ -118,6 +118,7 @@ export const routes: Routes = [
   { path: 'support-products/create', component: CreateSupportProductPostComponent },
   { path: 'support-products', component: SupportProductsMarketplace },
   {path: 'support-products/:id', component: SupportProductDetail },
+  {path: 'my-products', component: MyProductsComponent},
 
 
 

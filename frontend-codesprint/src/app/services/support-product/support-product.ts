@@ -26,6 +26,10 @@ private apiUrl = 'http://127.0.0.1:8081/api/v1/support-products';
     return this.http.get<SupportProductPostResponse>(`${this.apiUrl}/${id}`);
   }
 
+  updatePost(id: number, data: any): Observable<SupportProductPostResponse> {
+  return this.http.put<SupportProductPostResponse>(`${this.apiUrl}/${id}`, data);
+  }
+
   deletePost(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }

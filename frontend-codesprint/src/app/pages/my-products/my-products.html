@@ -1,0 +1,85 @@
+<div class="min-h-screen bg-gray-50">
+  <app-navbar></app-navbar>
+
+  <main class="lg:ml-64 pb-24 lg:pb-8">
+    <div class="container mx-auto max-w-7xl px-4 py-6">
+
+      <div class="mb-6">
+        <h1 class="text-2xl font-semibold">Mis productos</h1>
+        <p class="text-gray-600">Gestioná tus publicaciones</p>
+      </div>
+
+      <!-- LOADING -->
+      <div *ngIf="loading" class="bg-white rounded-xl p-8 text-center">
+        <h3 class="text-lg font-semibold">Cargando tus productos...</h3>
+      </div>
+
+      <!-- LISTA -->
+      <div *ngIf="!loading && myProducts.length > 0"
+           class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <div *ngFor="let product of myProducts"
+             class="bg-white rounded-xl shadow-sm overflow-hidden">
+
+          <!-- Imagen -->
+          <div class="h-48 bg-gray-100">
+            <img *ngIf="getImageUrl(product)"
+                 [src]="getImageUrl(product)"
+                 class="w-full h-full object-cover" />
+          </div>
+
+          <!-- Info -->
+          <div class="p-4">
+            <h3 class="font-semibold text-lg mb-2">
+              {{ product.title }}
+            </h3>
+
+            <p class="text-gray-600 text-sm mb-2">
+              ₡{{ product.salePrice | number }}
+            </p>
+
+            <!-- Estado -->
+            <div class="mb-3">
+              <span *ngIf="product.publicationState === 'ACTIVE'"
+                    class="bg-green-100 text-green-700 px-2 py-1 text-xs rounded">
+                Activo
+              </span>
+
+              <span *ngIf="product.publicationState === 'SOLD'"
+                    class="bg-gray-200 text-gray-700 px-2 py-1 text-xs rounded">
+                Vendido
+              </span>
+            </div>
+
+            <!-- BOTONES -->
+            <div class="flex flex-col gap-2">
+
+              <button
+                (click)="goToDetail(product)"
+                class="w-full px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
+                Ver detalle
+              </button>
+
+              <button
+                *ngIf="product.publicationState === 'ACTIVE' 
+                || product.publicationState === 'RESERVED'"                
+                (click)="markAsSold(product)"
+                class="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center justify-center gap-2">
+                <ng-icon name="heroCheckCircle" size="18"></ng-icon>
+                Marcar como vendido
+              </button>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!loading && myProducts.length === 0"
+           class="bg-white rounded-xl p-8 text-center">
+        <h3 class="text-lg font-semibold">No tenés productos aún</h3>
+        <p class="text-gray-600">Publicá tu primer producto 🚀</p>
+      </div>
+
+    </div>
+  </main>
+</div>
