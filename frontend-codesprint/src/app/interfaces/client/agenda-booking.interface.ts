@@ -33,4 +33,9 @@ export interface AgendaBookingResponseDTO {
 
 export interface RescheduleRequestDTO {
   scheduledAt: string;
+  rescheduleReason: string;
+}
+
+export interface CancelBookingRequestDTO {
+  cancellationReason: string;
 }

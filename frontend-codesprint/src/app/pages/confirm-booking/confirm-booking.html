@@ -2,7 +2,7 @@
   <app-navbar [role]="'client'"></app-navbar>
 
   <div class="flex-1 lg:ml-64 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8 bg-gray-50 min-h-screen overflow-x-hidden">
-    <div class="max-w-3xl mx-auto">
+    <div class="max-w-6xl mx-auto">
 
       <button (click)="goBack()" class="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-6 transition-colors">
         <ng-icon name="heroArrowLeft" size="18"></ng-icon>
@@ -16,10 +16,10 @@
         {{ errorMessage }}
       </div>
 
-      <div class="flex flex-col lg:flex-row gap-6">
+      <div class="flex flex-col xl:flex-row gap-6 items-start">
 
         <!-- Formulario -->
-        <div class="flex-1 flex flex-col gap-4">
+        <div class="flex-1 w-full flex flex-col gap-4 min-w-0">
 
           <!-- Fecha y Hora -->
           <div class="bg-white rounded-2xl border border-gray-100 p-6">
@@ -29,41 +29,44 @@
               </div>
               <h2 class="font-bold text-gray-800">Fecha y Hora</h2>
             </div>
-            <div class="grid grid-cols-2 gap-4">
 
-              <!-- Fecha -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
                   Fecha <span class="text-red-500">*</span>
                 </label>
-                <input type="date" [(ngModel)]="fecha"
-                       class="w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
-                       [ngClass]="(submitted && !fecha) || fechaEsPasada ? 'border-red-400 bg-red-50' : 'border-gray-200'" />
+                <input
+                  type="date"
+                  [(ngModel)]="fecha"
+                  class="w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+                  [ngClass]="(submitted && !fecha) || fechaEsPasada ? 'border-red-400 bg-red-50' : 'border-gray-200'"
+                />
 
-                <!-- Campo requerido -->
                 <p *ngIf="submitted && !fecha" class="text-xs text-red-500 mt-1">
                   Campo requerido
                 </p>
 
-                <!-- Alerta fecha pasada -->
-                <div *ngIf="fechaEsPasada"
-                     class="flex items-center gap-2 mt-2 bg-red-50 border border-red-200 text-red-600 text-xs rounded-lg px-3 py-2">
+                <div
+                  *ngIf="fechaEsPasada"
+                  class="flex items-center gap-2 mt-2 bg-red-50 border border-red-200 text-red-600 text-xs rounded-lg px-3 py-2"
+                >
                   <ng-icon name="heroExclamationCircle" size="14"></ng-icon>
                   La fecha ingresada ya pasó. Por favor selecciona una fecha válida.
                 </div>
               </div>
 
-              <!-- Hora -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
                   Hora <span class="text-red-500">*</span>
                 </label>
-                <input type="time" [(ngModel)]="hora"
-                       class="w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
-                       [ngClass]="submitted && !hora ? 'border-red-400 bg-red-50' : 'border-gray-200'" />
+                <input
+                  type="time"
+                  [(ngModel)]="hora"
+                  class="w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+                  [ngClass]="submitted && !hora ? 'border-red-400 bg-red-50' : 'border-gray-200'"
+                />
                 <p *ngIf="submitted && !hora" class="text-xs text-red-500 mt-1">Campo requerido</p>
               </div>
-
             </div>
           </div>
 
@@ -75,96 +78,72 @@
               </div>
               <h2 class="font-bold text-gray-800">Ubicaciones</h2>
             </div>
-            <div class="flex flex-col gap-4">
+
+            <div class="flex flex-col gap-6">
+              <!-- Punto de origen con mapa -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
                   Punto de origen <span class="text-red-500">*</span>
                 </label>
-                <input type="text" [(ngModel)]="origen" placeholder="Ej: Calle 15, San José Centro"
-                       class="w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
-                       [ngClass]="submitted && !origen ? 'border-red-400 bg-red-50' : 'border-gray-200'" />
-                <p *ngIf="submitted && !origen" class="text-xs text-red-500 mt-1">Campo requerido</p>
+
+                <div id="booking-map" class="w-full h-52 rounded-xl border border-gray-200 mb-3"></div>
+
+                <p class="text-gray-500 text-sm mb-3">Haz click en el mapa para marcar el origen</p>
+
+                <input
+                  type="text"
+                  [(ngModel)]="origen"
+                  placeholder="Ej: Frente al parque, casa azul"
+                  class="w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+                  [ngClass]="submitted && !origen ? 'border-red-400 bg-red-50' : 'border-gray-200'"
+                />
+
+                <p class="text-xs text-gray-400 mt-1">
+                  Agregue una referencia para facilitar la identificación del lugar
+                </p>
+
+                <p *ngIf="submitted && !origen" class="text-xs text-red-500 mt-1">
+                  Campo requerido
+                </p>
               </div>
+
+              <!-- Punto de destino con mapa -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
                   Destino <span class="text-red-500">*</span>
                 </label>
-                <input type="text" [(ngModel)]="destino" placeholder="Ej: Hospital San Juan de Dios"
-                       class="w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
-                       [ngClass]="submitted && !destino ? 'border-red-400 bg-red-50' : 'border-gray-200'" />
-                <p *ngIf="submitted && !destino" class="text-xs text-red-500 mt-1">Campo requerido</p>
-              </div>
-              <p class="text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2">
-                <span class="font-medium text-gray-500">Sugerencia:</span>
-                Incluye referencias o números de casa para facilitar la ubicación
-              </p>
-            </div>
-          </div>
 
-          <!-- Notas -->
-          <div class="bg-white rounded-2xl border border-gray-100 p-6">
-            <div class="flex items-center gap-2 mb-2">
-              <div class="w-8 h-8 rounded-full bg-yellow-50 flex items-center justify-center">
-                <ng-icon name="heroExclamationCircle" size="16" class="text-yellow-500"></ng-icon>
-              </div>
-              <h2 class="font-bold text-gray-800">Notas Importantes</h2>
-            </div>
-            <p class="text-xs text-gray-400 mb-3 ml-10">
-              Estas notas fueron prellenadas desde tu perfil. Puedes editarlas si es necesario.
-            </p>
-            <textarea [(ngModel)]="notas" rows="3"
-                      class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition resize-none">
-            </textarea>
-          </div>
+                <div id="destination-map" class="w-full h-52 rounded-xl border border-gray-200 mb-3"></div>
 
-          <!-- Contacto emergencia -->
-          <div class="bg-white rounded-2xl border border-gray-100 p-6">
-            <div class="flex items-center gap-2 mb-5">
-              <div class="w-8 h-8 rounded-full bg-pink-50 flex items-center justify-center">
-                <ng-icon name="heroPhone" size="16" class="text-pink-500"></ng-icon>
-              </div>
-              <h2 class="font-bold text-gray-800">Contacto de Emergencia</h2>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                Nombre y teléfono <span class="text-red-500">*</span>
-              </label>
-              <input type="text" [(ngModel)]="contactoEmergencia" placeholder="Ej: Juan González - 8888-5555"
-                     class="w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
-                     [ngClass]="submitted && !contactoEmergencia ? 'border-red-400 bg-red-50' : 'border-gray-200'" />
-              <p *ngIf="submitted && !contactoEmergencia" class="text-xs text-red-500 mt-1">Campo requerido</p>
-            </div>
-          </div>
+                <p class="text-gray-500 text-sm mb-3">Haz click en el mapa para marcar el destino</p>
 
-          <!-- Preferencias -->
-          <div class="bg-white rounded-2xl border border-gray-100 p-6">
-            <div class="flex items-center gap-2 mb-5">
-              <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center">
-                <ng-icon name="heroHeart" size="16" class="text-red-400"></ng-icon>
-              </div>
-              <h2 class="font-bold text-gray-800">Preferencias</h2>
-            </div>
-            <label class="flex items-start gap-3 cursor-pointer group">
-              <input type="checkbox" [(ngModel)]="marcarFavorito" class="mt-0.5 accent-teal-600 w-4 h-4 cursor-pointer" />
-              <div>
-                <p class="text-sm font-medium text-gray-800 group-hover:text-teal-700 transition-colors">
-                  Marcar como proveedor favorito
+                <input
+                  type="text"
+                  [(ngModel)]="destino"
+                  placeholder="Ej: Hospital San Juan de Dios"
+                  class="w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+                  [ngClass]="submitted && !destino ? 'border-red-400 bg-red-50' : 'border-gray-200'"
+                />
+
+                <p class="text-xs text-gray-400 mt-1">
+                  Agregue una referencia para facilitar la identificación del lugar de destino
                 </p>
-                <p class="text-xs text-gray-400 mt-0.5">
-                  Podrás acceder rápidamente a este proveedor en el futuro
+
+                <p *ngIf="submitted && !destino" class="text-xs text-red-500 mt-1">
+                  Campo requerido
                 </p>
               </div>
-            </label>
+            </div>
           </div>
 
+          
         </div>
 
         <!-- Resumen -->
-        <div class="lg:w-72 flex flex-col gap-4">
-          <div class="bg-white rounded-2xl border border-gray-100 p-6 lg:sticky lg:top-6">
+        <div class="w-full xl:w-80 shrink-0 flex flex-col gap-4">
+          <div class="bg-white rounded-2xl border border-gray-100 p-6 xl:sticky xl:top-6">
             <h2 class="font-bold text-gray-800 mb-4">Resumen de la reserva</h2>
 
-            <!-- Skeleton -->
             <div *ngIf="!provider" class="animate-pulse flex flex-col gap-3">
               <div class="h-4 bg-gray-200 rounded w-3/4"></div>
               <div class="h-4 bg-gray-100 rounded w-1/2"></div>
@@ -196,17 +175,81 @@
               </div>
             </div>
 
-            <button (click)="confirmar()" [disabled]="loading"
-                    class="w-full mt-6 py-3.5 rounded-xl font-semibold text-sm text-white transition-all duration-200"
-                    [ngClass]="loading
+            <!-- Método de pago -->
+            <div class="mt-6 border-t border-gray-100 pt-5">
+              <div class="flex items-center gap-2 mb-4">
+                <div class="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center">
+                  💳
+                </div>
+                <h2 class="font-bold text-gray-800">Método de pago</h2>
+              </div>
+
+              <div class="flex gap-3">
+                <button
+                  type="button"
+                  (click)="setAgreedPriceMode('CARD')"
+                  [ngClass]="{
+                    'bg-teal-700 text-white border-teal-700': agreedPriceMode === 'CARD',
+                    'bg-white text-gray-600 border-gray-200 hover:border-teal-400': agreedPriceMode !== 'CARD'
+                  }"
+                  class="flex-1 py-3 rounded-xl border text-sm font-semibold transition-all"
+                >
+                  Tarjeta
+                </button>
+
+                <button
+                  type="button"
+                  (click)="setAgreedPriceMode('PAYPAL')"
+                  [ngClass]="{
+                    'bg-teal-700 text-white border-teal-700': agreedPriceMode === 'PAYPAL',
+                    'bg-white text-gray-600 border-gray-200 hover:border-teal-400': agreedPriceMode !== 'PAYPAL'
+                  }"
+                  class="flex-1 py-3 rounded-xl border text-sm font-semibold transition-all"
+                >
+                  PayPal
+                </button>
+              </div>
+            </div>
+
+            <button
+              (click)="confirmar()"
+              [disabled]="loading"
+              class="w-full mt-6 py-3.5 rounded-xl font-semibold text-sm text-white transition-all duration-200"
+              [ngClass]="loading
                 ? 'bg-teal-400 opacity-60 cursor-not-allowed'
-                : 'bg-teal-700 hover:bg-teal-800 shadow-md cursor-pointer'">
-              {{ loading ? 'Procesando...' : 'Confirmar y pagar' }}
+                : 'bg-teal-700 hover:bg-teal-800 shadow-md cursor-pointer'"
+            >
+              {{ loading ? 'Procesando...' : 'Confirmar reserva' }}
             </button>
 
             <p *ngIf="submitted && !formValido" class="text-xs text-red-500 text-center mt-2">
               Completa todos los campos obligatorios
             </p>
+          </div>
+          <!-- Preferencias -->
+          <div class="bg-white rounded-2xl border border-gray-100 p-6">
+            <div class="flex items-center gap-2 mb-5">
+              <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center">
+                <ng-icon name="heroHeart" size="16" class="text-red-400"></ng-icon>
+              </div>
+              <h2 class="font-bold text-gray-800">Preferencias</h2>
+            </div>
+
+            <label class="flex items-start gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                [(ngModel)]="marcarFavorito"
+                class="mt-0.5 accent-teal-600 w-4 h-4 cursor-pointer"
+              />
+              <div>
+                <p class="text-sm font-medium text-gray-800 group-hover:text-teal-700 transition-colors">
+                  Marcar como proveedor favorito
+                </p>
+                <p class="text-xs text-gray-400 mt-0.5">
+                  Podrás acceder rápidamente a este proveedor en el futuro
+                </p>
+              </div>
+            </label>
           </div>
         </div>
 
