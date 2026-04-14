@@ -65,6 +65,7 @@ import { CreateReviewComponent } from './pages/create-review/create-review';
 import { AdminProductSupportCatalog } from './pages/admin-product-support-catalog/admin-product-support-catalog';
 import { AdminServiceCategory } from './pages/admin-service-category/admin-service-category';
 import { CreateServicesComponent } from './pages/createServices/create-services/create-services';
+import { FilteredHome } from './pages/filtered-home/filtered-home';
 
 
 
@@ -105,6 +106,7 @@ export const routes: Routes = [
   //Cliente
   { path: 'select-service', component: SelectService },
   { path: 'confirm-booking', component: ConfirmBooking },
+  { path: 'filtered-home', component: FilteredHome },
 
 
   // Proveedor
