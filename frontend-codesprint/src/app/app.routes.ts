@@ -65,6 +65,8 @@ import { CreateReviewComponent } from './pages/create-review/create-review';
 import { AdminProductSupportCatalog } from './pages/admin-product-support-catalog/admin-product-support-catalog';
 import { AdminServiceCategory } from './pages/admin-service-category/admin-service-category';
 import { CreateServicesComponent } from './pages/createServices/create-services/create-services';
+import { ChatIAComponent } from './pages/chat-AI/chat-ia/chat-ia';
+import { ResultadosRecomendadosComponent } from './pages/chat-AI/resultadosrecomendados/resultadosrecomendados';
 
 
 
@@ -168,6 +170,14 @@ export const routes: Routes = [
   {
     path: 'admin/service-categories',
     component: AdminServiceCategory
+  },
+  {
+    path: 'chat-ia',
+    component: ChatIAComponent
+  },
+  {
+    path: 'resultados-recomendados',
+    component: ResultadosRecomendadosComponent
   },
 
 

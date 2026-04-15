@@ -1,0 +1,334 @@
+<div class="min-h-screen bg-gray-50">
+  <app-navbar [role]="'client'"></app-navbar>
+
+  <main class="lg:ml-64 pb-24 lg:pb-8">
+    <div class="container mx-auto px-4 sm:px-6 py-6 max-w-4xl">
+
+      <!-- ── Header ─────────────────────────────────────────── -->
+      <div class="bg-white rounded-2xl shadow-sm mb-4 p-4 sm:p-6 border border-gray-100">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-teal-500 to-teal-600
+                        rounded-xl flex items-center justify-center flex-shrink-0">
+              <ng-icon name="heroSparkles" class="text-white text-xl"></ng-icon>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 mb-0.5">
+                <h2 class="text-lg font-bold text-gray-900">Asistente PuraVidaCare</h2>
+                <span class="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full
+                             text-xs font-medium flex items-center gap-1">
+                  <ng-icon name="heroCpuChip" class="text-xs"></ng-icon>
+                  IA
+                </span>
+                <span *ngIf="chatMode === 'booking'"
+                      class="px-2 py-0.5 bg-teal-100 text-teal-700 rounded-full
+                             text-xs font-medium flex items-center gap-1">
+                  <ng-icon name="heroCalendarDays" class="text-xs"></ng-icon>
+                  Agendando
+                </span>
+              </div>
+              <p class="text-xs text-gray-500">
+                {{ chatMode === 'booking' ? 'Preparando tu reserva' : 'Conversá libremente, la IA entiende' }}
+              </p>
+            </div>
+          </div>
+
+          <button *ngIf="messages.length > 1" (click)="restart()"
+            class="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-500
+                   border border-gray-200 rounded-xl hover:bg-gray-50 transition">
+            <ng-icon name="heroArrowPath" class="text-base"></ng-icon>
+            Reiniciar
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Chat container ────────────────────────────────── -->
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+
+        <!-- Chips iniciales de selección rápida -->
+        <!-- Solo se muestran al inicio, desaparecen después del primer mensaje -->
+        <div *ngIf="showInitialChips && initialChips.length > 0 && !bookingDraft"
+             class="border-b border-gray-100 p-3 sm:p-4 bg-gray-50">
+          <p class="text-xs text-gray-400 mb-2">Selección rápida:</p>
+          <div class="flex flex-wrap gap-2">
+            <button *ngFor="let chip of initialChips"
+              (click)="sendMessage(chip)"
+              [disabled]="inputBlocked"
+              class="px-3 py-1.5 bg-white border border-gray-200 rounded-xl text-xs
+                     hover:border-teal-500 hover:bg-teal-50 hover:text-teal-700
+                     transition disabled:opacity-50 disabled:cursor-not-allowed">
+              {{ chip }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Chips del flujo de agendamiento -->
+        <div *ngIf="chatMode === 'booking' && currentBookingChips.length > 0 && !bookingDraft"
+             class="border-b border-gray-100 p-3 sm:p-4 bg-gray-50">
+          <p class="text-xs text-gray-400 mb-2">Selección rápida:</p>
+          <div class="flex flex-wrap gap-2">
+            <button *ngFor="let chip of currentBookingChips"
+              (click)="sendMessage(chip)"
+              [disabled]="inputBlocked"
+              class="px-3 py-1.5 bg-white border border-gray-200 rounded-xl text-xs
+                     hover:border-teal-500 hover:bg-teal-50 hover:text-teal-700
+                     transition disabled:opacity-50 disabled:cursor-not-allowed">
+              {{ chip }}
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Mensajes ──────────────────────────────────────── -->
+        <div class="h-96 sm:h-[480px] overflow-y-auto p-4 sm:p-6 space-y-4">
+
+          <ng-container *ngFor="let msg of messages">
+
+            <!-- Mensaje IA -->
+            <div *ngIf="msg.type === 'ai'" class="flex justify-start">
+              <div class="flex items-end gap-2 max-w-[85%]">
+                <div class="w-7 h-7 rounded-full bg-teal-100 flex items-center
+                            justify-center flex-shrink-0 mb-1">
+                  <ng-icon name="heroSparkles" class="text-teal-600 text-xs"></ng-icon>
+                </div>
+                <div>
+                  <div class="bg-gray-100 rounded-2xl rounded-bl-sm px-4 py-3">
+                    <p class="text-sm text-gray-900 leading-relaxed">{{ msg.content }}</p>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-1 ml-1">{{ formatTime(msg.timestamp) }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mensaje usuario -->
+            <div *ngIf="msg.type === 'user'" class="flex justify-end">
+              <div class="max-w-[80%]">
+                <div class="bg-teal-600 rounded-2xl rounded-br-sm px-4 py-3">
+                  <p class="text-sm text-white leading-relaxed">{{ msg.content }}</p>
+                </div>
+                <p class="text-xs text-gray-400 mt-1 text-right mr-1">
+                  {{ formatTime(msg.timestamp) }}
+                </p>
+              </div>
+            </div>
+
+            <!-- ── Card de recomendación ─────────────────────── -->
+            <div *ngIf="msg.type === 'recommendation' && recommendation"
+                 class="flex justify-center my-4">
+              <div class="w-full max-w-lg bg-gradient-to-br from-teal-600 to-teal-700
+                          rounded-2xl shadow-lg p-5 text-white">
+
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center
+                              justify-center flex-shrink-0">
+                    <ng-icon name="heroSparkles" class="text-white text-lg"></ng-icon>
+                  </div>
+                  <div>
+                    <p class="text-xs text-teal-200">Recomendación IA</p>
+                    <h3 class="font-bold text-lg leading-tight">{{ recommendation.category }}</h3>
+                  </div>
+                </div>
+
+                <div class="bg-white/10 rounded-xl p-4 mb-3">
+                  <p class="text-teal-100 text-xs mb-1">¿Por qué este servicio?</p>
+                  <p class="text-white text-sm leading-relaxed">{{ recommendation.reason }}</p>
+                </div>
+
+                <div class="bg-white/10 rounded-xl px-4 py-2.5 mb-4 flex items-center gap-2">
+                  <ng-icon name="heroCheckCircle" class="text-teal-200 text-sm"></ng-icon>
+                  <p class="text-teal-100 text-xs">Zona de búsqueda: {{ recommendation.zone }}</p>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                  <button (click)="startBookingFlow()"
+                    class="w-full bg-white text-teal-700 font-semibold py-3 rounded-xl
+                           hover:bg-teal-50 transition flex items-center justify-center gap-2 text-sm">
+                    <ng-icon name="heroCalendarDays" class="text-base"></ng-icon>
+                    Agendar ahora
+                  </button>
+
+                  <button (click)="goToResults()"
+                    class="w-full bg-white/10 text-white font-medium py-2.5 rounded-xl
+                           hover:bg-white/20 transition flex items-center justify-center gap-2 text-sm">
+                    Ver proveedores recomendados
+                    <ng-icon name="heroArrowRight" class="text-base"></ng-icon>
+                  </button>
+
+                  <button (click)="restart()"
+                    class="w-full mt-1 text-teal-200 text-xs py-2 hover:text-white
+                           transition flex items-center justify-center gap-1.5">
+                    <ng-icon name="heroArrowPath" class="text-xs"></ng-icon>
+                    Hacer otra consulta
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Card de borrador de reserva ─────────────── -->
+            <div *ngIf="msg.type === 'booking-draft' && bookingDraft"
+                 class="flex justify-center my-4">
+              <div class="w-full max-w-lg bg-white border-2 border-teal-500
+                          rounded-2xl shadow-lg overflow-hidden">
+
+                <div class="bg-gradient-to-r from-teal-600 to-teal-700 px-5 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+                      <ng-icon name="heroCalendarDays" class="text-white text-base"></ng-icon>
+                    </div>
+                    <div>
+                      <p class="text-xs text-teal-200">Borrador de reserva</p>
+                      <h3 class="font-bold text-white">{{ bookingDraft.category }}</h3>
+                    </div>
+                    <span class="ml-auto px-2 py-1 bg-yellow-400 text-yellow-900
+                                 text-xs font-bold rounded-lg">PENDIENTE</span>
+                  </div>
+                </div>
+
+                <div class="p-5 space-y-3">
+                  <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-gray-50 rounded-xl p-3">
+                      <p class="text-xs text-gray-400 mb-1">📅 Fecha y hora</p>
+                      <p class="text-xs font-medium text-gray-900">{{ bookingDraft.scheduledAt }}</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3">
+                      <p class="text-xs text-gray-400 mb-1">📍 Zona</p>
+                      <p class="text-xs font-medium text-gray-900">{{ bookingDraft.zone }}</p>
+                    </div>
+                  </div>
+
+                  <div class="bg-gray-50 rounded-xl p-3">
+                    <p class="text-xs text-gray-400 mb-1">🏠 Origen</p>
+                    <p class="text-sm font-medium text-gray-900">{{ bookingDraft.originAddress }}</p>
+                  </div>
+
+                  <div class="bg-gray-50 rounded-xl p-3">
+                    <p class="text-xs text-gray-400 mb-1">🏥 Destino</p>
+                    <p class="text-sm font-medium text-gray-900">{{ bookingDraft.destinationAddress }}</p>
+                  </div>
+
+                  <div *ngIf="bookingDraft.agreedPrice"
+                       class="bg-teal-50 border border-teal-100 rounded-xl p-3
+                              flex items-center justify-between">
+                    <p class="text-xs text-teal-600">Precio estimado</p>
+                    <p class="font-bold text-teal-700">
+                      {{ formatPrice(bookingDraft.agreedPrice, bookingDraft.agreedPriceMode) }}
+                    </p>
+                  </div>
+
+                  <div *ngIf="bookingDraft.notes && bookingDraft.notes !== 'ninguna'
+                              && bookingDraft.notes !== 'Ninguna'"
+                       class="bg-amber-50 border border-amber-100 rounded-xl p-3">
+                    <p class="text-xs text-amber-600 mb-1">📝 Notas</p>
+                    <p class="text-xs text-amber-800">{{ bookingDraft.notes }}</p>
+                  </div>
+
+                  <div class="bg-blue-50 border border-blue-100 rounded-xl p-3">
+                    <p class="text-xs text-blue-700">
+                      ℹ️ Este es un <strong>borrador</strong>. La reserva quedará en estado
+                      <strong>PENDIENTE</strong> hasta que el proveedor la acepte.
+                    </p>
+                  </div>
+
+                  <div class="flex gap-3 pt-1">
+                    <button (click)="restart()" [disabled]="isConfirming"
+                      class="flex-1 py-3 border border-gray-200 text-gray-600 rounded-xl
+                             text-sm font-medium hover:bg-gray-50 transition
+                             disabled:opacity-50 flex items-center justify-center gap-2">
+                      <ng-icon name="heroXMark" class="text-base"></ng-icon>
+                      Cancelar
+                    </button>
+
+                    <button (click)="confirmBooking()" [disabled]="isConfirming"
+                      class="flex-grow py-3 bg-teal-600 text-white rounded-xl
+                             text-sm font-semibold hover:bg-teal-700 transition
+                             disabled:opacity-60 flex items-center justify-center gap-2">
+                      <ng-container *ngIf="!isConfirming">
+                        <ng-icon name="heroCheckCircle" class="text-base"></ng-icon>
+                        Confirmar reserva
+                      </ng-container>
+                      <ng-container *ngIf="isConfirming">
+                        <span class="w-4 h-4 border-2 border-white border-t-transparent
+                                     rounded-full animate-spin"></span>
+                        Confirmando...
+                      </ng-container>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </ng-container>
+
+          <!-- Indicador de escritura / carga IA -->
+          <div *ngIf="isTyping || isLoadingAI" class="flex justify-start">
+            <div class="flex items-end gap-2">
+              <div class="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                <ng-icon name="heroSparkles" class="text-teal-600 text-xs"></ng-icon>
+              </div>
+              <div class="bg-gray-100 rounded-2xl rounded-bl-sm px-4 py-3">
+                <div class="flex gap-1 items-center">
+                  <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+                  <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.15s]"></span>
+                  <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.3s]"></span>
+                  <span *ngIf="isLoadingAI" class="ml-2 text-xs text-gray-400">
+                    {{ chatMode === 'booking' ? 'Preparando borrador...' : 'Pensando...' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div #messagesEnd></div>
+        </div>
+
+        <!-- ── Input ─────────────────────────────────────────── -->
+        <div class="border-t border-gray-100 p-3 sm:p-4 bg-white">
+          <div class="flex gap-3">
+            <input type="text"
+                   [(ngModel)]="inputText"
+                   (keyup.enter)="sendMessage()"
+                   [disabled]="inputBlocked"
+                   [placeholder]="bookingDraft
+                     ? 'Revisá el borrador y confirmá o cancelá'
+                     : 'Escribí libremente...'"
+                   class="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl
+                          outline-none focus:border-teal-500 transition text-sm
+                          disabled:opacity-50 disabled:cursor-not-allowed" />
+            <button (click)="sendMessage()"
+                    [disabled]="!inputText.trim() || inputBlocked"
+                    class="px-4 py-3 bg-teal-600 text-white rounded-xl hover:bg-teal-700
+                           transition disabled:opacity-50 disabled:cursor-not-allowed">
+              <ng-icon name="heroPaperAirplane" class="text-lg"></ng-icon>
+            </button>
+          </div>
+          <p class="text-xs text-gray-400 mt-2 text-center">
+            Presiona Enter para enviar · La IA no diagnostica condiciones médicas
+          </p>
+        </div>
+      </div>
+
+      <!-- Info card -->
+      <div class="mt-4 bg-blue-50 border border-blue-100 rounded-2xl p-4 sm:p-5">
+        <h3 class="text-blue-900 font-semibold mb-2 text-sm">¿Cómo funciona?</h3>
+        <ol class="space-y-1.5 text-xs text-blue-800">
+          <li class="flex gap-2">
+            <span class="font-bold text-blue-600 flex-shrink-0">1.</span>
+            Contanos qué necesitás en tus propias palabras — la IA entiende lenguaje natural
+          </li>
+          <li class="flex gap-2">
+            <span class="font-bold text-blue-600 flex-shrink-0">2.</span>
+            La IA te hará preguntas para entender mejor la situación
+          </li>
+          <li class="flex gap-2">
+            <span class="font-bold text-blue-600 flex-shrink-0">3.</span>
+            Cuando tenga suficiente info, te recomendará el servicio ideal
+          </li>
+          <li class="flex gap-2">
+            <span class="font-bold text-blue-600 flex-shrink-0">4.</span>
+            Podés agendar directo o ver los proveedores disponibles
+          </li>
+        </ol>
+      </div>
+
+    </div>
+  </main>
+</div>
