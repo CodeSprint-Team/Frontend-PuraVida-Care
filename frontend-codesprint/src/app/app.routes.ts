@@ -4,6 +4,7 @@ import { ProfileEdit } from './pages/profile-edit/profile-edit';
 import { Profile } from './pages/profile/profile';
 import { HomeComponent } from './pages/client/home-client/home-client';
 import { MyServicesComponent } from './pages/myservices/myservices.component';
+import { HomeFilterComponent } from './pages/home-filter/home-filter.component';
 
 export const routes: Routes = [
 
@@ -33,10 +34,14 @@ export const routes: Routes = [
     component: ProfileEdit
   },
 
-  // 🔴 NUEVA RUTA PARA MY SERVICES
   {
     path: 'my-services',
     component: MyServicesComponent
+  },
+
+  {
+    path: 'home-filter',
+    component: HomeFilterComponent
   }
 
 ];
