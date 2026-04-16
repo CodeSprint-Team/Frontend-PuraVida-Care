@@ -11,4 +11,5 @@ export interface ArticleOfferResponse {
   message: string;
   offerState: 'PENDING' | 'ACCEPTED' | 'REJECTED';
   created?: string;
+  publicationState?: string;
 }
