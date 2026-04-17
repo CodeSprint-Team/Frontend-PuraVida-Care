@@ -5,11 +5,12 @@ import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { NavbarComponent } from '../../../components/navbar/navbar';
 import { ProfileService } from '../../viewProfile/services/profile.services';
 import { FavoritesService } from '../../../services/favorite.services';
+import { ChatService } from '../../chatMessage/chat.service/chat.service';
 import { ProviderProfile } from '../../viewProfile/models/provider-profile.model';
 import {
   heroArrowLeft, heroCheckBadge, heroMapPin, heroShieldCheck,
   heroPhone, heroEnvelope, heroStar, heroBriefcase,
-  heroUserCircle, heroHeart
+  heroUserCircle, heroHeart, heroChatBubbleLeftRight
 } from '@ng-icons/heroicons/outline';
 
 @Component({
@@ -19,7 +20,7 @@ import {
   viewProviders: [provideIcons({
     heroArrowLeft, heroCheckBadge, heroMapPin, heroShieldCheck,
     heroPhone, heroEnvelope, heroStar, heroBriefcase,
-    heroUserCircle, heroHeart
+    heroUserCircle, heroHeart, heroChatBubbleLeftRight
   })],
   templateUrl: './public-provider-profile.html',
   styleUrl: './public-provider-profile.css',
@@ -29,6 +30,7 @@ export class PublicProviderProfileComponent implements OnInit {
   private router            = inject(Router);
   private profileService    = inject(ProfileService);
   readonly favoritesService = inject(FavoritesService);
+  private chatService       = inject(ChatService); // 👈 nuevo
   private cdr               = inject(ChangeDetectorRef);
 
   provider: ProviderProfile | null = null;
@@ -56,18 +58,39 @@ export class PublicProviderProfileComponent implements OnInit {
     return this.favoritesService.canUseFavorites;
   }
 
-
-  // Vuelve a explorar, no al perfil del proveedor
   goBack(): void {
     this.router.navigate(['/explorar']);
   }
 
-  hireProvider() {
+  hireProvider(): void {
     const providerId = this.provider?.id;
     if (providerId) {
       this.router.navigate(['/select-service'], { queryParams: { providerId: providerId.toString() } });
     }
   }
+
+  sendMessage(): void {
+    const currentUserId = 1;
+    const providerUserId = Number(this.providerId);
+
+    this.chatService.getOrCreateDirectConversation(currentUserId, providerUserId)
+      .subscribe({
+        next: (conversationId) => {
+          this.router.navigate(['/chat', conversationId], {
+            state: {
+              conversation: {
+                providerName: this.provider?.fullName ?? '',
+                providerAvatar: this.provider?.profileImage ?? ''
+              }
+            }
+          });
+        },
+        error: (err) => {
+          console.error('Error al abrir conversación:', err);
+        }
+      });
+  }
+
   hasProfileImage(): boolean {
     return !!this.provider?.profileImage;
   }
@@ -87,9 +110,7 @@ export class PublicProviderProfileComponent implements OnInit {
   get ratingBars(): { stars: number; percentage: number }[] {
     const dist = (this.provider as any)?.ratingDistribution ?? {};
     return [5, 4, 3, 2, 1].map(stars => ({ stars, percentage: dist[stars] ?? 0 }));
-
   }
-
 
   getStarsArray(rating: number): number[] {
     return Array.from({ length: 5 }, (_, i) => (i < Math.round(rating) ? 1 : 0));
