@@ -67,8 +67,13 @@ import { AdminServiceCategory } from './pages/admin-service-category/admin-servi
 import { CreateServicesComponent } from './pages/createServices/create-services/create-services';
 import { ChatIAComponent } from './pages/chat-AI/chat-ia/chat-ia';
 import { ResultadosRecomendadosComponent } from './pages/chat-AI/resultadosrecomendados/resultadosrecomendados';
+<<<<<<< HEAD
 import { ChatComponent } from './pages/chatMessage/chat.component/chat.component';
 import { ConversationListComponent } from './pages/chatMessage/conversation-list.component/conversation-list.component';
+=======
+import { FilteredHome } from './pages/filtered-home/filtered-home';
+
+>>>>>>> aa677e1b839c85a55330fca225c415212165a810
 
 
 
@@ -109,6 +114,7 @@ export const routes: Routes = [
   //Cliente
   { path: 'select-service', component: SelectService },
   { path: 'confirm-booking', component: ConfirmBooking },
+  { path: 'filtered-home', component: FilteredHome },
 
 
   // Proveedor
