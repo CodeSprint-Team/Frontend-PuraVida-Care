@@ -69,4 +69,7 @@ capturePaypalOrder(orderId: string, productId: number): Observable<string> {
     { responseType: 'text' }
   );
 }
+
+
+
 }
