@@ -6,6 +6,7 @@ import { NavbarComponent } from '../../../components/navbar/navbar';
 import { ProfileService } from '../../viewProfile/services/profile.services';
 import { FavoritesService } from '../../../services/favorite.services';
 import { ChatService } from '../../chatMessage/chat.service/chat.service';
+import { AuthService } from '../../../services/auth.service';
 import { ProviderProfile } from '../../viewProfile/models/provider-profile.model';
 import {
   heroArrowLeft, heroCheckBadge, heroMapPin, heroShieldCheck,
@@ -30,15 +31,18 @@ export class PublicProviderProfileComponent implements OnInit {
   private router            = inject(Router);
   private profileService    = inject(ProfileService);
   readonly favoritesService = inject(FavoritesService);
-  private chatService       = inject(ChatService); // 👈 nuevo
+  private chatService       = inject(ChatService);
+  private authService       = inject(AuthService); // ← nuevo
   private cdr               = inject(ChangeDetectorRef);
 
   provider: ProviderProfile | null = null;
-  errorMessage = '';
-  providerId   = '';
+  errorMessage  = '';
+  providerId    = '';
+  sendingMsg    = false; // ← nuevo: evita doble click
+  msgError      = '';    // ← nuevo: muestra error en UI si falla
 
   ngOnInit(): void {
-    this.providerId = this.route.snapshot.paramMap.get('id') ?? '1';
+    this.providerId = this.route.snapshot.paramMap.get('id') ?? '';
     this.favoritesService.loadFavorites();
     this.loadProfile();
   }
@@ -46,7 +50,10 @@ export class PublicProviderProfileComponent implements OnInit {
   loadProfile(): void {
     this.errorMessage = '';
     this.profileService.getProviderProfile(this.providerId).subscribe({
-      next: (data) => { this.provider = data; this.cdr.detectChanges(); },
+      next: (data) => {
+        this.provider = data;
+        this.cdr.detectChanges();
+      },
       error: () => {
         this.errorMessage = 'No se pudo cargar el perfil del proveedor.';
         this.cdr.detectChanges();
@@ -65,30 +72,10 @@ export class PublicProviderProfileComponent implements OnInit {
   hireProvider(): void {
     const providerId = this.provider?.id;
     if (providerId) {
-      this.router.navigate(['/select-service'], { queryParams: { providerId: providerId.toString() } });
-    }
-  }
-
-  sendMessage(): void {
-    const currentUserId = 1;
-    const providerUserId = Number(this.providerId);
-
-    this.chatService.getOrCreateDirectConversation(currentUserId, providerUserId)
-      .subscribe({
-        next: (conversationId) => {
-          this.router.navigate(['/chat', conversationId], {
-            state: {
-              conversation: {
-                providerName: this.provider?.fullName ?? '',
-                providerAvatar: this.provider?.profileImage ?? ''
-              }
-            }
-          });
-        },
-        error: (err) => {
-          console.error('Error al abrir conversación:', err);
-        }
+      this.router.navigate(['/select-service'], {
+        queryParams: { providerId: providerId.toString() }
       });
+    }
   }
 
   hasProfileImage(): boolean {
@@ -121,6 +108,8 @@ export class PublicProviderProfileComponent implements OnInit {
   }
 
   get startingPrice(): string {
-    return this.provider?.services?.length ? this.provider.services[0].price : 'Consultar';
+    return this.provider?.services?.length
+      ? this.provider.services[0].price
+      : 'Consultar';
   }
 }

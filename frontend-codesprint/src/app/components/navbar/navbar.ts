@@ -70,10 +70,10 @@ export class NavbarComponent implements OnInit, OnChanges {
 
       case 'provider':
         this.navItems = [
-          { label: 'Dashboard', path: '/provider-dashboard', icon: 'heroClipboardDocumentList' },
-          { label: 'Mensajes',  path: '/provider-messages',  icon: 'heroChatBubbleLeftRight'   },
-          { label: 'Agenda',    path: '/provider-agenda',    icon: 'heroCalendarDays'          },
-          { label: 'Perfil',    path: `/provider-profile/${userId}`, icon: 'heroUser'          },
+          { label: 'Dashboard', path: '/provider-dashboard',       icon: 'heroClipboardDocumentList' },
+          { label: 'Mensajes',  path: '/mensajes',                 icon: 'heroChatBubbleLeftRight'   },
+          { label: 'Agenda',    path: '/provider-agenda',          icon: 'heroCalendarDays'          },
+          { label: 'Perfil',    path: `/provider-profile/${userId}`, icon: 'heroUser'                },
         ];
         this.panelLabel = 'Panel Proveedor';
         break;
@@ -100,3 +100,5 @@ export class NavbarComponent implements OnInit, OnChanges {
     }
   }
 }
+
+
