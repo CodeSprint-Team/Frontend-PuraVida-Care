@@ -1,11 +1,12 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ServiceService, Service, ServiceStats } from '../../services/service.service';
+import { NavbarComponent } from '../../components/navbar/navbar';
 
 @Component({
   selector: 'app-myservices',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, NavbarComponent],
   templateUrl: './myservices.component.html',
   styleUrls: ['./myservices.component.css']
 })
@@ -14,17 +15,23 @@ export class MyServicesComponent implements OnInit {
   stats: ServiceStats = { total: 0, active: 0, paused: 0 };
   loading = true;
   error = '';
-  providerId = 3;
+  providerId!: number;
 
   constructor(
     private serviceService: ServiceService,
     private cdr: ChangeDetectorRef
-  ) {
-    console.log('Constructor ejecutado');
-  }
+  ) {}
 
   ngOnInit(): void {
-    console.log('ngOnInit ejecutado');
+    const userId = localStorage.getItem('user_id');
+
+    if (!userId) {
+      this.error = 'No se encontró el usuario. Iniciá sesión nuevamente.';
+      this.loading = false;
+      return;
+    }
+
+    this.providerId = Number(userId);
     this.loadServices();
     this.loadStats();
   }
@@ -36,7 +43,7 @@ export class MyServicesComponent implements OnInit {
         console.log('Datos recibidos:', data);
         this.services = data;
         this.loading = false;
-        this.cdr.detectChanges(); // ← fuerza actualización
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error HTTP:', err);
@@ -52,7 +59,7 @@ export class MyServicesComponent implements OnInit {
       next: (data) => {
         console.log('Stats recibidas:', data);
         this.stats = data;
-        this.cdr.detectChanges(); // ← fuerza actualización
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Error al cargar estadísticas', err)
     });

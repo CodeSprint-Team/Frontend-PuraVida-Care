@@ -1,0 +1,159 @@
+<div class="min-h-screen bg-gray-50 flex flex-col">
+  <main class="lg:ml-64 pb-24 lg:pb-8 flex-1">
+    <div class="container mx-auto px-6 py-8 max-w-2xl">
+
+      <div class="flex items-center gap-4 mb-8">
+        <button (click)="goBack()" class="p-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition shadow-sm">
+          <ng-icon name="heroArrowLeft" class="text-xl text-gray-600"></ng-icon>
+        </button>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Configuración</h1>
+          <p class="text-gray-500 text-sm">Gestiona tu identidad de administrador</p>
+        </div>
+      </div>
+
+      <div *ngIf="statusMessage.text" 
+           [ngClass]="statusMessage.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'"
+           class="mb-6 p-4 border rounded-2xl flex items-center gap-3 animate-fade-in">
+        <ng-icon [name]="statusMessage.type === 'success' ? 'heroCheckCircle' : 'heroExclamationTriangle'" class="text-xl"></ng-icon>
+        <span class="font-medium">{{ statusMessage.text }}</span>
+      </div>
+
+      <form [formGroup]="profileForm" (ngSubmit)="handleSave()" class="space-y-6">
+        
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 flex flex-col items-center">
+          <div class="relative group">
+            <div class="w-32 h-32 rounded-full overflow-hidden ring-4 ring-white shadow-xl bg-indigo-50 flex items-center justify-center border border-gray-100">
+              <img *ngIf="imagePreview" [src]="imagePreview" class="w-full h-full object-cover">
+              <ng-icon *ngIf="!imagePreview" name="heroUser" class="text-5xl text-indigo-200"></ng-icon>
+            </div>
+            <button type="button" (click)="fileInput.click()" class="absolute bottom-1 right-1 bg-indigo-600 text-white p-2.5 rounded-full shadow-lg hover:scale-110 transition active:scale-95">
+              <ng-icon name="heroPencilSquare" class="text-lg"></ng-icon>
+            </button>
+          </div>
+          
+          <input type="file" #fileInput (change)="handleImageUpload($event)" accept="image/*" class="hidden">
+          
+          <div class="mt-4 flex gap-4 items-center">
+            <button type="button" (click)="fileInput.click()" class="text-sm font-bold text-indigo-600 hover:text-indigo-800">Subir nueva foto</button>
+            <span class="text-gray-300">|</span>
+            <button type="button" *ngIf="imagePreview" (click)="removePhoto()" class="text-sm font-bold text-red-500 hover:text-red-700">Eliminar</button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+          <h3 class="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <ng-icon name="heroUser" class="text-indigo-600"></ng-icon> Información Personal
+          </h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Nombre</label>
+              <input type="text" formControlName="userName" 
+                     [class.ring-red-500]="getFieldError('userName')"
+                     class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 focus:ring-2 focus:ring-indigo-500 transition outline-none">
+              <p class="text-xs text-red-500 mt-1" *ngIf="getFieldError('userName')">{{ getFieldError('userName') }}</p>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Apellido</label>
+              <input type="text" formControlName="lastName" 
+                     [class.ring-red-500]="getFieldError('lastName')"
+                     class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 focus:ring-2 focus:ring-indigo-500 transition outline-none">
+              <p class="text-xs text-red-500 mt-1" *ngIf="getFieldError('lastName')">{{ getFieldError('lastName') }}</p>
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Email Administrador</label>
+              <div class="relative">
+                <ng-icon name="heroEnvelope" class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"></ng-icon>
+                <input type="email" formControlName="email" 
+                       [class.ring-red-500]="getFieldError('email')"
+                       class="w-full bg-gray-50 border-none rounded-2xl pl-12 pr-5 py-4 focus:ring-2 focus:ring-indigo-500 transition outline-none">
+              </div>
+              <p class="text-xs text-red-500 mt-1" *ngIf="getFieldError('email')">{{ getFieldError('email') }}</p>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <div class="mt-6 bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <button (click)="togglePasswordSection()" 
+                class="w-full p-8 flex items-center justify-between hover:bg-gray-50 transition">
+          <div class="flex items-center gap-3 text-left">
+            <div class="p-2 bg-indigo-50 rounded-xl text-indigo-600">
+              <ng-icon name="heroLockClosed" class="text-xl"></ng-icon>
+            </div>
+            <div>
+              <h3 class="font-bold text-gray-800">Seguridad y Contraseña</h3>
+              <p class="text-sm text-gray-400">Actualiza tus credenciales de acceso</p>
+            </div>
+          </div>
+          <ng-icon [name]="showPasswordSection ? 'heroEyeSlash' : 'heroEye'" class="text-gray-400 text-xl"></ng-icon>
+        </button>
+
+        <div *ngIf="showPasswordSection" class="p-8 border-t border-gray-50 bg-white animate-fade-in">
+          
+          <div *ngIf="passwordStatus.text" 
+               [ngClass]="passwordStatus.type === 'success' ? 'bg-emerald-50 text-emerald-800' : 'bg-red-50 text-red-800'"
+               class="mb-6 p-4 rounded-2xl text-sm font-medium">
+            {{ passwordStatus.text }}
+          </div>
+
+          <form [formGroup]="passwordForm" (ngSubmit)="handleChangePassword()" class="space-y-5">
+            <div>
+              <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Clave Actual</label>
+              <div class="relative">
+                <input [type]="showCurrentPassword ? 'text' : 'password'" formControlName="currentPassword" 
+                       class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 pr-12 focus:ring-2 focus:ring-indigo-500 transition outline-none" placeholder="••••••••">
+                <button type="button" (click)="showCurrentPassword = !showCurrentPassword" class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-300">
+                  <ng-icon [name]="showCurrentPassword ? 'heroEyeSlash' : 'heroEye'"></ng-icon>
+                </button>
+              </div>
+              <p class="text-xs text-red-500 mt-1" *ngIf="getPasswordError('currentPassword')">{{ getPasswordError('currentPassword') }}</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Nueva Clave</label>
+                <div class="relative">
+                  <input [type]="showNewPassword ? 'text' : 'password'" formControlName="newPassword" 
+                         class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 focus:ring-2 focus:ring-indigo-500 transition outline-none">
+                  <button type="button" (click)="showNewPassword = !showNewPassword" class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-300">
+                    <ng-icon [name]="showNewPassword ? 'heroEyeSlash' : 'heroEye'"></ng-icon>
+                  </button>
+                </div>
+                <p class="text-xs text-red-500 mt-1" *ngIf="getPasswordError('newPassword')">{{ getPasswordError('newPassword') }}</p>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Confirmar</label>
+                <div class="relative">
+                  <input [type]="showConfirmPassword ? 'text' : 'password'" formControlName="confirmPassword" 
+                         [class.ring-2]="passwordMismatch" [class.ring-red-300]="passwordMismatch"
+                         class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 focus:ring-2 focus:ring-indigo-500 transition outline-none">
+                </div>
+                <p class="text-xs text-red-500 mt-1" *ngIf="passwordMismatch">Las contraseñas no coinciden.</p>
+              </div>
+            </div>
+
+            <button type="submit" [disabled]="isChangingPassword" 
+                    class="w-full py-4 bg-gray-900 text-white font-bold rounded-2xl hover:bg-black transition flex items-center justify-center gap-2">
+              <span *ngIf="isChangingPassword" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+              Actualizar Contraseña
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-4 pt-8">
+        <button type="button" (click)="goBack()" class="flex-1 py-4 px-6 rounded-2xl border border-gray-200 text-gray-600 font-bold hover:bg-gray-100 transition order-2 sm:order-1">
+          Descartar cambios
+        </button>
+        <button type="button" (click)="handleSave()" [disabled]="isSubmitting" 
+                class="flex-1 py-4 px-6 rounded-2xl bg-indigo-600 text-white font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition disabled:opacity-50 flex items-center justify-center gap-3 order-1 sm:order-2">
+          <span *ngIf="isSubmitting" class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+          {{ isSubmitting ? 'Guardando...' : 'Aplicar Cambios' }}
+        </button>
+      </div>
+
+    </div>
+  </main>
+</div>
