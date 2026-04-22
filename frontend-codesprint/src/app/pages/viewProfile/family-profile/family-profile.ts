@@ -13,6 +13,8 @@ import {
   heroExclamationTriangle, heroShieldCheck, heroDocumentText, heroPhoto,
   heroArrowRightOnRectangle, heroStar, heroHeart, heroTrash
 } from '@ng-icons/heroicons/outline';
+import { TelemedHistoryComponent } from '../../../components/telemedicina/telemed-history.component';
+
 
 interface FavoriteProviderItem {
   id: number;
@@ -26,7 +28,7 @@ interface FavoriteProviderItem {
 @Component({
   selector: 'app-family-profile',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, NgIconComponent],
+  imports: [CommonModule, NavbarComponent, NgIconComponent,TelemedHistoryComponent],
   viewProviders: [provideIcons({
     heroPencilSquare, heroUser, heroPhone, heroEnvelope, heroUsers,
     heroExclamationTriangle, heroShieldCheck, heroDocumentText, heroPhoto,
@@ -47,6 +49,7 @@ export class FamilyProfileComponent implements OnInit {
   errorMessage = '';
   userId       = '';
   profileId    = '';
+  seniorProfileId = '';
 
   favorites: FavoriteProviderItem[] = [];
 
@@ -60,21 +63,22 @@ export class FamilyProfileComponent implements OnInit {
   loadProfile(): void {
     this.errorMessage = '';
     this.profileService.getFamilyProfileByUserId(this.userId).subscribe({
-      next: (data) => {
-        this.profile = {
-          ...data,
-          emergencyName:     data.emergencyContactName     ?? data.emergencyName     ?? '',
-          emergencyRelation: data.emergencyContactRelation ?? data.emergencyRelation ?? '',
-          emergencyPhone:    data.emergencyContactPhone    ?? data.emergencyPhone    ?? '',
-          importantNotes:    data.importantNotes           ?? data.notes             ?? '',
-          relationToSenior:  data.relationToSenior         ?? '',
-        };
-        this.profileId = String(data.id);
-        localStorage.setItem('profile_id', this.profileId);
-        this.cdr.detectChanges();
-        // Carga favoritos después de tener el profileId
-        this.loadFavorites();
-      },
+next: (data) => {
+  console.log('FamilyProfile keys:', Object.keys(data));
+  this.profile = {
+    ...data,
+    emergencyName:     data.emergencyContactName     ?? data.emergencyName     ?? '',
+    emergencyRelation: data.emergencyContactRelation ?? data.emergencyRelation ?? '',
+    emergencyPhone:    data.emergencyContactPhone    ?? data.emergencyPhone    ?? '',
+    importantNotes:    data.importantNotes           ?? data.notes             ?? '',
+    relationToSenior:  data.relationToSenior         ?? '',
+  };
+  this.profileId = String(data.id);
+  this.seniorProfileId = String((data as any).seniorProfileId ?? (data as any).seniorId ?? (data as any).senior_profile_id ?? '');
+  localStorage.setItem('profile_id', this.profileId);
+  this.cdr.detectChanges();
+  this.loadFavorites();
+},
       error: (err) => {
         console.error('Error cargando perfil familiar:', err);
         this.errorMessage = 'No se pudo cargar el perfil. Intenta nuevamente.';

@@ -1,0 +1,524 @@
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
+
+import { TelemedApiService } from '../../../services/telemedicina/telemed-api-service';
+import { TelemedWebsocketService } from '../../../services/telemedicina/telemed-websocket-service';
+import { AudioCaptureService } from '../../../services/telemedicina/audio-capture-service';
+import { JitsiService } from '../../../services/telemedicina/jitsi-service';
+import { ConnectionMonitorService, ConnectionQuality } from '../../../services/telemedicina/connection-monitor-service';
+import { NotificationService } from '../../../services/telemedicina/notification-service';
+import { ConsentModalComponent } from '../../../components/telemedicina/consent-modal/consent-modal.component';
+import { VideoControlsComponent } from '../../../components/telemedicina/video-controls/video-controls.component';
+import {
+  TranscriptionResult,
+  ClinicalAnalysisResult,
+  AiStatus,
+  EndSessionResponse,
+} from '../../../interfaces/telemedicina/telemed-responses.interface';
+import { environment } from '../../../../environments/environment';
+
+interface ChecklistItem {
+  id: number;
+  text: string;
+  checked: boolean;
+}
+
+interface TranscriptionEntry {
+  id: number;
+  text: string;
+  timestamp: string;
+  symptoms?: string[];
+}
+
+type ActiveTab = 'checklist' | 'notas' | 'transcripcion' | 'resumen';
+
+@Component({
+  selector: 'app-doctor-view',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ConsentModalComponent,
+    VideoControlsComponent,
+  ],
+  templateUrl: './doctorViewComponent.html',
+  styleUrls: ['./doctorViewComponent.css'],
+})
+export class DoctorViewComponent implements OnInit, AfterViewInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+
+  // Referencia al contenedor del video Jitsi
+  @ViewChild('jitsiContainer') jitsiContainer!: ElementRef;
+
+  // ─── Session data ───
+  sessionId = '';
+  patientName = 'Paciente';
+  patientAge = 0;
+  providerName = 'Doctor';
+
+  // ─── UI state ───
+  isMicOn = true;
+  isCameraOn = true;
+  showSubtitles = true;
+  duration = 0;
+  durationInterval: any;
+  activeTab: ActiveTab = 'checklist';
+
+  tabs: { key: ActiveTab; label: string }[] = [
+  { key: 'checklist', label: 'Checklist' },
+  { key: 'notas', label: 'Notas' },
+  { key: 'transcripcion', label: 'Transcripción' },
+  { key: 'resumen', label: 'Resumen' }
+];
+
+  // ─── Modal states ───
+  showConsentModal = false;
+  showEndCallModal = false;
+  showEmergencyModal = false;
+  consentLoading = false;
+
+  // ─── AI state ───
+  aiActive = false;
+  aiConnected = false;
+  wsConnected = false;
+
+  // ─── Connection quality ───
+  connectionQuality: ConnectionQuality = 'good';
+  showPoorConnectionBanner = false;
+
+  // ─── Video call (Jitsi) ───
+  jitsiReady = false;
+
+  // ─── Transcripción en tiempo real ───
+  transcriptionEntries: TranscriptionEntry[] = [];
+  lastSubtitleText = '';
+
+  // ─── Análisis clínico ───
+  clinicalAnalysis: ClinicalAnalysisResult | null = null;
+  analysisLoading = false;
+
+  // ─── Checklist clínico ───
+  checklist: ChecklistItem[] = [
+    { id: 1, text: 'Revisar historial médico', checked: false },
+    { id: 2, text: 'Evaluar síntomas actuales', checked: false },
+    { id: 3, text: 'Verificar medicación activa', checked: false },
+    { id: 4, text: 'Descartar alergias', checked: false },
+    { id: 5, text: 'Ordenar exámenes si necesario', checked: false },
+    { id: 6, text: 'Definir tratamiento', checked: false },
+    { id: 7, text: 'Agendar control', checked: false },
+  ];
+
+  // ─── Notas rápidas ───
+  quickNotes = '';
+
+  // ─── Resumen post-consulta ───
+  endSessionResult: EndSessionResponse | null = null;
+
+  // ─── Loading/Error states ───
+  loading = false;
+  errorMessage = '';
+  isEndingSession = false;
+
+constructor(
+  private router: Router,
+  private route: ActivatedRoute,
+  private telemedApi: TelemedApiService,
+  private wsService: TelemedWebsocketService,
+  private audioCapture: AudioCaptureService,
+  private jitsiService: JitsiService,
+  private connectionMonitor: ConnectionMonitorService,
+  private notification: NotificationService,
+  private cdr: ChangeDetectorRef      
+) {}
+  ngOnInit(): void {
+    // Obtener sessionId de la ruta: /telemedicina/doctor/:sessionId
+    this.sessionId = this.route.snapshot.paramMap.get('sessionId') || '';
+
+    if (!this.sessionId) {
+      this.errorMessage = 'No se encontró el ID de sesión';
+      return;
+    }
+
+    // Cargar datos del doctor desde localStorage
+    // Tu LoginComponent guarda: localStorage.setItem('user_name', response.userName)
+    this.providerName = localStorage.getItem('user_name') || 'Doctor';
+
+    // TODO: Cargar datos del paciente desde tu API de booking/sesión
+    // Ejemplo: this.loadSessionData();
+
+    // Iniciar timer de duración
+    this.startDurationTimer();
+
+    // Verificar salud del servicio de IA
+    this.checkAiHealth();
+
+    // Mostrar modal de consentimiento al inicio
+    this.showConsentModal = true;
+
+    // Iniciar monitoreo de conexión
+    this.startConnectionMonitoring();
+  }
+
+  // ─── Jitsi video call ───
+  ngAfterViewInit(): void {
+    // Inicializar Jitsi Meet embebido
+    // Se ejecuta después de que el DOM está listo
+    if (this.jitsiContainer) {
+      this.initJitsiCall();
+    }
+  }
+
+  private initJitsiCall(): void {
+    this.jitsiService.initCall({
+      roomName: `telemed-session-${this.sessionId}`,
+      parentElement: this.jitsiContainer.nativeElement,
+      userDisplayName: this.providerName,
+    });
+
+    Promise.resolve().then(() => {
+      this.jitsiReady = true;
+      this.cdr.detectChanges();
+    });
+
+    this.jitsiService.onParticipantLeft(() => {
+      this.notification.showWarning('El paciente se desconectó de la llamada');
+    });
+
+    this.jitsiService.onCallEnded(() => {
+      if (!this.isEndingSession && !this.showEndCallModal) {
+        this.openEndCallModal();
+      }
+    });
+  }
+
+  // ─── Connection monitoring ───
+  private startConnectionMonitoring(): void {
+    this.connectionMonitor.startMonitoring(environment.apiUrl);
+
+    this.connectionMonitor.status$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((status) => {
+        this.connectionQuality = status.quality;
+
+        if (status.quality === 'poor' || status.quality === 'offline') {
+          this.showPoorConnectionBanner = true;
+          this.notification.showWarning(status.message);
+        } else {
+          this.showPoorConnectionBanner = false;
+        }
+      });
+  }
+
+  switchToAudioOnly(): void {
+    this.showPoorConnectionBanner = false;
+    this.isCameraOn = false;
+    this.jitsiService.toggleVideo(); // Apagar cámara en Jitsi
+    this.notification.showInfo('Continuando en modo solo audio');
+  }
+
+  // ─── Timer de duración ───
+  private startDurationTimer(): void {
+    this.durationInterval = setInterval(() => {
+      this.duration++;
+    }, 1000);
+  }
+
+  formatDuration(seconds: number): string {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs
+      .toString()
+      .padStart(2, '0')}`;
+  }
+
+  // ─── Health check ───
+  private checkAiHealth(): void {
+    this.telemedApi
+      .checkAiHealth()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.aiConnected = response.aiAvailable;
+        },
+        error: () => {
+          this.aiConnected = false;
+        },
+      });
+  }
+  onConsentDecision(accepted: boolean): void {
+    this.consentLoading = true;
+
+    // Cerrar el modal de una vez para no bloquear la pantalla
+    this.showConsentModal = false;
+
+    this.telemedApi
+      .registerConsent(this.sessionId, accepted)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.consentLoading = false;
+          this.aiActive = accepted;
+
+          if (accepted) {
+            this.connectWebSocket();
+            this.startAudioCapture();
+          }
+        },
+        error: (err) => {
+          this.consentLoading = false;
+          this.aiActive = false;
+          this.errorMessage = 'Error al registrar consentimiento';
+          console.error(err);
+
+          // Opcional: si quieres, puedes decidir reabrirlo
+          // this.showConsentModal = true;
+        },
+      });
+  }
+
+  private connectWebSocket(): void {
+    this.wsService.connect(this.sessionId);
+
+    this.wsService.connected$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((connected) => {
+        this.wsConnected = connected;
+      });
+
+    this.wsService.transcription$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((result: TranscriptionResult) => {
+        console.log('[Transcription recibida]', result);
+        this.handleNewTranscription(result);
+        this.errorMessage = '';
+      });
+
+    this.wsService.analysis$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((analysis: ClinicalAnalysisResult) => {
+        console.log('[Analysis recibido]', analysis);
+        this.clinicalAnalysis = analysis;
+        this.analysisLoading = false;
+        this.errorMessage = '';
+        this.activeTab = 'resumen';
+      });
+
+    this.wsService.error$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((err) => {
+        console.error('[WebSocket Error]', err.message);
+        this.errorMessage = err.message;
+        this.analysisLoading = false;
+      });
+  }
+  // ─── Audio Capture ───
+  private async startAudioCapture(): Promise<void> {
+    try {
+      await this.audioCapture.startCapture();
+    } catch (error) {
+      this.errorMessage =
+        'No se pudo acceder al micrófono. Verifique los permisos.';
+    }
+  }
+
+  // ─── Transcripción ───
+  private handleNewTranscription(result: TranscriptionResult): void {
+    const entry: TranscriptionEntry = {
+      id: this.transcriptionEntries.length + 1,
+      text: result.cleanText,
+      timestamp: result.timestamp || new Date().toLocaleTimeString('es-CR'),
+      symptoms: result.detectedSymptoms,
+    };
+
+    this.transcriptionEntries.push(entry);
+    this.lastSubtitleText = result.cleanText;
+  }
+
+  // ─── Controles de video ───
+  toggleMic(): void {
+    this.isMicOn = !this.isMicOn;
+    // Sincronizar con Jitsi
+    this.jitsiService.toggleAudio();
+    // Sincronizar con AudioCapture (transcripción IA)
+    if (this.isMicOn) {
+      this.audioCapture.resumeCapture();
+    } else {
+      this.audioCapture.pauseCapture();
+    }
+    this.notification.showInfo(
+      this.isMicOn ? 'Micrófono activado' : 'Micrófono desactivado'
+    );
+  }
+
+  toggleCamera(): void {
+    this.isCameraOn = !this.isCameraOn;
+    // Sincronizar con Jitsi
+    this.jitsiService.toggleVideo();
+    this.notification.showInfo(
+      this.isCameraOn ? 'Cámara activada' : 'Cámara desactivada'
+    );
+  }
+
+  toggleSubtitles(): void {
+    this.showSubtitles = !this.showSubtitles;
+  }
+
+  // ─── Checklist ───
+  toggleChecklist(id: number): void {
+    const item = this.checklist.find((i) => i.id === id);
+    if (item) {
+      item.checked = !item.checked;
+    }
+  }
+
+  get completedCount(): number {
+    return this.checklist.filter((i) => i.checked).length;
+  }
+
+  requestAnalysis(): void {
+    if (!this.wsConnected) {
+      this.errorMessage = 'WebSocket no conectado';
+      return;
+    }
+
+    this.analysisLoading = true;
+    this.errorMessage = '';
+
+    console.log('[Analysis] solicitando análisis...');
+    this.wsService.requestAnalysis('');
+
+    setTimeout(() => {
+      if (this.analysisLoading) {
+        this.analysisLoading = false;
+        this.errorMessage = 'El análisis tardó demasiado o no llegó al frontend.';
+      }
+    }, 15000);
+  }
+
+  // ─── Desactivar IA ───
+  deactivateAi(): void {
+    this.telemedApi
+      .deactivateAi(this.sessionId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.aiActive = false;
+          this.audioCapture.stopCapture();
+        },
+        error: (err) => {
+          this.errorMessage = 'Error al desactivar IA';
+          console.error(err);
+        },
+      });
+  }
+
+
+    confirmEndCall(): void {
+    console.log('[EndSession] click en finalizar');
+
+    if (this.loading) {
+      console.log('[EndSession] ya estaba loading');
+      return;
+    }
+
+    this.loading = true;
+    this.isEndingSession = true;
+
+    const durationMinutes = Math.ceil(this.duration / 60);
+
+    console.log('[EndSession] enviando request REST', {
+      sessionId: this.sessionId,
+      providerName: this.providerName,
+      durationMinutes
+    });
+
+    this.telemedApi
+      .endSession(this.sessionId, this.providerName, durationMinutes)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          console.log('[EndSession] next', response);
+          console.log('[EndSession] iaStatus:', response.iaStatus);
+          console.log('[EndSession] record:', response.record);
+          console.log('[EndSession] clinical_summary:', response.record?.clinical_summary);
+
+          // Detener todo PRIMERO
+          this.audioCapture.stopCapture();
+          this.wsService.disconnect();
+          this.jitsiService.dispose();
+          this.connectionMonitor.stopMonitoring();
+          clearInterval(this.durationInterval);
+
+          // Actualizar estado
+          this.endSessionResult = response;
+          this.showEndCallModal = false;
+          this.loading = false;
+          this.activeTab = 'resumen';
+          this.aiActive = false;
+          this.wsConnected = false;
+
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('[EndSession] error', err);
+          this.loading = false;
+          this.isEndingSession = false;
+          this.errorMessage = 'Error al finalizar la consulta';
+          this.cdr.detectChanges();
+        },
+        complete: () => {
+          console.log('[EndSession] complete');
+        }
+      });
+  }
+
+  openEndCallModal(): void {
+    if (this.isEndingSession) {
+      return;
+    }
+    this.showEndCallModal = true;
+  }
+
+  cancelEndCall(): void {
+    this.showEndCallModal = false;
+  }
+  // ─── Emergencia ───
+  openEmergencyModal(): void {
+    this.showEmergencyModal = true;
+  }
+
+  handleEmergency(type: 'emergency' | 'family'): void {
+    this.showEmergencyModal = false;
+    // TODO: Integrar con tu sistema de alertas
+    alert(
+      type === 'emergency'
+        ? 'Contactando servicios de emergencia...'
+        : 'Alertando a familiar de confianza...'
+    );
+  }
+
+  // ─── Navegación ───
+  goBack(): void {
+    // Tu login redirige PROVIDER a /provider-profile/{userId}
+    const userId = localStorage.getItem('user_id');
+    if (userId) {
+      this.router.navigate(['/provider-profile', userId]);
+    } else {
+      this.router.navigate(['/login']);
+    }
+  }
+
+  // ─── Cleanup ───
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.audioCapture.stopCapture();
+    this.wsService.disconnect();
+    this.jitsiService.dispose();
+    this.connectionMonitor.stopMonitoring();
+    clearInterval(this.durationInterval);
+  }
+}

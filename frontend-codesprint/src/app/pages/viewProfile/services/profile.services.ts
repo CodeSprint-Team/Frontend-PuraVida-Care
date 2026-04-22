@@ -130,12 +130,12 @@ export class ProfileService {
       address: raw.address ?? '',
       relationToSenior: raw.relationToSenior ?? '',
       importantNotes: raw.importantNotes ?? raw.notes ?? '',
+      seniorProfileId: raw.seniorProfileId ?? null,  // ⬅ AGREGAR
 
       emergencyName: raw.emergencyContactName ?? '',
       emergencyRelation: raw.emergencyContactRelation ?? '',
       emergencyPhone: raw.emergencyContactPhone ?? '',
 
-      // Compatibilidad con componentes viejos
       emergencyContactName: raw.emergencyContactName ?? '',
       emergencyContactRelation: raw.emergencyContactRelation ?? '',
       emergencyContactPhone: raw.emergencyContactPhone ?? '',
