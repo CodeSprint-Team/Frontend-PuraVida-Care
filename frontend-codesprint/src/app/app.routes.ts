@@ -66,7 +66,8 @@ import { AdminProductSupportCatalog } from './pages/admin-product-support-catalo
 import { AdminServiceCategory } from './pages/admin-service-category/admin-service-category';
 import { CreateServicesComponent } from './pages/createServices/create-services/create-services';
 import { FilteredHome } from './pages/filtered-home/filtered-home';
-
+import { DoctorViewComponent } from './pages/telemedicina/doctor_view/doctorViewComponent';
+import {PatientViewComponent} from './pages/telemedicina/patient_view/patient_view_component';
 
 
 export const routes: Routes = [
@@ -171,6 +172,15 @@ export const routes: Routes = [
     path: 'admin/service-categories',
     component: AdminServiceCategory
   },
+  {
+    path: 'telemedicina/doctor-view/:sessionId',
+    component: DoctorViewComponent
+  },
+  {path: 'telemedicina/patient-view/:sessionId',
+    component: PatientViewComponent
+  },
+
+
 
 
   { path: '**', redirectTo: 'landing' }
