@@ -3,6 +3,7 @@ import { Landing } from './pages/landing/landing';
 import { LoginComponent } from './pages/login/login.component';
 import { HomeComponent } from './pages/client/home-client/home-client';
 import { MyServicesComponent } from './pages/myservices/myservices.component';
+import { HomeFilterComponent } from './pages/home-filter/home-filter.component';
 
 // Auth / Registro
 import { Register } from './pages/auth/register/register';
@@ -179,6 +180,17 @@ export const routes: Routes = [
   },
   {
 
+
+  {
+    path: 'my-services',
+    component: MyServicesComponent
+  },
+
+  {
+    path: 'home-filter',
+    component: HomeFilterComponent
+  },
+
     path: 'chat-ia',
     component: ChatIAComponent
   },
@@ -207,6 +219,7 @@ export const routes: Routes = [
 
 
   { path: '**', redirectTo: 'landing' }
+
 
 ];
 
