@@ -4,6 +4,7 @@ import { LoginComponent } from './pages/login/login.component';
 import { HomeComponent } from './pages/client/home-client/home-client';
 import { MyServicesComponent } from './pages/myservices/myservices.component';
 import { HomeFilterComponent } from './pages/home-filter/home-filter.component';
+import { ChecklistHogarComponent } from './pages/checklist-hogar/checklist-hogar.component';
 
 // Auth / Registro
 import { Register } from './pages/auth/register/register';
@@ -189,6 +190,14 @@ export const routes: Routes = [
   {
     path: 'home-filter',
     component: HomeFilterComponent
+
+  },  
+
+  {
+    path: 'checklist-hogar', 
+    component: ChecklistHogarComponent
+  },
+  
   },
 
     path: 'chat-ia',
@@ -222,4 +231,5 @@ export const routes: Routes = [
 
 
 ];
+
 
