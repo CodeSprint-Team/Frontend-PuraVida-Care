@@ -66,10 +66,14 @@ import { AdminProductSupportCatalog } from './pages/admin-product-support-catalo
 import { AdminServiceCategory } from './pages/admin-service-category/admin-service-category';
 import { CreateServicesComponent } from './pages/createServices/create-services/create-services';
 import { FilteredHome } from './pages/filtered-home/filtered-home';
+
 import { ChatIAComponent } from './pages/chat-AI/chat-ia/chat-ia';
 import { ResultadosRecomendadosComponent } from './pages/chat-AI/resultadosrecomendados/resultadosrecomendados';
 import { ChatComponent } from './pages/chatMessage/chat.component/chat.component';
 import { ConversationListComponent } from './pages/chatMessage/conversation-list.component/conversation-list.component';
+import { DoctorViewComponent } from './pages/telemedicina/doctor_view/doctorViewComponent';
+import {PatientViewComponent} from './pages/telemedicina/patient_view/patient_view_component';
+
 
 export const routes: Routes = [
   // General
@@ -174,6 +178,7 @@ export const routes: Routes = [
     component: AdminServiceCategory
   },
   {
+
     path: 'chat-ia',
     component: ChatIAComponent
   },
@@ -189,6 +194,18 @@ export const routes: Routes = [
     path: 'chat/:id',
     component: ChatComponent
   },
+
+    path: 'telemedicina/doctor-view/:sessionId',
+    component: DoctorViewComponent
+  },
+  {path: 'telemedicina/patient-view/:sessionId',
+    component: PatientViewComponent
+  },
+
+
+
+
+
   { path: '**', redirectTo: 'landing' }
 
 ];
