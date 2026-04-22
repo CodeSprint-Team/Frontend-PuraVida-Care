@@ -1,39 +1,186 @@
 import { Routes } from '@angular/router';
 import { Landing } from './pages/landing/landing';
-import { ProfileEdit } from './pages/profile-edit/profile-edit';
-import { Profile } from './pages/profile/profile';
+import { LoginComponent } from './pages/login/login.component';
 import { HomeComponent } from './pages/client/home-client/home-client';
 import { MyServicesComponent } from './pages/myservices/myservices.component';
 import { HomeFilterComponent } from './pages/home-filter/home-filter.component';
 import { ChecklistHogarComponent } from './pages/checklist-hogar/checklist-hogar.component';
 
+// Auth / Registro
+import { Register } from './pages/auth/register/register';
+import { RegisterRole } from './pages/register-role/register-role';
+import { RegisterClient } from './pages/register-client/register-client';
+import { RegisterProvider } from './pages/register-provider/register-provider';
+import { RegisterSenior } from './pages/register-senior/register-senior';
+import { VerificacionBiometricaComponent } from './pages/biometric-verification/biometric-verification';
+
+// Perfiles
+import { ProfileComponent } from './pages/viewProfile/profile/profile';
+import { ProfileEdit } from './pages/viewProfile/profile-edit/profile-edit';
+import { ProviderProfileComponent } from './pages/viewProfile/provider-profile/provider-profile';
+import { ProviderProfileEditComponent } from './pages/viewProfile/provider-profile-edit/provider-profile-edit';
+import { FamilyProfileComponent } from './pages/viewProfile/family-profile/family-profile';
+import { FamilyProfileEdit } from './pages/viewProfile/family-profile-edit/family-profile-edit';
+
+// Admin
+import { AdminDashboard } from './pages/admin-dashboard/admin-dashboard';
+import { ProviderRequests } from './pages/provider-requests/provider-requests';
+
+
+import {ProviderRequestsComponent} from './pages/provider-request-service/provider-request-service';
+import { ProviderBookingDetail } from './pages/provider-booking-detail/provider-booking-detail';
+import { ProviderStartBooking } from './pages/provider-start-booking/provider-start-booking';
+import { ProviderInService } from './pages/provider-in-service/provider-in-service';
+import { FamilyTrackingComponent } from './pages/family-tracking/family-tracking';
+
+import { AdminUsers } from './pages/admin-users/admin-users';
+
+
+// Proveedor
+import { ProviderDashboard } from './pages/provider-dashboard/provider-dashboard';
+
+// Cliente / Explorar
+import { ExplorarServiciosComponent } from './pages/explore/explore-services/explore-services';
+import { PublicProviderProfileComponent } from './pages/publicProvider/public-provider-profile/public-provider-profile';
+
+import {AgendaCliente} from './pages/agenda-cliente/agenda-cliente';
+import {CalendarioCliente} from './pages/calendario-cliente/calendario-cliente';
+import {DetalleCitaCliente} from './pages/detalle-cita-cliente/detalle-cita-cliente';
+
+import { AdminServices } from './pages/admin-services/admin-services';
+
+import {AdminProfileComponent} from './pages/viewProfile/admin-profile/admin-profile';
+import {AdminProfileEditComponent} from './pages/viewProfile/admin-profile-edit/admin-profile-edit';
+import {SelectService} from './pages/select-service/select-service';
+import {ConfirmBooking} from './pages/confirm-booking/confirm-booking';
+
+//Bienes de apoyo
+import { CreateSupportProductPostComponent } from './pages/create-support-product-post/create-support-product-post';
+import { SupportProductsMarketplace } from './pages/support-products-marketplace/support-products-marketplace';
+import { SupportProductDetail } from './pages/support-product-detail/support-product-detail';
+import { SupportProductReceivedOffers } from './pages/support-product-received-offers/support-product-received-offers';
+import { SupportProductMadeOffers } from './pages/support-product-made-offers/support-product-made-offers';
+
+
+import { MyCompletedServicesComponent } from './pages/my-completed-services/my-completed-services';
+import { CreateReviewComponent } from './pages/create-review/create-review';
+import { AdminProductSupportCatalog } from './pages/admin-product-support-catalog/admin-product-support-catalog';
+import { AdminServiceCategory } from './pages/admin-service-category/admin-service-category';
+import { CreateServicesComponent } from './pages/createServices/create-services/create-services';
+import { FilteredHome } from './pages/filtered-home/filtered-home';
+
+import { ChatIAComponent } from './pages/chat-AI/chat-ia/chat-ia';
+import { ResultadosRecomendadosComponent } from './pages/chat-AI/resultadosrecomendados/resultadosrecomendados';
+import { ChatComponent } from './pages/chatMessage/chat.component/chat.component';
+import { ConversationListComponent } from './pages/chatMessage/conversation-list.component/conversation-list.component';
+import { DoctorViewComponent } from './pages/telemedicina/doctor_view/doctorViewComponent';
+import {PatientViewComponent} from './pages/telemedicina/patient_view/patient_view_component';
+
+
 export const routes: Routes = [
+  // General
+  { path: '',        redirectTo: 'landing', pathMatch: 'full' },
+  { path: 'landing', component: Landing },
+  { path: 'login',   component: LoginComponent },
+  { path: 'home',    component: HomeComponent },
 
-  {
-    path: '',
-    redirectTo: 'landing',
-    pathMatch: 'full'
-  },
+  // Registro
+  { path: 'register',          component: Register },
+  { path: 'register/role',     component: RegisterRole },
+  { path: 'register/client',   component: RegisterClient },
+  { path: 'register/provider', component: RegisterProvider },
+  { path: 'register/senior',   component: RegisterSenior },
 
-  {
-    path: 'landing',
-    component: Landing
-  },
+  // Verificación
+  { path: 'biometric-verification', component: VerificacionBiometricaComponent },
 
-  {
-    path: 'home',
-    component: HomeComponent
-  },
+  // Perfiles
+  { path: 'profile/:id',               component: ProfileComponent },
+  { path: 'profile-edit/:id',          component: ProfileEdit },
+  { path: 'provider-profile/:id',      component: ProviderProfileComponent },
+  { path: 'provider-profile-edit/:id', component: ProviderProfileEditComponent },
+  { path: 'family-profile/:id',        component: FamilyProfileComponent },
+  { path: 'family-profile-edit/:id',   component: FamilyProfileEdit },
 
-  {
-    path: 'profile',
-    component: Profile
-  },
+  // Admin
+  { path: 'admin-dashboard',           component: AdminDashboard },
+  { path: 'admin/provider-requests',   component: ProviderRequests },
+  { path: 'admin/users',               component: AdminUsers },
+  { path: 'admin/services', component: AdminServices },
+  { path: 'admin-profile/:id',          component: AdminProfileComponent},
+  { path: 'admin-profile-edit/:id',     component: AdminProfileEditComponent},
 
-  {
-    path: 'profile-edit',
-    component: ProfileEdit
+
+  //Cliente
+  { path: 'select-service', component: SelectService },
+  { path: 'confirm-booking', component: ConfirmBooking },
+  { path: 'filtered-home', component: FilteredHome },
+
+
+  // Proveedor
+  { path: 'provider-dashboard',        component: ProviderDashboard },
+
+  //Cliente
+  { path: 'agenda-cliente', component: AgendaCliente },
+  { path: 'calendario-cliente', component: CalendarioCliente },
+  { path: 'detalle-cita-cliente/:id', component: DetalleCitaCliente },
+
+  // Explorar
+  { path: 'explorar',      component: ExplorarServiciosComponent },
+  { path: 'proveedor/:id', component: PublicProviderProfileComponent },
+  { path: 'support-products/create', component: CreateSupportProductPostComponent },
+  { path: 'support-products', component: SupportProductsMarketplace },
+  {path: 'support-products/received-offers', component: SupportProductReceivedOffers },
+  {path: 'support-products/made-offers', component: SupportProductMadeOffers },
+  {path: 'support-products/:id', component: SupportProductDetail },
+
+
+
+
+
+  { path: 'admin-dashboard/providers',
+    component: AdminDashboard
   },
+  { path: 'provider-requests-service/:id',
+    component: ProviderRequestsComponent
+  },
+  { path: 'provider-booking-detail/:id',
+    component: ProviderBookingDetail
+  },
+  { path: 'provider-start-service/:id',
+    component: ProviderStartBooking
+  },
+  { path: 'provider-in-service/:id',
+    component: ProviderInService
+  },
+  { path: 'family-tracking/:sessionId',
+    component: FamilyTrackingComponent
+  },
+  {
+    path: 'my-services',
+    component: MyServicesComponent
+  },
+  {
+    path: 'create-service',
+    component: CreateServicesComponent
+  },
+  {
+    path: 'my-completed-services',
+    component: MyCompletedServicesComponent
+  },
+  {
+    path: 'create-review/:providerId',
+    component: CreateReviewComponent
+  },
+  {path: 'admin/product-support-catalog',
+    component: AdminProductSupportCatalog      
+  },
+  {
+    path: 'admin/service-categories',
+    component: AdminServiceCategory
+  },
+  {
+
 
   {
     path: 'my-services',
@@ -43,10 +190,46 @@ export const routes: Routes = [
   {
     path: 'home-filter',
     component: HomeFilterComponent
+
   },  
 
   {
     path: 'checklist-hogar', 
     component: ChecklistHogarComponent
-  }
+  },
+  
+  },
+
+    path: 'chat-ia',
+    component: ChatIAComponent
+  },
+  {
+    path: 'resultados-recomendados',
+    component: ResultadosRecomendadosComponent
+  },
+  {
+  path: 'mensajes',
+  component: ConversationListComponent
+  },
+  {
+    path: 'chat/:id',
+    component: ChatComponent
+  },
+
+    path: 'telemedicina/doctor-view/:sessionId',
+    component: DoctorViewComponent
+  },
+  {path: 'telemedicina/patient-view/:sessionId',
+    component: PatientViewComponent
+  },
+
+
+
+
+
+  { path: '**', redirectTo: 'landing' }
+
+
 ];
+
+

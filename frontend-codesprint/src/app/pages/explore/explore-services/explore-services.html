@@ -1,0 +1,415 @@
+<div class="min-h-screen bg-gray-50">
+  <app-navbar></app-navbar>
+
+  <main class="lg:ml-64 pb-24 lg:pb-8">
+    <div class="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-7xl">
+
+      <!-- Header -->
+      <div class="mb-6">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Explorar servicios</h1>
+        <p class="text-gray-600 text-sm">Encuentra el proveedor ideal para tus necesidades</p>
+      </div>
+
+      <!-- Búsqueda -->
+      <div class="mb-4 flex gap-3">
+        <div class="relative flex-1">
+          <ng-icon name="heroMagnifyingGlass"
+                   class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
+          </ng-icon>
+          <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="doSearch()"
+                 placeholder="Buscar por nombre o especialidad..."
+                 class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200
+                        rounded-xl outline-none focus:border-teal-500 transition text-sm" />
+        </div>
+        <button (click)="doSearch()"
+                class="px-5 py-3 bg-teal-600 text-white rounded-xl font-medium
+                       hover:bg-teal-700 transition text-sm">
+          Buscar
+        </button>
+      </div>
+
+      <!-- Chips de filtros activos -->
+      <div class="flex items-center gap-2 flex-wrap mb-6">
+
+        <button (click)="openFilters()"
+                class="flex items-center gap-2 px-4 py-2 rounded-xl border-2 transition text-sm font-medium"
+                [ngClass]="activeFilterCount > 0
+                  ? 'bg-teal-600 text-white border-teal-600'
+                  : 'bg-white text-gray-700 border-gray-200 hover:border-teal-500'">
+          <ng-icon name="heroAdjustmentsHorizontal" class="text-base"></ng-icon>
+          Filtros
+          <span *ngIf="activeFilterCount > 0"
+                class="bg-white text-teal-600 px-2 py-0.5 rounded-full text-xs font-semibold">
+            {{ activeFilterCount }}
+          </span>
+        </button>
+
+        <div *ngIf="activeFilters.zone"
+             class="flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 text-teal-800
+                    rounded-full text-xs font-medium border border-teal-200">
+          <ng-icon name="heroMapPin" class="text-xs"></ng-icon>
+          {{ activeFilters.zone }}
+          <button (click)="removeFilter('zone')" class="hover:text-teal-900 ml-0.5">
+            <ng-icon name="heroXMark" class="text-xs"></ng-icon>
+          </button>
+        </div>
+
+        <div *ngIf="activeFilters.minPrice || activeFilters.maxPrice"
+             class="flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 text-teal-800
+                    rounded-full text-xs font-medium border border-teal-200">
+          {{ priceChipLabel }}
+          <button (click)="removeFilter('minPrice')" class="hover:text-teal-900 ml-0.5">
+            <ng-icon name="heroXMark" class="text-xs"></ng-icon>
+          </button>
+        </div>
+
+        <div *ngIf="activeFilters.minRating"
+             class="flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 text-teal-800
+                    rounded-full text-xs font-medium border border-teal-200">
+          <ng-icon name="heroStar" class="text-xs text-yellow-500"></ng-icon>
+          {{ activeFilters.minRating }}+ estrellas
+          <button (click)="removeFilter('minRating')" class="hover:text-teal-900 ml-0.5">
+            <ng-icon name="heroXMark" class="text-xs"></ng-icon>
+          </button>
+        </div>
+
+        <div *ngIf="activeFilters.category"
+             class="flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 text-teal-800
+                    rounded-full text-xs font-medium border border-teal-200">
+          {{ activeFilters.category }}
+          <button (click)="removeFilter('category')" class="hover:text-teal-900 ml-0.5">
+            <ng-icon name="heroXMark" class="text-xs"></ng-icon>
+          </button>
+        </div>
+
+        <div *ngIf="activeFilters.verifiedOnly"
+             class="flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 text-teal-800
+                    rounded-full text-xs font-medium border border-teal-200">
+          <ng-icon name="heroCheckBadge" class="text-xs"></ng-icon>
+          Solo verificados
+          <button (click)="removeFilter('verifiedOnly')" class="hover:text-teal-900 ml-0.5">
+            <ng-icon name="heroXMark" class="text-xs"></ng-icon>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Contador -->
+      <p class="text-sm text-gray-500 mb-5">
+        <span *ngIf="loaded">{{ providers.length }} proveedores encontrados</span>
+        <span *ngIf="!loaded" class="animate-pulse">Buscando...</span>
+      </p>
+
+      <!-- Skeleton -->
+      <div *ngIf="!loaded"
+           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div *ngFor="let s of [1,2,3,4,5,6]"
+             class="bg-white rounded-2xl shadow-sm overflow-hidden animate-pulse">
+          <div class="aspect-square bg-gray-200"></div>
+          <div class="p-5 space-y-3">
+            <div class="h-5 w-36 bg-gray-200 rounded-xl"></div>
+            <div class="h-4 w-24 bg-gray-100 rounded-xl"></div>
+            <div class="h-4 w-28 bg-gray-100 rounded-xl"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div *ngIf="loaded && errorMessage"
+           class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+        <p class="text-red-700 font-medium text-sm">{{ errorMessage }}</p>
+        <button (click)="doSearch()" class="mt-3 text-sm text-teal-600 hover:underline">
+          Reintentar
+        </button>
+      </div>
+
+      <!-- Sin resultados -->
+      <div *ngIf="loaded && !errorMessage && providers.length === 0"
+           class="bg-white rounded-2xl shadow-sm p-12 text-center border border-gray-100">
+        <ng-icon name="heroMagnifyingGlass" class="text-6xl text-gray-300 mx-auto mb-4"></ng-icon>
+        <h3 class="text-lg font-semibold text-gray-700 mb-1">Sin resultados</h3>
+        <p class="text-sm text-gray-500 mb-4">
+          No se encontraron proveedores con los filtros aplicados.
+        </p>
+        <button (click)="clearFilters()" class="text-sm text-teal-600 hover:underline">
+          Limpiar filtros
+        </button>
+      </div>
+
+      <!-- Grid de proveedores -->
+      <div *ngIf="loaded && !errorMessage && providers.length > 0"
+           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+
+        <div *ngFor="let p of providers"
+             (click)="goToProvider(p.id)"
+             class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all
+                    overflow-hidden cursor-pointer border border-gray-100 relative">
+
+          <!-- Botón favorito — solo para CLIENT y SENIOR -->
+          <button *ngIf="canUseFavorites"
+                  (click)="toggleFavorite($event, p.id)"
+                  class="absolute top-3 right-3 z-10 w-9 h-9 rounded-full flex items-center
+                         justify-center transition shadow-sm"
+                  [ngClass]="isFavorite(p.id)
+                    ? 'bg-red-500 text-white'
+                    : 'bg-white/80 text-gray-400 hover:text-red-400'"
+                  [title]="isFavorite(p.id) ? 'Quitar de favoritos' : 'Guardar en favoritos'">
+            <ng-icon name="heroHeart" class="text-base"></ng-icon>
+          </button>
+
+          <!-- Imagen / iniciales -->
+          <div class="aspect-square bg-gradient-to-br from-teal-50 to-teal-100
+                      flex items-center justify-center overflow-hidden">
+            <img *ngIf="p.profileImage" [src]="p.profileImage" [alt]="p.fullName"
+                 class="w-full h-full object-cover" />
+            <span *ngIf="!p.profileImage" class="text-4xl font-semibold text-teal-700">
+              {{ getInitials(p.fullName) }}
+            </span>
+          </div>
+
+          <!-- Datos -->
+          <div class="p-4 sm:p-5">
+            <div class="flex items-start justify-between gap-2 mb-1">
+              <h3 class="font-semibold text-gray-900 text-base leading-tight truncate">
+                {{ p.fullName }}
+              </h3>
+              <ng-icon *ngIf="p.verified" name="heroCheckBadge"
+                       class="text-teal-600 text-lg flex-shrink-0 mt-0.5">
+              </ng-icon>
+            </div>
+
+            <p class="text-xs text-gray-500 mb-3 truncate">
+              {{ p.providerType ?? 'Cuidador' }}
+              <span *ngIf="p.serviceCategories?.length"> · {{ p.serviceCategories[0] }}</span>
+            </p>
+
+            <div *ngIf="p.zone" class="flex items-center gap-1.5 text-gray-500 text-xs mb-3">
+              <ng-icon name="heroMapPin" class="text-sm flex-shrink-0"></ng-icon>
+              <span class="truncate">{{ p.zone }}</span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1">
+                <ng-icon name="heroStar" class="text-yellow-400 text-sm"></ng-icon>
+                <span class="text-sm font-medium text-gray-900">
+                  {{ p.averageRating?.toFixed(1) ?? '—' }}
+                </span>
+                <span class="text-xs text-gray-400">({{ p.totalReviews }})</span>
+              </div>
+              <span class="text-sm font-semibold text-teal-600">
+                {{ formatPrice(p.startingPrice, p.startingPriceMode) }}
+              </span>
+            </div>
+
+            <div *ngIf="p.insuranceActive"
+                 class="flex items-center gap-1.5 mt-2 text-xs text-green-600">
+              <ng-icon name="heroShieldCheck" class="text-sm"></ng-icon>
+              Seguro activo
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Panel de filtros -->
+<div *ngIf="showFilters"
+     class="fixed inset-0 bg-black/50 z-50 flex items-end lg:items-center lg:justify-center"
+     (click)="closeFilters()">
+
+  <div class="bg-white w-full lg:max-w-xl lg:rounded-2xl rounded-t-2xl
+              max-h-[90vh] overflow-y-auto"
+       (click)="$event.stopPropagation()">
+
+    <div class="sticky top-0 bg-white border-b border-gray-100 px-5 py-4
+                flex items-center justify-between z-10">
+      <div class="flex items-center gap-2">
+        <h2 class="text-base font-bold text-gray-900">Filtros</h2>
+        <span *ngIf="activeFilterCount > 0"
+              class="bg-teal-600 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
+          {{ activeFilterCount }}
+        </span>
+      </div>
+      <button (click)="closeFilters()"
+              class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 transition">
+        <ng-icon name="heroXMark" class="text-lg text-gray-600"></ng-icon>
+      </button>
+    </div>
+
+    <div class="px-5 py-5 space-y-6">
+
+      <!-- Precio -->
+      <div>
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
+          Precio por hora
+        </p>
+        <div class="space-y-2 mb-4">
+          <button *ngFor="let preset of pricePresets; let i = index"
+                  (click)="selectPreset(i)"
+                  class="w-full flex items-center justify-between px-4 py-3 rounded-xl
+                         border-2 text-left transition"
+                  [ngClass]="selectedPreset === i
+                    ? 'border-teal-600 bg-teal-50'
+                    : 'border-gray-200 hover:border-gray-300'">
+            <div>
+              <p class="text-sm font-medium"
+                 [ngClass]="selectedPreset === i ? 'text-teal-800' : 'text-gray-800'">
+                {{ preset.label }}
+              </p>
+              <p class="text-xs mt-0.5"
+                 [ngClass]="selectedPreset === i ? 'text-teal-600' : 'text-gray-400'">
+                {{ preset.desc }}
+              </p>
+            </div>
+            <div *ngIf="selectedPreset === i"
+                 class="w-5 h-5 rounded-full bg-teal-600 flex items-center justify-center flex-shrink-0">
+              <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                <path d="M1 4l2.5 2.5L9 1" stroke="white" stroke-width="1.5"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-3 mb-4">
+          <div class="flex-1 h-px bg-gray-200"></div>
+          <span class="text-xs text-gray-400">o define tu propio rango</span>
+          <div class="flex-1 h-px bg-gray-200"></div>
+        </div>
+
+        <div class="flex justify-between items-baseline mb-2">
+          <div>
+            <p class="text-xs text-gray-400 mb-0.5">Desde</p>
+            <p class="text-lg font-semibold text-gray-900">{{ formatColones(sliderMin) }}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-xs text-gray-400 mb-0.5">Hasta</p>
+            <p class="text-lg font-semibold text-gray-900">{{ formatColones(sliderMax) }}</p>
+          </div>
+        </div>
+
+        <div class="relative h-2 bg-gray-200 rounded-full my-3">
+          <div class="absolute h-full bg-teal-600 rounded-full pointer-events-none"
+               [style.left]="sliderFillLeft" [style.width]="sliderFillWidth">
+          </div>
+          <input type="range" [min]="PRICE_MIN" [max]="PRICE_MAX" [step]="PRICE_STEP"
+                 [ngModel]="sliderMin" (ngModelChange)="onMinSlider($event)"
+                 class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+          <input type="range" [min]="PRICE_MIN" [max]="PRICE_MAX" [step]="PRICE_STEP"
+                 [ngModel]="sliderMax" (ngModelChange)="onMaxSlider($event)"
+                 class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+          <div class="absolute w-5 h-5 bg-white border-2 border-teal-600 rounded-full
+                      top-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none shadow-sm"
+               [style.left]="sliderFillLeft"></div>
+          <div class="absolute w-5 h-5 bg-white border-2 border-teal-600 rounded-full
+                      top-1/2 -translate-y-1/2 pointer-events-none shadow-sm"
+               [style.left]="'calc(' + sliderFillLeft + ' + ' + sliderFillWidth + ')'"></div>
+        </div>
+
+        <div class="flex justify-between text-xs text-gray-400">
+          <span>{{ formatColones(PRICE_MIN) }}</span>
+          <span>{{ formatColones(PRICE_MAX) }}</span>
+        </div>
+
+        <div class="mt-3 px-3 py-2.5 bg-teal-50 rounded-xl flex items-center gap-2">
+          <ng-icon name="heroInformationCircle" class="text-teal-600 text-sm flex-shrink-0"></ng-icon>
+          <p class="text-xs text-teal-800">
+            Servicios entre {{ formatColones(sliderMin) }} y {{ formatColones(sliderMax) }} por hora
+          </p>
+        </div>
+      </div>
+
+      <!-- Rating -->
+      <div>
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+          Calificación mínima
+        </p>
+        <div class="flex gap-2 flex-wrap">
+          <button *ngFor="let r of ['4.5', '4.7', '4.9']"
+                  (click)="filters.minRating = filters.minRating === r ? '' : r"
+                  class="flex items-center gap-1.5 px-4 py-2 rounded-full border-2 text-sm transition"
+                  [ngClass]="filters.minRating === r
+                    ? 'border-teal-600 bg-teal-50 text-teal-800 font-medium'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-300'">
+            <ng-icon name="heroStar"
+                     [ngClass]="filters.minRating === r ? 'text-yellow-500' : 'text-gray-400'"
+                     class="text-sm"></ng-icon>
+            {{ r }} o más
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+          Tipo de servicio
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <button *ngFor="let cat of categories"
+                  (click)="filters.category = filters.category === cat.categoryName ? '' : cat.categoryName"
+                  class="px-4 py-2 rounded-full border-2 text-sm transition"
+                  [ngClass]="filters.category === cat.categoryName
+                    ? 'border-teal-600 bg-teal-50 text-teal-800 font-medium'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-300'">
+            {{ cat.categoryName }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Provincia -->
+      <div>
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+          Provincia
+        </p>
+        <div class="grid grid-cols-2 gap-2">
+          <button *ngFor="let prov of provinces"
+                  (click)="filters.zone = filters.zone === prov ? '' : prov"
+                  class="px-4 py-2.5 rounded-xl border-2 text-sm text-left transition"
+                  [ngClass]="filters.zone === prov
+                    ? 'border-teal-600 bg-teal-50 text-teal-800 font-medium'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-300'">
+            {{ prov }}
+          </button>
+        </div>
+        <p class="text-xs text-gray-400 mt-2">
+          Al seleccionar una provincia se incluyen todos sus cantones automáticamente.
+        </p>
+      </div>
+
+      <!-- Solo verificados -->
+      <div>
+        <label class="flex items-center justify-between cursor-pointer
+                      bg-gray-50 rounded-xl px-4 py-3 border border-gray-200">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-teal-50 flex items-center justify-center flex-shrink-0">
+              <ng-icon name="heroCheckBadge" class="text-teal-600 text-lg"></ng-icon>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-800">Solo proveedores verificados</p>
+              <p class="text-xs text-gray-400">Identidad confirmada por PuraVida Care</p>
+            </div>
+          </div>
+          <input type="checkbox" [(ngModel)]="filters.verifiedOnly"
+                 class="w-5 h-5 accent-teal-600 cursor-pointer flex-shrink-0" />
+        </label>
+      </div>
+
+    </div>
+
+    <div class="sticky bottom-0 bg-white border-t border-gray-100 px-5 py-4 flex gap-3">
+      <button (click)="clearFilters()"
+              class="flex-1 py-3 rounded-xl border border-gray-200 bg-white
+                     text-gray-600 font-medium text-sm hover:bg-gray-50 transition">
+        Limpiar
+      </button>
+      <button (click)="applyFilters()"
+              class="flex-2 px-8 py-3 rounded-xl bg-teal-600 text-white font-medium
+                     text-sm hover:bg-teal-700 transition">
+        Aplicar filtros
+      </button>
+    </div>
+
+  </div>
+</div>

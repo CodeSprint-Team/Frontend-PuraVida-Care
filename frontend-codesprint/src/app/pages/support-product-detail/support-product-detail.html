@@ -1,0 +1,364 @@
+<div class="min-h-screen bg-gray-50">
+  <app-navbar></app-navbar>
+
+  <main class="lg:ml-64 pb-24 lg:pb-8">
+    <div class="container mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-8">
+      <a
+        routerLink="/support-products"
+        class="inline-flex items-center gap-2 text-sm text-teal-700 hover:text-teal-800 mb-6"
+      >
+        <ng-icon name="heroArrowLeft" size="18"></ng-icon>
+        Volver a bienes de apoyo
+      </a>
+
+      @if (offerSuccess) {
+        <div class="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 shadow-sm">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h3 class="text-sm font-bold text-emerald-800">Oferta enviada</h3>
+              <p class="mt-1 text-sm text-emerald-700">
+                {{ offerSuccess }}
+              </p>
+            </div>
+
+            <button
+              class="text-emerald-700 hover:text-emerald-900 text-xl leading-none"
+              (click)="closeOfferSuccess()"
+              aria-label="Cerrar mensaje"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      }
+
+      @if (loading && !product) {
+        <div class="bg-white rounded-2xl shadow-sm p-8 text-center">
+          <h2 class="text-xl font-semibold">Cargando producto...</h2>
+          <p class="text-gray-600 mt-2">Esperá un momento.</p>
+        </div>
+      } @else if (product) {
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+          <div class="space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <div class="h-72 sm:h-96 bg-gray-100">
+                @if (getImageUrl(product)) {
+                  <img
+                    [src]="getImageUrl(product)!"
+                    [alt]="product.title"
+                    class="w-full h-full object-cover cursor-zoom-in hover:opacity-90 transition"
+                    (click)="openImage(getImageUrl(product))"
+                  />
+                } @else {
+                  <div class="w-full h-full flex items-center justify-center text-gray-400">
+                    Sin imagen
+                  </div>
+                }
+              </div>
+            </div>
+
+            @if (getGoogleMapsEmbedUrl()) {
+              <div class="bg-white rounded-2xl shadow-sm p-4">
+                <h2 class="text-lg font-semibold text-gray-900 mb-3">Ubicación del producto</h2>
+
+                <div class="overflow-hidden rounded-xl border border-gray-200">
+                  <iframe
+                    [src]="getGoogleMapsEmbedUrl()!"
+                    width="100%"
+                    height="260"
+                    style="border: 0"
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                  >
+                  </iframe>
+                </div>
+
+                <div class="mt-3 flex items-center justify-between gap-3 flex-wrap">
+                  <p class="text-sm text-gray-600">
+                    {{ product.locationText || 'Ubicación aproximada' }}
+                  </p>
+
+                  <div class="flex gap-3">
+                    @if (getGoogleMapsLink()) {
+                      <a
+                        [href]="getGoogleMapsLink()!"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-sm font-medium text-teal-700 hover:text-teal-800"
+                      >
+                        Ver en Google Maps
+                      </a>
+                    }
+
+                    <button
+                      class="text-sm font-medium text-blue-600 hover:text-blue-700"
+                      (click)="openMap()"
+                    >
+                      Ver mapa grande
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <div class="mb-6 space-y-3">
+              <p class="text-sm text-gray-500 uppercase tracking-wide">
+                Tipo de bien de apoyo
+              </p>
+
+              <p class="text-lg font-medium text-gray-700">
+                {{ product.supportProductCatalogName || 'No especificado' }}
+              </p>
+
+              <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">
+                Nombre: {{ product.title }}
+              </h1>
+            </div>
+
+            <div class="mb-4">
+              <div class="flex items-center gap-3 mb-2 flex-wrap">
+                <h1 class="text-sm font-semibold text-teal-700 mb-1">Precio de venta:</h1>
+                <p class="text-3xl font-bold text-teal-700">
+                  ₡{{ product.salePrice.toLocaleString() }}
+                </p>
+              </div>
+
+              @if (product.originalPrice && product.originalPrice > product.salePrice) {
+                <h1 class="text-sm font-semibold text-gray-500 mb-1">Precio original:</h1>
+                <p class="text-sm text-gray-500 line-through">
+                  ₡{{ product.originalPrice.toLocaleString() }}
+                </p>
+              }
+            </div>
+
+            <div class="flex flex-wrap gap-2 mb-6">
+              @if (product.condition === 'NEW') {
+                <span class="px-3 py-1 rounded-full bg-green-100 text-sm text-green-700">
+                  NUEVO
+                </span>
+              } @else if (product.condition === 'USED') {
+                <span class="px-3 py-1 rounded-full bg-yellow-100 text-sm text-orange-700">
+                  USADO
+                </span>
+              }
+
+              @if (product.acceptsOffers === true) {
+                <span class="px-3 py-1 rounded-full bg-emerald-100 text-sm text-emerald-700">
+                  Acepta ofertas
+                </span>
+              } @else if (product.acceptsOffers === false) {
+                <span class="px-3 py-1 rounded-full bg-red-100 text-sm text-red-700">
+                  No acepta ofertas
+                </span>
+              }
+
+              @if (product.publicationState) {
+                <span class="px-3 py-1 rounded-full bg-slate-100 text-sm text-slate-700">
+                  {{ product.publicationState }}
+                </span>
+              }
+            </div>
+
+            <div class="space-y-4 mb-6">
+              <h2 class="text-lg font-semibold text-gray-900 mb-2">
+                Descripción:
+              </h2>
+
+              <p class="text-lg text-gray-700 leading-relaxed">
+                {{ product.description }}
+              </p>
+
+              <div class="flex items-center gap-2 text-gray-700">
+                <ng-icon name="heroMapPin" size="18"></ng-icon>
+                <span>{{ product.locationText || 'Ubicación no disponible' }}</span>
+              </div>
+
+              @if (product.usageTimeText) {
+                <div class="flex items-center gap-2 text-gray-700">
+                  <ng-icon name="heroClock" size="18"></ng-icon>
+                  <span>Tiempo de uso: {{ product.usageTimeText }}</span>
+                </div>
+              }
+
+              @if (product.created) {
+                <div class="flex items-center gap-2 text-gray-700">
+                  <ng-icon name="heroTag" size="18"></ng-icon>
+                  <span>Publicado: {{ product.created | date:'dd/MM/yyyy' }}</span>
+                </div>
+              }
+            </div>
+
+            <div class="mb-6">
+              @if (hasCurrentUserOffer) {
+                <div
+                  class="w-full sm:w-auto rounded-xl border border-amber-200 bg-amber-50 px-5 py-3 text-amber-800 font-semibold"
+                >
+                  Ya ofertaste por este artículo
+                </div>
+              } @else if (canMakeOffer()) {
+                <button
+                  class="w-full sm:w-auto rounded-xl bg-emerald-600 px-5 py-3 text-white font-semibold hover:bg-emerald-700 transition"
+                  (click)="openOfferModal()"
+                >
+                  Hacer oferta
+                </button>
+              } @else {
+                <div
+                  class="w-full sm:w-auto rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 text-slate-600 font-medium"
+                >
+                  Este artículo no está disponible para nuevas ofertas
+                </div>
+              }
+            </div>
+
+            <div class="border-t pt-6">
+              <h2 class="text-lg font-semibold text-gray-900 mb-3">Información del propietario</h2>
+
+              <div class="space-y-3">
+                <div class="flex items-center gap-3 text-gray-700">
+                  <ng-icon name="heroUser" size="18"></ng-icon>
+                  <span>{{ getOwnerFullName() }}</span>
+                </div>
+
+                @if (product.userEmail) {
+                  <div class="flex items-center gap-3 text-gray-700">
+                    <ng-icon name="heroEnvelope" size="18"></ng-icon>
+                    <span>{{ product.userEmail }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <div class="bg-white rounded-2xl shadow-sm p-8 text-center">
+          <h2 class="text-xl font-semibold">No se encontró el producto</h2>
+          <p class="text-gray-600 mt-2">La publicación no existe o no está disponible.</p>
+        </div>
+      }
+    </div>
+
+    @if (isImageOpen && selectedImage) {
+      <div
+        class="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
+        (click)="closeImage()"
+      >
+        <div class="relative max-w-4xl w-full px-4">
+          <img
+            [src]="selectedImage"
+            class="w-full max-h-[80vh] object-contain rounded-xl shadow-lg"
+            (click)="$event.stopPropagation()"
+          />
+
+          <button
+            class="absolute top-2 right-4 text-white text-3xl font-bold"
+            (click)="closeImage()"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (isMapOpen && getGoogleMapsEmbedUrl()) {
+      <div
+        class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+        (click)="closeMap()"
+      >
+        <div
+          class="relative w-full max-w-5xl h-[80vh] bg-white rounded-xl overflow-hidden"
+          (click)="$event.stopPropagation()"
+        >
+          <iframe
+            [src]="getGoogleMapsEmbedUrl()!"
+            width="100%"
+            height="100%"
+            style="border: 0"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+          >
+          </iframe>
+
+          <button
+            class="absolute top-2 right-4 text-gray-700 text-3xl font-bold"
+            (click)="closeMap()"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (isOfferModalOpen) {
+      <div
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+        (click)="closeOfferModal()"
+      >
+        <div
+          class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+          (click)="$event.stopPropagation()"
+        >
+          <div class="mb-4">
+            <h2 class="text-xl font-bold text-gray-900">Enviar oferta</h2>
+            <p class="text-sm text-gray-600 mt-1">
+              Ingresá el monto que querés ofertar y un mensaje para el vendedor.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Precio ofertado
+              </label>
+              <input
+                type="number"
+                [(ngModel)]="offerAmount"
+                min="1"
+                class="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-emerald-500"
+                placeholder="Ejemplo: 25000"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Mensaje
+              </label>
+              <textarea
+                [(ngModel)]="offerMessage"
+                rows="4"
+                class="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-emerald-500"
+                placeholder="Hola, me interesa el producto y quisiera ofrecer este monto..."
+              ></textarea>
+            </div>
+
+            @if (offerError) {
+              <div class="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                {{ offerError }}
+              </div>
+            }
+          </div>
+
+          <div class="mt-6 flex justify-end gap-3">
+            <button
+              class="rounded-xl border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+              (click)="closeOfferModal()"
+              [disabled]="offerLoading"
+            >
+              Cancelar
+            </button>
+
+            <button
+              class="rounded-xl bg-emerald-600 px-4 py-2 text-white font-semibold hover:bg-emerald-700 disabled:opacity-60"
+              (click)="submitOffer()"
+              [disabled]="offerLoading"
+            >
+              {{ offerLoading ? 'Enviando...' : 'Enviar oferta' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </main>
+</div>
