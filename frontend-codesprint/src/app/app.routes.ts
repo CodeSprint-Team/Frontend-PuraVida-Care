@@ -5,6 +5,7 @@ import { Profile } from './pages/profile/profile';
 import { HomeComponent } from './pages/client/home-client/home-client';
 import { MyServicesComponent } from './pages/myservices/myservices.component';
 import { HomeFilterComponent } from './pages/home-filter/home-filter.component';
+import { ChecklistHogarComponent } from './pages/checklist-hogar/checklist-hogar.component';
 
 export const routes: Routes = [
 
@@ -42,6 +43,10 @@ export const routes: Routes = [
   {
     path: 'home-filter',
     component: HomeFilterComponent
-  }
+  },  
 
+  {
+    path: 'checklist-hogar', 
+    component: ChecklistHogarComponent
+  }
 ];

@@ -1,0 +1,154 @@
+<div class="min-h-screen bg-gray-50">
+  <app-navbar></app-navbar>
+  
+  <main class="lg:ml-64 pb-24 lg:pb-8">
+    <div class="container mx-auto px-6 py-8 max-w-4xl">
+      
+      <!-- Header -->
+      <div class="mb-6">
+        <button (click)="goBack()" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4">
+          <i class="fa-solid fa-arrow-left w-5 h-5"></i>
+          <span>Volver al mapa</span>
+        </button>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Checklist del Hogar</h1>
+        <p class="text-gray-600">Verifica los puntos clave antes de iniciar el servicio</p>
+      </div>
+
+      <!-- Progress Overview -->
+      <div class="bg-gradient-to-br from-teal-600 to-teal-700 rounded-2xl shadow-lg p-6 mb-6 text-white">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-white text-lg font-semibold mb-1">Progreso general</h2>
+            <p class="text-teal-100 text-sm">{{ getCompletedCount() }} de {{ items.length }} ítems completados</p>
+          </div>
+          <div class="text-right">
+            <div class="text-5xl font-bold mb-1">{{ getProgress() }}%</div>
+            <p class="text-teal-100 text-sm">Ítems obligatorios</p>
+          </div>
+        </div>
+        <div class="w-full bg-teal-800 rounded-full h-3 overflow-hidden">
+          <div class="bg-white h-full rounded-full transition-all duration-500" [style.width.%]="getProgress()"></div>
+        </div>
+      </div>
+
+      <!-- Info Card -->
+      <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
+        <div class="flex items-start gap-3">
+          <i class="fa-solid fa-circle-info w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0"></i>
+          <div class="flex-1">
+            <p class="text-sm text-blue-800">
+              Los ítems marcados con <span class="text-red-600">*</span> son <strong>obligatorios</strong>. 
+              Debes completarlos antes de poder marcar el checklist como revisado.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Checklist by Category -->
+      <div class="space-y-6">
+        <div *ngFor="let category of categories">
+          <div class="bg-white rounded-2xl shadow-sm">
+            <!-- Category Header -->
+            <div [class]="category.bgColor + ' p-4 rounded-t-2xl'">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center" [class]="category.color">
+                    <i [class]="category.icon + ' w-6 h-6'"></i>
+                  </div>
+                  <div>
+                    <h3 [class]="category.color + ' text-lg font-semibold mb-1'">{{ category.name }}</h3>
+                    <p class="text-sm text-gray-600">
+                      {{ getCategoryProgress(category.id).completed }} de {{ getCategoryProgress(category.id).total }} completados
+                    </p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div [class]="category.color + ' text-2xl font-bold mb-1'">{{ getCategoryProgress(category.id).percentage }}%</div>
+                </div>
+              </div>
+              <div class="mt-3 w-full bg-white/50 rounded-full h-2 overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-500" 
+                     [class]="getCategoryBarColor(category.id)"
+                     [style.width.%]="getCategoryProgress(category.id).percentage">
+                </div>
+              </div>
+            </div>
+
+            <!-- Category Items -->
+            <div class="p-4">
+              <div class="space-y-3">
+                <div *ngFor="let item of items | filterByCategory:category.id">
+                  <button (click)="toggleItem(item.id)" 
+                          class="w-full p-4 rounded-xl border-2 transition-all text-left"
+                          [class.border-teal-600]="item.checked"
+                          [class.bg-teal-50]="item.checked"
+                          [class.border-gray-200]="!item.checked"
+                          [class.hover:border-gray-300]="!item.checked"
+                          [class.bg-white]="!item.checked">
+                    <div class="flex items-start gap-3">
+                      <div class="pt-0.5">
+                        <i *ngIf="item.checked" class="fa-solid fa-check-circle w-6 h-6 text-teal-600"></i>
+                        <i *ngIf="!item.checked" class="fa-regular fa-circle w-6 h-6 text-gray-300"></i>
+                      </div>
+                      <div class="flex-1">
+                        <div class="flex items-start gap-2 mb-1">
+                          <h4 [class]="item.checked ? 'text-teal-700' : 'text-gray-900' + ' font-medium'">{{ item.title }}</h4>
+                          <span *ngIf="item.required" class="text-red-600 text-sm">*</span>
+                        </div>
+                        <p [class]="item.checked ? 'text-teal-600' : 'text-gray-600' + ' text-sm'">{{ item.description }}</p>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <div class="mt-8 bg-white rounded-2xl shadow-sm p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-1">¿Todo listo?</h3>
+            <p class="text-sm text-gray-600">Marca como revisado para iniciar el servicio</p>
+          </div>
+          <div *ngIf="getProgress() === 100" class="flex items-center gap-2 text-green-600">
+            <i class="fa-solid fa-check-circle w-5 h-5"></i>
+            <span class="text-sm font-medium">Todos los obligatorios completos</span>
+          </div>
+        </div>
+
+        <button (click)="markAsReviewed()" 
+                [disabled]="getProgress() < 100"
+                class="w-full px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-medium transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          <i class="fa-solid fa-check-square w-5 h-5"></i>
+          <span>Marcar como revisado</span>
+        </button>
+
+        <div *ngIf="getProgress() < 100" class="text-sm text-gray-500 text-center mt-3">
+          Completa los {{ getRemainingRequiredCount() }} ítems obligatorios restantes
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Success Modal -->
+  <div *ngIf="showSuccessModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6">
+    <div class="bg-white rounded-2xl p-8 max-w-md w-full text-center">
+      <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="fa-solid fa-check-circle w-10 h-10 text-green-600"></i>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-900 mb-2">¡Checklist completado!</h2>
+      <p class="text-gray-600 mb-6">Has verificado todos los puntos importantes del hogar. Ya podes iniciar el servicio de forma segura.</p>
+      <div class="space-y-3">
+        <button (click)="goToHomeMap()" class="w-full px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-medium transition-colors">
+          Volver al mapa del hogar
+        </button>
+        <button (click)="goToActiveService()" class="w-full px-6 py-3 text-teal-600 hover:bg-teal-50 rounded-xl transition-all">
+          Ir al servicio activo
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
