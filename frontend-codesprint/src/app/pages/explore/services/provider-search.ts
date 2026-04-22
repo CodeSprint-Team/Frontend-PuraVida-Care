@@ -1,12 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ProviderSearchResult, ProviderSearchFilters } from '../models/ProviderSearchResult';
+import { ProviderSearchResult, ProviderSearchFilters, ServiceCategory } from '../models/ProviderSearchResult';
 
 @Injectable({ providedIn: 'root' })
 export class ProviderSearchService {
   private http    = inject(HttpClient);
   private baseUrl = 'http://localhost:8081/api/v1/search/providers';
+  private categoriesUrl = 'http://localhost:8081/api/v1/service-categories';
 
   search(filters: Partial<ProviderSearchFilters>): Observable<ProviderSearchResult[]> {
     let params = new HttpParams();

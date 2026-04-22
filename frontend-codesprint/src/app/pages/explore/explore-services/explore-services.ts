@@ -11,6 +11,7 @@ import {
 import { NavbarComponent } from '../../../components/navbar/navbar';
 import { ProviderSearchService } from '../services/provider-search';
 import { FavoritesService } from '../../../services/favorite.services';
+import { ServiceCategoryService, ServiceCategoryResponse } from '../../../services/Admin/ServiceCategoryService';
 import {
   ProviderSearchResult, ProviderSearchFilters, EMPTY_FILTERS
 } from '../models/ProviderSearchResult';
@@ -29,6 +30,7 @@ import {
 })
 export class ExplorarServiciosComponent implements OnInit {
   private searchService     = inject(ProviderSearchService);
+  private categoryService   = inject(ServiceCategoryService);
   readonly favoritesService = inject(FavoritesService);
   private router            = inject(Router);
   private cdr               = inject(ChangeDetectorRef);
@@ -47,10 +49,7 @@ export class ExplorarServiciosComponent implements OnInit {
     'Heredia', 'Guanacaste', 'Puntarenas', 'Limón'
   ];
 
-  readonly categories = [
-    'Enfermería', 'Fisioterapia', 'Acompañamiento',
-    'Cuidado general', 'Transporte'
-  ];
+  categories: ServiceCategoryResponse[] = [];
 
   readonly PRICE_MIN  = 5000;
   readonly PRICE_MAX  = 70000;
@@ -68,7 +67,18 @@ export class ExplorarServiciosComponent implements OnInit {
 
   ngOnInit(): void {
     this.favoritesService.loadFavorites();
+    this.loadCategories();
     this.doSearch();
+  }
+
+  loadCategories(): void {
+    this.categoryService.getAllActive().subscribe({
+      next: (cats) => {
+        this.categories = cats;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error cargando categorías:', err)
+    });
   }
 
   get canUseFavorites(): boolean {
