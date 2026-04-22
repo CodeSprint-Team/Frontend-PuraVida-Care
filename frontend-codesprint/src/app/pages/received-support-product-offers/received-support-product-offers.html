@@ -1,0 +1,122 @@
+<div class="min-h-screen bg-gray-50">
+  <app-navbar></app-navbar>
+
+  <main class="lg:ml-64 pb-24 lg:pb-8">
+    <div class="container mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-8">
+      <div class="mb-6">
+        <a
+          routerLink="/support-products"
+          class="inline-flex items-center gap-2 text-sm text-teal-700 hover:text-teal-800 mb-4"
+        >
+          ← Volver al marketplace
+        </a>
+
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">
+          Ofertas recibidas
+        </h1>
+        <p class="text-gray-600 mt-2">
+          Aquí podés revisar las ofertas que han hecho sobre tus publicaciones.
+        </p>
+      </div>
+
+      @if (successMessage) {
+        <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          {{ successMessage }}
+        </div>
+      }
+
+      @if (errorMessage) {
+        <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {{ errorMessage }}
+        </div>
+      }
+
+      @if (loading) {
+        <div class="rounded-2xl bg-white p-8 shadow-sm text-center">
+          <h2 class="text-lg font-semibold text-gray-900">Cargando ofertas...</h2>
+          <p class="text-gray-600 mt-2">Esperá un momento.</p>
+        </div>
+      } @else if (offers.length === 0) {
+        <div class="rounded-2xl bg-white p-8 shadow-sm text-center">
+          <h2 class="text-lg font-semibold text-gray-900">Todavía no has recibido ofertas</h2>
+          <p class="text-gray-600 mt-2">
+            Cuando alguien oferte por uno de tus productos, lo vas a ver aquí.
+          </p>
+        </div>
+      } @else {
+        <div class="space-y-4">
+          @for (offer of offers; track offer.id) {
+            <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+              <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                <div class="flex-1">
+                  <div class="flex flex-wrap items-center gap-3 mb-3">
+                    <h2 class="text-lg font-bold text-gray-900">
+                      {{ offer.supportProductPostId || 'Producto' }}
+                    </h2>
+
+                    <span
+                      class="rounded-full px-3 py-1 text-xs font-semibold"
+                      [ngClass]="getStatusClasses(offer.offerState)"
+                    >
+                      {{ offer.offerState }}
+                    </span>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p class="text-gray-500 mb-1">Comprador</p>
+                      <p class="font-medium text-gray-900">
+                        {{ getBuyerFullName(offer) }}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p class="text-gray-500 mb-1">Monto ofertado</p>
+                      <p class="text-xl font-bold text-emerald-700">
+                        ₡{{ offer.amount.toLocaleString() }}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p class="text-gray-500 mb-1">Fecha</p>
+                      <p class="font-medium text-gray-900">
+                        {{ offer.created ? (offer.created | date:'dd/MM/yyyy HH:mm') : 'No disponible' }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="mt-4">
+                    <p class="text-gray-500 mb-1 text-sm">Mensaje</p>
+                    <div class="rounded-xl bg-gray-50 px-4 py-3 text-gray-700">
+                      {{ offer.message || 'Sin mensaje' }}
+                    </div>
+                  </div>
+                </div>
+
+                @if (offer.offerState === 'PENDING') {
+                  <div class="flex flex-col sm:flex-row lg:flex-col gap-3 lg:min-w-42.5">
+                    <button
+                      class="rounded-xl bg-emerald-600 px-4 py-3 text-white font-semibold hover:bg-emerald-700 disabled:opacity-60"
+                      (click)="acceptOffer(offer.id)"
+                      [disabled]="actionLoadingId === offer.id"
+                    >
+                      {{ actionLoadingId === offer.id ? 'Procesando...' : 'Aceptar' }}
+                    </button>
+
+                    <button
+                      class="rounded-xl bg-red-600 px-4 py-3 text-white font-semibold hover:bg-red-700 disabled:opacity-60"
+                      (click)="rejectOffer(offer.id)"
+                      [disabled]="actionLoadingId === offer.id"
+                    >
+                      {{ actionLoadingId === offer.id ? 'Procesando...' : 'Rechazar' }}
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </main>
+</div>

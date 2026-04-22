@@ -69,8 +69,8 @@ export class QuickActions {
     }
 
   providerActions = [
-    { title: 'Crear servicio',  description: 'Publicar nueva oferta', icon: 'heroPlus',           color: 'green',  route: '/provider-dashboard' },
-    { title: 'Mis servicios',   description: 'Ver y editar servicios', icon: 'heroDocumentText',  color: 'blue',   route: '/provider-dashboard' },
+    { title: 'Crear servicio',  description: 'Publicar nueva oferta', icon: 'heroPlus',           color: 'green',  route: '/create-service' },
+    { title: 'Mis servicios',   description: 'Ver y editar servicios', icon: 'heroDocumentText',  color: 'blue',   route: '/my-services' },
     { title: 'Disponibilidad',  description: 'Gestionar calendario',  icon: 'heroCalendarDays',   color: 'purple', route: '/provider-dashboard' },
     { title: 'Solicitudes',     description: 'Ver solicitudes',       icon: 'heroInbox',           color: 'orange', route: '/provider-requests-service' },
     { title: 'Perfil público',  description: 'Ver como cliente',      icon: 'heroUser',            color: 'pink',   route: '/provider-dashboard' },

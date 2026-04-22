@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   heroMapPin,
@@ -15,11 +16,12 @@ import {
 import { NavbarComponent } from '../../components/navbar/navbar';
 import { SupportProductService } from '../../services/support-product/support-product';
 import { SupportProductPostResponse } from '../../interfaces/support-product/support-product-response.interface';
+import { ArticleOfferResponse } from '../../interfaces/support-product/article-offer-response.interface';
 
 @Component({
   selector: 'app-support-product-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavbarComponent, NgIconComponent],
+  imports: [CommonModule, RouterModule, NavbarComponent, NgIconComponent, FormsModule],
   viewProviders: [
     provideIcons({
       heroMapPin,
@@ -36,9 +38,25 @@ import { SupportProductPostResponse } from '../../interfaces/support-product/sup
 export class SupportProductDetail implements OnInit {
   product: SupportProductPostResponse | null = null;
   loading = true;
+
   isImageOpen = false;
   selectedImage: string | null = null;
+
   isMapOpen = false;
+
+  currentUserId: number | null = null;
+
+  isOfferModalOpen = false;
+  offerAmount: number | null = null;
+  offerMessage = '';
+  offerLoading = false;
+  offerError = '';
+  offerSuccess = '';
+
+  hasCurrentUserOffer = false;
+  userOfferMessage = '';
+
+  private offerSuccessTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -49,6 +67,8 @@ export class SupportProductDetail implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    const userId = localStorage.getItem('user_id');
+    this.currentUserId = userId ? Number(userId) : null;
     this.loadProduct();
   }
 
@@ -67,17 +87,47 @@ export class SupportProductDetail implements OnInit {
       next: (data) => {
         this.ngZone.run(() => {
           this.product = data;
-          this.loading = false;
-          this.cdr.detectChanges();
+          this.checkIfCurrentUserAlreadyOffered();
         });
       },
-      error: (error) => {
+      error: () => {
         this.ngZone.run(() => {
           this.product = null;
           this.loading = false;
+          this.hasCurrentUserOffer = false;
+          this.userOfferMessage = '';
           this.cdr.detectChanges();
         });
       },
+    });
+  }
+
+  checkIfCurrentUserAlreadyOffered(): void {
+    if (!this.product || !this.currentUserId) {
+      this.hasCurrentUserOffer = false;
+      this.userOfferMessage = '';
+      this.loading = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.supportProductService.getOffersByPostId(this.product.id).subscribe({
+      next: (offers: ArticleOfferResponse[]) => {
+        const myOffer = offers.find(
+          (offer) => offer.buyerUserId === this.currentUserId
+        );
+
+        this.hasCurrentUserOffer = !!myOffer;
+        this.userOfferMessage = myOffer ? 'Oferta ya realizada' : '';
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.hasCurrentUserOffer = false;
+        this.userOfferMessage = '';
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -107,7 +157,12 @@ export class SupportProductDetail implements OnInit {
   }
 
   getGoogleMapsEmbedUrl(): SafeResourceUrl | null {
-    if (!this.product?.locationLat || !this.product?.locationLng) {
+    if (
+      this.product?.locationLat === null ||
+      this.product?.locationLat === undefined ||
+      this.product?.locationLng === null ||
+      this.product?.locationLng === undefined
+    ) {
       return null;
     }
 
@@ -116,7 +171,12 @@ export class SupportProductDetail implements OnInit {
   }
 
   getGoogleMapsLink(): string | null {
-    if (!this.product?.locationLat || !this.product?.locationLng) {
+    if (
+      this.product?.locationLat === null ||
+      this.product?.locationLat === undefined ||
+      this.product?.locationLng === null ||
+      this.product?.locationLng === undefined
+    ) {
       return null;
     }
 
@@ -124,20 +184,113 @@ export class SupportProductDetail implements OnInit {
   }
 
   openImage(imageUrl: string | null): void {
-  if (!imageUrl) return;
-  this.selectedImage = imageUrl;
-  this.isImageOpen = true;
-}
+    if (!imageUrl) return;
+    this.selectedImage = imageUrl;
+    this.isImageOpen = true;
+  }
 
-closeImage(): void {
-  this.isImageOpen = false;
-  this.selectedImage = null;
-}
-openMap(): void {
-  this.isMapOpen = true;
-}
+  closeImage(): void {
+    this.isImageOpen = false;
+    this.selectedImage = null;
+  }
 
-closeMap(): void {
-  this.isMapOpen = false;
-}
+  openMap(): void {
+    this.isMapOpen = true;
+  }
+
+  closeMap(): void {
+    this.isMapOpen = false;
+  }
+
+  isOwner(): boolean {
+    return !!this.product && !!this.currentUserId && this.product.userId === this.currentUserId;
+  }
+
+  canMakeOffer(): boolean {
+    return !!this.product &&
+      !!this.currentUserId &&
+      this.product.acceptsOffers === true &&
+      (this.product.publicationState === 'ACTIVE' || this.product.publicationState === 'RESERVED') &&
+      this.product.userId !== this.currentUserId &&
+      !this.hasCurrentUserOffer;
+  }
+
+  openOfferModal(): void {
+    if (!this.canMakeOffer()) {
+      return;
+    }
+
+    this.offerError = '';
+    this.offerAmount = this.product?.salePrice ?? null;
+    this.offerMessage = '';
+    this.isOfferModalOpen = true;
+  }
+
+  closeOfferModal(): void {
+    if (this.offerLoading) {
+      return;
+    }
+
+    this.isOfferModalOpen = false;
+  }
+
+  clearOfferSuccessAfterDelay(): void {
+    if (this.offerSuccessTimeout) {
+      clearTimeout(this.offerSuccessTimeout);
+    }
+
+    this.offerSuccessTimeout = setTimeout(() => {
+      this.offerSuccess = '';
+      this.cdr.detectChanges();
+    }, 4000);
+  }
+
+  closeOfferSuccess(): void {
+    this.offerSuccess = '';
+
+    if (this.offerSuccessTimeout) {
+      clearTimeout(this.offerSuccessTimeout);
+      this.offerSuccessTimeout = null;
+    }
+  }
+
+  submitOffer(): void {
+    if (!this.product || !this.currentUserId) {
+      this.offerError = 'No se pudo identificar al usuario.';
+      return;
+    }
+
+    if (this.offerAmount === null || this.offerAmount === undefined || this.offerAmount <= 0) {
+      this.offerError = 'Ingresá un monto válido.';
+      return;
+    }
+
+    this.offerLoading = true;
+    this.offerError = '';
+    this.offerSuccess = '';
+
+    this.supportProductService.createOffer({
+      supportProductPostId: this.product.id,
+      buyerUserId: this.currentUserId,
+      amount: this.offerAmount,
+      message: this.offerMessage.trim(),
+    }).subscribe({
+      next: (_response: ArticleOfferResponse) => {
+        this.offerLoading = false;
+        this.isOfferModalOpen = false;
+        this.offerAmount = null;
+        this.offerMessage = '';
+        this.offerSuccess = '¡Oferta realizada con éxito! El vendedor ya puede verla.';
+        this.hasCurrentUserOffer = true;
+        this.userOfferMessage = 'Oferta ya realizada';
+        this.clearOfferSuccessAfterDelay();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.offerLoading = false;
+        this.offerError = err?.error?.message || err?.error || 'No se pudo enviar la oferta.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
 }
