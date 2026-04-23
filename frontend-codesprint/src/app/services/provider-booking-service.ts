@@ -66,4 +66,19 @@ export class ProviderBookingService {
       { params }
     );
   }
+
+ cancelBooking(
+  bookingId: number,
+  providerProfileId: number,
+  dto: { cancellationReason: string }
+) {
+  const params = new HttpParams().set('providerProfileId', providerProfileId);
+
+  return this.http.patch<BookingActionResponse>(
+    `${this.bookingsUrl}/${bookingId}/cancel`,
+    dto,
+    { params }
+  );
+}
+  
 }

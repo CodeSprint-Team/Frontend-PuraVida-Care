@@ -9,7 +9,8 @@ import { NavbarComponent } from '../../components/navbar/navbar';
 import { DetalleCita } from '../../interfaces/client/detalle-cita.interface';
 import {
   AgendaBookingResponseDTO,
-  RescheduleRequestDTO
+  RescheduleRequestDTO,
+  CancelBookingRequestDTO
 } from '../../interfaces/client/agenda-booking.interface';
 import { AgendaClienteService } from '../../services/agenda-cliente/agenda-cliente.service';
 import { AuthService } from '../../services/auth.service';
@@ -45,6 +46,8 @@ export class DetalleCitaCliente implements OnInit {
 
   nuevaFecha = '';
   nuevaHora = '';
+  motivoReprogramacion = '';
+  motivoCancelacion = '';
 
   private clientProfileId: number | null = null;
   private bookingId: number | null = null;
@@ -76,10 +79,12 @@ export class DetalleCitaCliente implements OnInit {
     if (!this.canEditBooking()) return;
     this.nuevaFecha = '';
     this.nuevaHora = '';
+    this.motivoReprogramacion = '';
     this.showModalReprogramar = true;
   }
 
   closeReprogramar(): void {
+    if (this.processing) return;
     this.showModalReprogramar = false;
   }
 
@@ -96,11 +101,46 @@ export class DetalleCitaCliente implements OnInit {
       return;
     }
 
+    if (!this.motivoReprogramacion.trim()) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Motivo requerido',
+        text: 'Debes indicar el motivo de la reprogramación.',
+        confirmButtonColor: '#14b8a6'
+      });
+      return;
+    }
+
+    const nuevaFechaHora = new Date(`${this.nuevaFecha}T${this.nuevaHora}:00`);
+    const ahora = new Date();
+
+    if (Number.isNaN(nuevaFechaHora.getTime())) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Fecha inválida',
+        text: 'La fecha u hora seleccionada no es válida.',
+        confirmButtonColor: '#14b8a6'
+      });
+      return;
+    }
+
+    if (nuevaFechaHora <= ahora) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Fecha inválida',
+        text: 'La nueva fecha y hora deben ser posteriores al momento actual.',
+        confirmButtonColor: '#14b8a6'
+      });
+      return;
+    }
+
     const dto: RescheduleRequestDTO = {
-      scheduledAt: `${this.nuevaFecha}T${this.nuevaHora}:00`
+      scheduledAt: `${this.nuevaFecha}T${this.nuevaHora}:00`,
+      rescheduleReason: this.motivoReprogramacion.trim()
     };
 
     this.processing = true;
+
     this.agendaService.rescheduleBooking(this.clientProfileId, this.bookingId, dto).subscribe({
       next: () => {
         this.processing = false;
@@ -110,7 +150,7 @@ export class DetalleCitaCliente implements OnInit {
         Swal.fire({
           icon: 'success',
           title: 'Cita reprogramada',
-          text: 'El proveedor fue notificado del cambio.',
+          text: 'La cita quedó reprogramada y volverá a estado pendiente hasta que el proveedor la acepte.',
           confirmButtonColor: '#14b8a6'
         });
       },
@@ -128,18 +168,35 @@ export class DetalleCitaCliente implements OnInit {
 
   openCancelar(): void {
     if (!this.canEditBooking()) return;
+    this.motivoCancelacion = '';
     this.showModalCancelar = true;
   }
 
   closeCancelar(): void {
+    if (this.processing) return;
     this.showModalCancelar = false;
   }
 
   confirmarCancelar(): void {
     if (!this.clientProfileId || !this.bookingId) return;
 
+    if (!this.motivoCancelacion.trim()) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Motivo requerido',
+        text: 'Debes indicar la razón de la cancelación.',
+        confirmButtonColor: '#14b8a6'
+      });
+      return;
+    }
+
+    const dto: CancelBookingRequestDTO = {
+      cancellationReason: this.motivoCancelacion.trim()
+    };
+
     this.processing = true;
-    this.agendaService.cancelBooking(this.clientProfileId, this.bookingId).subscribe({
+
+    this.agendaService.cancelBooking(this.clientProfileId, this.bookingId, dto).subscribe({
       next: () => {
         this.processing = false;
         this.showModalCancelar = false;
@@ -148,7 +205,9 @@ export class DetalleCitaCliente implements OnInit {
         Swal.fire({
           icon: 'success',
           title: 'Cita cancelada',
+          text: 'La cita fue cancelada correctamente y el proveedor será notificado.',
           text: 'El proveedor fue notificado de la cancelación.',
+
           confirmButtonColor: '#14b8a6'
         });
       },
@@ -439,13 +498,20 @@ export class DetalleCitaCliente implements OnInit {
     return new Date();
   }
 
-  private coordinatesOrText(latitude: number, longitude: number, fallback: string): string {
+  private coordinatesOrText(
+    latitude: number | null,
+    longitude: number | null,
+    fallback: string
+  ): string {
     const hasCoordinates = latitude !== null && longitude !== null;
     if (!hasCoordinates) return fallback;
     return `${latitude}, ${longitude}`;
   }
 
-  private toUiStatus(rawStatus: string, scheduledDate: Date): 'Programado' | 'Hoy' | 'Completado' | 'Cancelado' {
+  private toUiStatus(
+    rawStatus: string,
+    scheduledDate: Date
+  ): 'Programado' | 'Hoy' | 'Completado' | 'Cancelado' {
     const normalized = rawStatus?.toUpperCase() ?? '';
 
     if (normalized === 'COMPLETADO') return 'Completado';

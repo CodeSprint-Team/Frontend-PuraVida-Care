@@ -28,8 +28,9 @@
 
     <button
       routerLink="/agenda-cliente"
-      class="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors mb-5"
-    >
+            
+      class="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors mb-5">
+
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
@@ -223,6 +224,7 @@
         </div>
       </div>
     }
+
   </div>
 </div>
 
@@ -231,6 +233,13 @@
     <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-xl">
       <h2 class="text-base font-bold text-gray-800 mb-1">Reprogramar cita</h2>
       <div class="w-full h-px bg-gray-100 mb-4"></div>
+
+      <div class="bg-blue-50 border border-blue-100 rounded-lg px-3 py-3 mb-4">
+        <p class="text-xs text-blue-700 leading-relaxed">
+          <span class="font-semibold">Importante:</span>
+          al reprogramar esta cita, la reserva volverá a estado <span class="font-semibold">Pendiente</span> y el proveedor deberá aprobar nuevamente el servicio antes de que quede confirmada.
+        </p>
+      </div>
 
       <div class="flex flex-col gap-4 mb-4">
         <div>
@@ -248,12 +257,25 @@
             [(ngModel)]="nuevaHora"
             class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400" />
         </div>
+
+        <div>
+          <label class="text-xs text-gray-500 mb-1 block">Razón de la reprogramación</label>
+          <textarea
+            [(ngModel)]="motivoReprogramacion"
+            rows="4"
+            maxlength="300"
+            placeholder="Escribe la razón por la que deseas reprogramar esta cita"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 resize-none focus:outline-none focus:ring-2 focus:ring-teal-400"></textarea>
+          <p class="text-[11px] text-gray-400 mt-1">
+            Este motivo será visible como referencia para el proveedor.
+          </p>
+        </div>
       </div>
 
       <div class="bg-amber-50 rounded-lg px-3 py-2.5 mb-5">
         <p class="text-xs text-amber-700">
           <span class="font-semibold">Nota:</span>
-          El proveedor será notificado del cambio. Si no está disponible en la nueva fecha, te contactaremos para coordinar.
+          El proveedor será notificado del cambio de fecha y hora. La cita quedará pendiente hasta recibir una nueva aprobación.
         </p>
       </div>
 
@@ -281,14 +303,30 @@
       <h2 class="text-base font-bold text-gray-800 mb-1">Cancelar cita</h2>
       <div class="w-full h-px bg-gray-100 mb-4"></div>
 
-      <p class="text-sm text-gray-600 mb-3">
-        ¿Estás seguro que deseas cancelar esta cita? El proveedor será notificado y podrás volver a programar cuando lo necesites.
-      </p>
+      <div class="bg-red-50 border border-red-100 rounded-lg px-3 py-3 mb-4">
+        <p class="text-xs text-red-700 leading-relaxed">
+          <span class="font-semibold">Importante:</span>
+          esta acción cancelará la cita y el proveedor será notificado.
+        </p>
+      </div>
 
-      <div class="bg-red-50 rounded-lg px-3 py-2.5 mb-5">
-        <p class="text-xs text-red-600">
-          <span class="font-semibold">Política de cancelación:</span>
-          Cancelaciones con menos de 24 horas de anticipación pueden aplicar una penalidad.
+      <div class="mb-4">
+        <label class="text-xs text-gray-500 mb-1 block">Razón de la cancelación</label>
+        <textarea
+          [(ngModel)]="motivoCancelacion"
+          rows="4"
+          maxlength="300"
+          placeholder="Escribe la razón por la que deseas cancelar esta cita"
+          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 resize-none focus:outline-none focus:ring-2 focus:ring-red-400"></textarea>
+        <p class="text-[11px] text-gray-400 mt-1">
+          Este motivo será visible para el proveedor.
+        </p>
+      </div>
+
+      <div class="bg-amber-50 rounded-lg px-3 py-2.5 mb-5">
+        <p class="text-xs text-amber-700">
+          <span class="font-semibold">Nota:</span>
+          Una vez cancelada la cita, ya no se mantendrá la reserva actual y deberás reservar nuevamente si deseas el servicio después.
         </p>
       </div>
 
@@ -308,6 +346,7 @@
       </div>
     </div>
   </div>
+
 }
 
 @if (paymentModalOpen) {
@@ -358,4 +397,5 @@
       </div>
     </div>
   </div>
+
 }
