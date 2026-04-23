@@ -4,7 +4,7 @@
   <main class="lg:ml-64 pb-24 lg:pb-8">
     <div class="container mx-auto px-6 py-8 max-w-5xl">
 
-      <!-- ERROR -->
+      <!-- ERROR GENERAL -->
       <div *ngIf="errorMessage"
            class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
         <p class="text-red-700 font-medium">{{ errorMessage }}</p>
@@ -25,12 +25,13 @@
 
         <!-- HEADER CARD -->
         <div class="bg-white rounded-2xl shadow-sm p-8 mb-6 relative">
-          <!-- BOTÓN FAVORITO — esquina superior derecha de la tarjeta -->
+
+          <!-- BOTÓN FAVORITO -->
           <div *ngIf="canUseFavorites" class="absolute top-5 right-5">
             <button
               (click)="toggleFavorite()"
               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl
-                    font-medium transition border text-sm"
+                     font-medium transition border text-sm"
               [ngClass]="isFavorite
                 ? 'bg-red-50 border-red-200 text-red-500 hover:bg-red-100'
                 : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'"
@@ -41,6 +42,7 @@
           </div>
 
           <div class="flex flex-col md:flex-row gap-6">
+
             <!-- FOTO -->
             <div class="w-32 h-32 rounded-2xl overflow-hidden bg-gradient-to-br
                         from-teal-100 to-teal-200 flex-shrink-0 flex items-center
@@ -77,7 +79,9 @@
               <div class="flex items-center gap-2 bg-yellow-50 px-4 py-2 rounded-xl w-fit mb-4">
                 <ng-icon name="heroStar" class="text-yellow-500"></ng-icon>
                 <span class="text-lg font-semibold">{{ ratingDisplay }}</span>
-                <span class="text-gray-600 text-sm">({{ provider.totalReviews ?? 0 }} reseñas)</span>
+                <span class="text-gray-600 text-sm">
+                  ({{ provider.totalReviews ?? 0 }} reseñas)
+                </span>
               </div>
 
               <!-- Bio -->
@@ -92,7 +96,9 @@
               <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div class="flex items-center gap-3 text-gray-700 bg-gray-50 rounded-xl px-4 py-3">
                   <ng-icon name="heroMapPin" class="text-teal-600 flex-shrink-0"></ng-icon>
-                  <span class="text-sm truncate">{{ provider.zone ?? 'Zona no especificada' }}</span>
+                  <span class="text-sm truncate">
+                    {{ provider.zone ?? 'Zona no especificada' }}
+                  </span>
                 </div>
                 <div class="flex items-center gap-3 text-gray-700 bg-gray-50 rounded-xl px-4 py-3">
                   <ng-icon name="heroBriefcase" class="text-teal-600 flex-shrink-0"></ng-icon>
@@ -100,7 +106,9 @@
                 </div>
                 <div class="flex items-center gap-3 text-gray-700 bg-gray-50 rounded-xl px-4 py-3">
                   <ng-icon name="heroShieldCheck" class="text-teal-600 flex-shrink-0"></ng-icon>
-                  <span class="text-sm">{{ provider.insuranceActive ? 'Seguro activo' : 'Sin seguro' }}</span>
+                  <span class="text-sm">
+                    {{ provider.insuranceActive ? 'Seguro activo' : 'Sin seguro' }}
+                  </span>
                 </div>
               </div>
 
@@ -163,19 +171,32 @@
           </div>
         </div>
 
-        <!-- CTA CONTRATAR -->
+        <!-- CTA CONTRATAR + MENSAJE -->
         <div class="bg-white rounded-2xl p-6 border border-gray-200">
+
+          <!-- Error de mensaje -->
+          <div *ngIf="msgError"
+               class="mb-4 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+            <p class="text-red-600 text-sm">{{ msgError }}</p>
+          </div>
+
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div>
               <p class="text-xs text-gray-400">Precio desde</p>
               <p class="text-3xl font-semibold text-gray-900">{{ startingPrice }}</p>
               <p class="text-xs text-gray-500">por hora</p>
             </div>
-            <button (click)="hireProvider()"
-                    class="px-8 py-3.5 bg-teal-700 text-white rounded-xl
-                           font-medium hover:opacity-85 transition">
-              Contratar
-            </button>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+              <!-- BOTÓN CONTRATAR -->
+              <button
+                (click)="hireProvider()"
+                class="px-8 py-3.5 bg-teal-700 text-white rounded-xl
+                       font-medium hover:opacity-85 transition">
+                Contratar
+              </button>
+
+            </div>
           </div>
         </div>
 

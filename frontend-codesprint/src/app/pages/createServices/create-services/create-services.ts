@@ -1,4 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { 
+  Component, 
+  OnInit, 
+  inject, 
+  ChangeDetectionStrategy, 
+  ChangeDetectorRef 
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -43,13 +49,15 @@ import {
     })
   ],
   templateUrl: './create-services.html',
-  styleUrls: ['./create-services.css']
+  styleUrls: ['./create-services.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CreateServicesComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private http = inject(HttpClient);
   private categoryService = inject(ServiceCategoryService);
+  private cdr = inject(ChangeDetectorRef);
 
   serviceForm!: FormGroup;
   submitted = false;
@@ -59,7 +67,6 @@ export class CreateServicesComponent implements OnInit {
   selectedPhoto: File | null = null;
   selectedDocuments: File[] = [];
 
-  // Ahora se cargan desde el backend
   categories: ServiceCategoryResponse[] = [];
 
   priceTypes = [
@@ -108,21 +115,22 @@ export class CreateServicesComponent implements OnInit {
     });
 
     this.loadCategories();
-
-    console.log('profile_id localStorage:', localStorage.getItem('profile_id'));
-    console.log('user_id localStorage:', localStorage.getItem('user_id'));
   }
 
   private loadCategories(): void {
     this.loadingCategories = true;
+    this.cdr.markForCheck();
+
     this.categoryService.getAllActive().subscribe({
       next: (data) => {
         this.categories = data;
         this.loadingCategories = false;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Error al cargar categorías:', err);
         this.loadingCategories = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -141,7 +149,6 @@ export class CreateServicesComponent implements OnInit {
 
   onFileChange(event: Event, type: 'photo' | 'documents'): void {
     const input = event.target as HTMLInputElement;
-
     if (!input.files || input.files.length === 0) return;
 
     if (type === 'photo') {
@@ -149,6 +156,7 @@ export class CreateServicesComponent implements OnInit {
     } else {
       this.selectedDocuments = Array.from(input.files);
     }
+    this.cdr.markForCheck();
   }
 
   onCancel(): void {
@@ -160,14 +168,13 @@ export class CreateServicesComponent implements OnInit {
 
     if (this.serviceForm.invalid) {
       this.serviceForm.markAllAsTouched();
-      console.warn('Formulario inválido:', this.serviceForm.value);
+      this.cdr.markForCheck();
       return;
     }
 
     const providerProfileId = localStorage.getItem('profile_id');
 
     if (!providerProfileId) {
-      console.error('No existe "profile_id" en localStorage');
       alert('No se encontró el perfil del proveedor. Primero abre tu perfil de proveedor.');
       return;
     }
@@ -175,7 +182,6 @@ export class CreateServicesComponent implements OnInit {
     const selectedCategoryId = this.serviceForm.value.category;
 
     if (!selectedCategoryId) {
-      console.error('No hay categoría seleccionada');
       alert('Selecciona una categoría válida.');
       return;
     }
@@ -204,23 +210,20 @@ Requisitos:
       publicationState: 'pending'
     };
 
-    console.log('Payload enviado:', payload);
-
     this.loading = true;
+    this.cdr.markForCheck();
 
     this.http.post('http://localhost:8081/api/v1/services', payload).subscribe({
       next: (response) => {
-        console.log('Servicio creado con éxito:', response);
         this.loading = false;
+        this.cdr.markForCheck();
         alert('Servicio creado correctamente');
         this.router.navigate(['/my-services']);
       },
       error: (error) => {
         console.error('Error al crear servicio:', error);
-        console.error('Status:', error?.status);
-        console.error('Body error:', error?.error);
-
         this.loading = false;
+        this.cdr.markForCheck();
 
         let backendMessage = 'Error al crear el servicio.';
 
@@ -239,4 +242,3 @@ Requisitos:
     });
   }
 }
-

@@ -1,0 +1,383 @@
+<div class="min-h-screen bg-gray-50">
+  <app-navbar></app-navbar>
+  
+  <main class="lg:ml-64 pb-24 lg:pb-8">
+    <div class="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-7xl">
+      
+      <!-- Header -->
+      <div class="mb-6">
+        <button (click)="goBack()" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4">
+          <i class="fa-solid fa-arrow-left w-5 h-5"></i>
+          <span>Volver</span>
+        </button>
+        
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div class="flex-1">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Filtros del Hogar</h1>
+            <p class="text-gray-600">Mapa interactivo del lugar con información categorizada</p>
+          </div>
+          
+          <div class="flex gap-3">
+            <!-- Botón Modo Edición -->
+            <button (click)="toggleEditMode()" 
+                    [class.bg-teal-600]="isEditMode"
+                    [class.bg-gray-200]="!isEditMode"
+                    [class.text-white]="isEditMode"
+                    [class.text-gray-700]="!isEditMode"
+                    class="px-4 py-3 rounded-xl transition-all flex items-center gap-2 font-medium">
+              <i [class]="isEditMode ? 'fa-solid fa-check' : 'fa-solid fa-arrows-up-down-left-right'"></i>
+              <span>{{ isEditMode ? 'Guardar posiciones' : 'Mover marcadores' }}</span>
+            </button>
+            
+            <button (click)="goToChecklist()" 
+                    class="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2">
+              <i class="fa-solid fa-check-square w-5 h-5"></i>
+              <span>Ver checklist</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Banner -->
+      <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
+        <div class="flex items-start gap-3">
+          <i class="fa-solid fa-circle-info w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0"></i>
+          <div class="flex-1">
+            <p class="text-sm text-blue-800">
+              <strong>Para cuidadores:</strong> Esta información es confidencial y solo está disponible durante servicios confirmados. Usa las capas para filtrar la información que necesitas.
+            </p>
+            <p *ngIf="isEditMode" class="text-sm text-teal-600 mt-2">
+              <i class="fa-solid fa-arrows-up-down-left-right"></i> Modo edición activado: Arrastra los marcadores para cambiar su posición.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile Layers Toggle -->
+      <div class="lg:hidden mb-4">
+        <button (click)="toggleLayersPanel()" 
+                class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl flex items-center justify-between hover:bg-gray-50">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-bars w-5 h-5 text-teal-600"></i>
+            <span class="font-medium">Capas de información</span>
+            <span class="text-sm text-gray-500">({{ activeLayers.length }} activas)</span>
+          </div>
+          <i [class]="isLayersPanelOpen ? 'fa-solid fa-chevron-left w-5 h-5' : 'fa-solid fa-chevron-right w-5 h-5'"></i>
+        </button>
+      </div>
+
+      <!-- Main Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        <!-- Layers Panel -->
+        <div [class]="isLayersPanelOpen ? 'block' : 'hidden lg:block' + ' lg:col-span-1'">
+          <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-900">Capas de información</h3>
+              <button (click)="closeLayersPanel()" class="lg:hidden w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200">
+                <i class="fa-solid fa-xmark w-5 h-5 text-gray-600"></i>
+              </button>
+            </div>
+
+            <div class="space-y-3">
+              <div *ngFor="let layer of layers">
+                <button (click)="toggleLayer(layer.id)" 
+                        [class]="activeLayers.includes(layer.id) ? layer.color + ' text-white border-transparent' : 'bg-gray-50 border-gray-200 hover:border-gray-300' + ' w-full p-4 rounded-xl border-2 transition-all text-left'">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                      <i [class]="layer.icon + ' w-5 h-5'"></i>
+                      <span class="font-medium">{{ layer.name }}</span>
+                    </div>
+                    <div [class]="activeLayers.includes(layer.id) ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600' + ' w-6 h-6 rounded-lg flex items-center justify-center text-xs'">
+                      {{ markers.filter(m => m.layer === layer.id).length }}
+                    </div>
+                  </div>
+                  <p [class]="activeLayers.includes(layer.id) ? 'text-white/80' : 'text-gray-600'" class="text-xs">
+                    {{ layer.description }}
+                  </p>
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="mt-6 pt-6 border-t border-gray-200">
+              <div class="text-center">
+                <p class="text-3xl font-bold text-teal-600 mb-1">{{ getVisibleMarkers().length }}</p>
+                <p class="text-sm text-gray-600">Marcadores visibles</p>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="mt-6 space-y-2">
+              <button (click)="goToEditMarkers()" class="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all text-sm">
+                Editar marcadores
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Map Area -->
+        <div class="lg:col-span-2">
+          <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-900">Mapa del lugar</h3>
+              <div class="flex items-center gap-2">
+                <span class="text-sm text-gray-600">{{ getVisibleMarkers().length }} marcadores</span>
+              </div>
+            </div>
+
+            <!-- Image Container with Markers -->
+            <div *ngIf="backgroundImage; else uploadState">
+              <div #mapContainer class="relative bg-gray-100 rounded-2xl overflow-hidden aspect-[4/3]">
+                <img [src]="backgroundImage" alt="Foto del lugar" class="absolute inset-0 w-full h-full object-cover pointer-events-none">
+                <div class="absolute inset-0 bg-black/10 pointer-events-none"></div>
+
+                <!-- Draggable Markers -->
+                <ng-container *ngFor="let marker of getVisibleMarkers(); let i = index">
+                  <div
+                    (mousedown)="startDrag($event, marker)"
+                    (touchstart)="startDrag($event, marker)"
+                    [class.dragging]="marker.isDragging"
+                    [class.cursor-grab]="isEditMode"
+                    [class.cursor-grabbing]="marker.isDragging"
+                    class="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all"
+                    [class.z-20]="selectedMarker?.id === marker.id"
+                    [class.z-10]="selectedMarker?.id !== marker.id"
+                    [style.left.%]="marker.x"
+                    [style.top.%]="marker.y">
+                    
+                    <div class="relative" (click)="$event.stopPropagation(); selectMarker(marker)">
+                      <!-- Pulse effect when selected -->
+                      <div *ngIf="selectedMarker?.id === marker.id" 
+                           class="absolute inset-0 rounded-full opacity-75 animate-ping" 
+                           [class]="getMarkerColor(marker.layer)"></div>
+
+                      <!-- Pin body -->
+                      <div [class]="getMarkerColor(marker.layer) + ' relative w-10 h-10 sm:w-12 sm:h-12 rounded-full shadow-lg flex items-center justify-center text-white border-2 border-white transition-transform hover:scale-110'">
+                        <span class="text-lg sm:text-xl">{{ marker.icon }}</span>
+                      </div>
+
+                      <!-- Number badge -->
+                      <div class="absolute -top-1 -right-1 w-5 h-5 bg-white text-gray-900 rounded-full flex items-center justify-center text-xs font-medium shadow-md">
+                        {{ i + 1 }}
+                      </div>
+
+                      <!-- Status indicator -->
+                      <div *ngIf="marker.status === 'activo'" 
+                           class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                    </div>
+
+                    <!-- Quick label -->
+                    <div *ngIf="selectedMarker?.id !== marker.id && !isEditMode" 
+                         class="absolute top-14 left-1/2 -translate-x-1/2 whitespace-nowrap pointer-events-none hidden sm:block">
+                      <div class="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg shadow-md text-xs font-medium">
+                        {{ marker.title }}
+                      </div>
+                    </div>
+                    
+                    <!-- Edit mode hint -->
+                    <div *ngIf="isEditMode" 
+                         class="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/70 text-white text-xs px-2 py-1 rounded-full pointer-events-none">
+                      <i class="fa-solid fa-arrows-up-down-left-right"></i> Arrastrar
+                    </div>
+                  </div>
+                </ng-container>
+
+                <!-- No markers message -->
+                <div *ngIf="getVisibleMarkers().length === 0" class="absolute inset-0 flex items-center justify-center bg-black/20">
+                  <div class="bg-white rounded-2xl p-6 text-center max-w-sm mx-4">
+                    <i class="fa-solid fa-location-dot w-12 h-12 text-gray-400 mx-auto mb-3"></i>
+                    <p class="text-gray-600 mb-2">No hay marcadores visibles</p>
+                    <p class="text-sm text-gray-500">Activa las capas para ver los marcadores</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Image Actions -->
+              <div class="mt-4 flex gap-2">
+                <label class="flex-1 cursor-pointer">
+                  <input type="file" accept="image/*" (change)="onFileChange($event)" class="hidden">
+                  <div class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all text-sm text-center">Cambiar foto</div>
+                </label>
+                <button (click)="removeImage()" class="px-4 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-all text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-trash-can w-4 h-4"></i>
+                  <span>Eliminar</span>
+                </button>
+              </div>
+            </div>
+
+            <ng-template #uploadState>
+              <label class="cursor-pointer w-full">
+                <input type="file" accept="image/*" (change)="onFileChange($event)" class="hidden">
+                <div class="bg-gray-100 rounded-2xl overflow-hidden aspect-[4/3] flex items-center justify-center">
+                  <div class="text-center p-6">
+                    <div class="w-20 h-20 bg-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <i class="fa-solid fa-cloud-arrow-up w-10 h-10 text-teal-600"></i>
+                    </div>
+                    <h4 class="text-lg font-semibold text-gray-900 mb-2">Subí una foto del lugar</h4>
+                    <p class="text-sm text-gray-600 mb-4">JPG, PNG o WEBP • Máximo 10MB</p>
+                    <div class="px-6 py-3 bg-teal-600 text-white rounded-xl inline-flex items-center gap-2 hover:bg-teal-700 transition-all">
+                      <i class="fa-solid fa-cloud-arrow-up w-5 h-5"></i>
+                      <span>Seleccionar foto</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-4">La foto debe mostrar una vista general del edificio o lugar</p>
+                  </div>
+                </div>
+              </label>
+            </ng-template>
+
+            <!-- Legend -->
+            <div *ngIf="backgroundImage" class="mt-4 flex flex-wrap gap-2 sm:gap-3">
+              <div *ngFor="let layer of layers" class="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
+                <div [class]="'w-3 h-3 ' + layer.color + ' rounded-full'"></div>
+                <i [class]="layer.icon + ' w-4 h-4 text-gray-600'"></i>
+                <span class="text-sm text-gray-700">{{ layer.name }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Details Panel -->
+        <div class="lg:col-span-1">
+          <div [class]="selectedMarker ? 'block' : 'hidden lg:block' + ' bg-white rounded-2xl shadow-sm p-4 sm:p-6 lg:sticky lg:top-24'">
+            <div *ngIf="selectedMarker; else noSelection">
+              <div class="flex items-start justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Detalles</h3>
+                <button (click)="clearSelectedMarker()" class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200">
+                  <i class="fa-solid fa-xmark w-5 h-5 text-gray-600"></i>
+                </button>
+              </div>
+
+              <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                  <div [class]="getMarkerColor(selectedMarker.layer) + ' w-14 h-14 rounded-xl flex items-center justify-center text-2xl'">
+                    {{ selectedMarker.icon }}
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-1">{{ selectedMarker.title }}</h4>
+                    <p class="text-sm text-gray-600 capitalize flex items-center gap-2">
+                      {{ selectedMarker.layer }}
+                      <span *ngIf="selectedMarker.status === 'activo'" class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
+                        <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                        Activo
+                      </span>
+                    </p>
+                  </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-4">
+                  <p class="text-sm text-gray-700 leading-relaxed">{{ selectedMarker.description }}</p>
+                </div>
+
+                <div *ngIf="selectedMarker.contact" class="bg-teal-50 border border-teal-200 rounded-xl p-4">
+                  <div class="flex items-center gap-2 mb-2">
+                    <i class="fa-solid fa-phone w-4 h-4 text-teal-600"></i>
+                    <span class="text-sm font-medium text-teal-900">Contacto</span>
+                  </div>
+                  <p class="text-sm text-teal-800">{{ selectedMarker.contact }}</p>
+                </div>
+
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between text-sm">
+                    <span class="text-gray-600">Tipo:</span>
+                    <span class="capitalize font-medium">{{ selectedMarker.type }}</span>
+                  </div>
+                  <div class="flex items-center justify-between text-sm">
+                    <span class="text-gray-600">Estado:</span>
+                    <span [class]="selectedMarker.status === 'activo' ? 'text-green-600' : 'text-gray-600' + ' capitalize font-medium'">
+                      {{ selectedMarker.status }}
+                    </span>
+                  </div>
+                </div>
+
+                <div *ngIf="selectedMarker.layer === 'seguridad'" class="bg-red-50 border border-red-200 rounded-xl p-3">
+                  <p class="text-sm text-red-800 flex items-center gap-2">
+                    <i class="fa-solid fa-shield w-4 h-4"></i>
+                    <span><strong>Crítico:</strong> Información de seguridad</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <ng-template #noSelection>
+              <div class="text-center py-12">
+                <i class="fa-solid fa-location-dot w-12 h-12 text-gray-300 mx-auto mb-3"></i>
+                <p class="text-gray-500 mb-2">Selecciona un marcador</p>
+                <p class="text-sm text-gray-400">Toca cualquier pin en el mapa para ver más detalles</p>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Mobile Modal -->
+  <div *ngIf="selectedMarker" class="lg:hidden fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-3xl shadow-2xl p-6 max-h-[80vh] overflow-y-auto" style="animation: slideUp 0.3s ease-out">
+    <div class="flex items-start justify-between mb-4">
+      <h3 class="text-lg font-semibold text-gray-900">Detalles</h3>
+      <button (click)="clearSelectedMarker()" class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200">
+        <i class="fa-solid fa-xmark w-5 h-5 text-gray-600"></i>
+      </button>
+    </div>
+
+    <div class="space-y-4">
+      <div class="flex items-center gap-3">
+        <div [class]="getMarkerColor(selectedMarker.layer) + ' w-14 h-14 rounded-xl flex items-center justify-center text-2xl'">
+          {{ selectedMarker.icon }}
+        </div>
+        <div class="flex-1">
+          <h4 class="text-lg font-semibold text-gray-900 mb-1">{{ selectedMarker.title }}</h4>
+          <p class="text-sm text-gray-600 capitalize flex items-center gap-2">
+            {{ selectedMarker.layer }}
+            <span *ngIf="selectedMarker.status === 'activo'" class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
+              <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+              Activo
+            </span>
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-gray-50 rounded-xl p-4">
+        <p class="text-sm text-gray-700 leading-relaxed">{{ selectedMarker.description }}</p>
+      </div>
+
+      <div *ngIf="selectedMarker.contact" class="bg-teal-50 border border-teal-200 rounded-xl p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <i class="fa-solid fa-phone w-4 h-4 text-teal-600"></i>
+          <span class="text-sm font-medium text-teal-900">Contacto</span>
+        </div>
+        <p class="text-sm text-teal-800">{{ selectedMarker.contact }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  
+  .animate-ping {
+    animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+  
+  @keyframes ping {
+    75%, 100% { transform: scale(2); opacity: 0; }
+  }
+  
+  .cursor-grab {
+    cursor: grab;
+  }
+  
+  .cursor-grabbing {
+    cursor: grabbing;
+  }
+  
+  .dragging {
+    opacity: 0.8;
+    z-index: 100;
+    filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.3));
+  }
+</style>

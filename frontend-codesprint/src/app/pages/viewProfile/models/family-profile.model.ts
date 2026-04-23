@@ -1,7 +1,7 @@
 import { BaseProfile } from './profile.model';
 
 export interface FamilyProfile extends BaseProfile {
-  // Campos que ya tenías
+  seniorProfileId?: number | null;  // ⬅ AGREGAR
   relationToSenior:  string;
   emergencyName:     string;
   emergencyRelation: string;

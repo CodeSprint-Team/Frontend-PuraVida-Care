@@ -47,7 +47,7 @@ export interface SeniorProfileUpdateDTO {
   age?: number;
   address?: string;
   phone?: string;
-  profileImage?: string;
+  profileImage?: string | null;
   familyMember?: string;
   familyRelation?: string;
   familyPhone?: string;

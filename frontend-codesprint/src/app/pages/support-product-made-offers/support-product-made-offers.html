@@ -18,6 +18,12 @@
         </p>
       </div>
 
+      @if (successMessage) {
+        <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          {{ successMessage }}
+        </div>
+      }
+
       @if (errorMessage) {
         <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {{ errorMessage }}
@@ -95,6 +101,13 @@
                     </div>
                   }
 
+                  @if (offer.publicationState) {
+                    <div>
+                      <span class="font-semibold">Estado de la publicación:</span>
+                      {{ offer.publicationState }}
+                    </div>
+                  }
+
                   @if (offer.created) {
                     <div class="flex items-center gap-2">
                       <ng-icon name="heroClock" size="16"></ng-icon>
@@ -105,11 +118,68 @@
                     </div>
                   }
                 </div>
+
+                @if (canPay(offer)) {
+                  <div class="mt-6">
+                    <button
+                      class="rounded-xl bg-blue-600 px-4 py-2 text-white font-semibold hover:bg-blue-700 transition"
+                      (click)="openPayModal(offer)"
+                    >
+                      Pagar
+                    </button>
+                  </div>
+                }
               </div>
             </div>
           }
         </div>
       }
     </div>
+
+    @if (isPayModalOpen && selectedOffer) {
+      <div
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+        (click)="closePayModal()"
+      >
+        <div
+          class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto"
+          (click)="$event.stopPropagation()"
+        >
+          <div class="mb-4">
+            <h2 class="text-xl font-bold text-gray-900">Pagar oferta aceptada</h2>
+            <p class="text-sm text-gray-600 mt-1">
+              Tu oferta fue aceptada. Ahora podés completar el pago.
+            </p>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-2">
+            <h3 class="text-lg font-semibold text-gray-900">
+              {{ selectedOffer.supportProductTitle }}
+            </h3>
+
+            <p class="text-sm text-gray-600">
+              Vendedor: {{ selectedOffer.sellerName || 'No disponible' }}
+            </p>
+
+            <p class="text-2xl font-bold text-teal-700">
+              ₡{{ selectedOffer.amount.toLocaleString() }}
+            </p>
+          </div>
+
+          <div class="mt-6">
+            <div id="paypal-button-container-made-offers"></div>
+          </div>
+
+          <div class="mt-6 flex justify-end">
+            <button
+              class="rounded-xl border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
+              (click)="closePayModal()"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    }
   </main>
 </div>

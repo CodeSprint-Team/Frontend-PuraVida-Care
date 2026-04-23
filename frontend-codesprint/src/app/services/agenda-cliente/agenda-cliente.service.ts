@@ -19,6 +19,7 @@ export class AgendaClienteService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/agenda-cliente`;
   private readonly profileApiUrl = `${environment.apiUrl}/profiles/client`;
+  private readonly paypalApiUrl = `${environment.apiUrl}/paypal`;
 
   getClientProfileIdByUserId(userId: number): Observable<number> {
     return this.http
@@ -53,6 +54,7 @@ export class AgendaClienteService {
     );
   }
 
+
   cancelBooking(
     clientProfileId: number,
     bookingId: number,
@@ -65,3 +67,19 @@ export class AgendaClienteService {
   }
 
 }
+
+  createPaypalOrderForBooking(bookingId: number): Observable<any> {
+    return this.http.post<any>(
+      `${this.paypalApiUrl}/create-order/booking/${bookingId}`,
+      {}
+    );
+  }
+
+  capturePaypalOrderForBooking(orderId: string, bookingId: number): Observable<any> {
+    return this.http.post<any>(
+      `${this.paypalApiUrl}/capture-order/booking?orderId=${orderId}&bookingId=${bookingId}`,
+      {}
+    );
+  }
+}
+
