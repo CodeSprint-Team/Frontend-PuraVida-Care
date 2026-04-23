@@ -5,9 +5,8 @@ import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   heroHome, heroMagnifyingGlass, heroCalendarDays,
   heroCpuChip, heroChatBubbleLeftRight, heroUser,
-  heroCog6Tooth, heroClipboardDocumentList
+  heroCog6Tooth, heroClipboardDocumentList, heroShoppingBag
 } from '@ng-icons/heroicons/outline';
-
 interface NavItem {
   label: string;
   path: string;
@@ -21,7 +20,7 @@ interface NavItem {
   viewProviders: [provideIcons({
     heroHome, heroMagnifyingGlass, heroCalendarDays,
     heroCpuChip, heroChatBubbleLeftRight, heroUser,
-    heroCog6Tooth, heroClipboardDocumentList
+    heroCog6Tooth, heroClipboardDocumentList, heroShoppingBag
   })],
   templateUrl: './navbar.html',
 })
@@ -73,7 +72,9 @@ export class NavbarComponent implements OnInit, OnChanges {
           { label: 'Dashboard', path: '/provider-dashboard',       icon: 'heroClipboardDocumentList' },
           { label: 'Mensajes',  path: '/mensajes',                 icon: 'heroChatBubbleLeftRight'   },
           { label: 'Agenda',    path: '/provider-agenda',          icon: 'heroCalendarDays'          },
+          { label: 'Marketplace',  path: '/support-products',       icon: 'heroShoppingBag'          },
           { label: 'Perfil',    path: `/provider-profile/${userId}`, icon: 'heroUser'                },
+
         ];
         this.panelLabel = 'Panel Proveedor';
         break;
@@ -85,6 +86,7 @@ export class NavbarComponent implements OnInit, OnChanges {
           { label: 'Agenda',   path: '/agenda',   icon: 'heroCalendarDays'        },
           { label: 'Mensajes', path: '/mensajes', icon: 'heroChatBubbleLeftRight' },
           { label: 'Perfil',   path: `/profile/${userId}`, icon: 'heroUser'       },
+          { label: 'Marketplace',  path: '/support-products',       icon: 'heroShoppingBag'              },
         ];
         this.panelLabel = '';
         break;
