@@ -11,87 +11,163 @@
       </div>
       <button
         (click)="onCreateNew()"
-        class="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors">
-        <i class="fa-regular fa-plus"></i>
-        Crear nuevo servicio
+        class="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white
+               px-5 py-2.5 rounded-xl font-medium transition-colors">
+        + Crear nuevo servicio
       </button>
     </div>
 
     <!-- Stats -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-      <div class="bg-white rounded-xl p-6 shadow-sm text-center">
-        <span class="block text-3xl font-bold text-teal-600">{{ totalServices }}</span>
+      <div class="bg-white rounded-2xl p-6 shadow-sm text-center border border-gray-100">
+        <span class="block text-3xl font-bold text-teal-600">{{ totalServices() }}</span>
         <span class="text-gray-500 text-sm">Total servicios</span>
       </div>
-      <div class="bg-white rounded-xl p-6 shadow-sm text-center">
-        <span class="block text-3xl font-bold text-teal-600">{{ activeServices }}</span>
+      <div class="bg-white rounded-2xl p-6 shadow-sm text-center border border-gray-100">
+        <span class="block text-3xl font-bold text-emerald-600">{{ activeServices() }}</span>
         <span class="text-gray-500 text-sm">Servicios activos</span>
       </div>
-      <div class="bg-white rounded-xl p-6 shadow-sm text-center">
-        <span class="block text-3xl font-bold text-teal-600">{{ pausedServices }}</span>
+      <div class="bg-white rounded-2xl p-6 shadow-sm text-center border border-gray-100">
+        <span class="block text-3xl font-bold text-amber-500">{{ pausedServices() }}</span>
         <span class="text-gray-500 text-sm">Servicios pausados</span>
       </div>
     </div>
 
-    <!-- Loading / Error -->
-    <div *ngIf="loading" class="text-center text-gray-500 py-8">Cargando servicios...</div>
-    <div *ngIf="error" class="text-center text-red-500 py-4">{{ error }}</div>
+    <!-- Loading skeleton -->
+    @if (loading()) {
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        @for (i of [1,2,3]; track i) {
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+            <div class="h-4 w-20 bg-gray-200 rounded-full animate-pulse mb-4"></div>
+            <div class="h-5 w-3/4 bg-gray-200 rounded-xl animate-pulse mb-2"></div>
+            <div class="h-4 w-1/2 bg-gray-100 rounded-xl animate-pulse mb-3"></div>
+            <div class="h-4 w-full bg-gray-100 rounded-xl animate-pulse mb-1"></div>
+            <div class="h-4 w-2/3 bg-gray-100 rounded-xl animate-pulse mb-4"></div>
+            <div class="flex gap-2">
+              <div class="h-8 w-20 bg-gray-200 rounded-lg animate-pulse"></div>
+              <div class="h-8 w-20 bg-gray-200 rounded-lg animate-pulse"></div>
+              <div class="h-8 w-16 bg-gray-200 rounded-lg animate-pulse"></div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Error -->
+    @if (!loading() && error()) {
+      <div class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+        <p class="text-red-700 font-medium mb-3">{{ error() }}</p>
+        <button
+          (click)="loadServices()"
+          class="text-sm text-teal-600 hover:underline font-medium">
+          Intentar nuevamente
+        </button>
+      </div>
+    }
 
     <!-- Empty state -->
-    <div *ngIf="!loading && services.length === 0"
-      class="text-center text-gray-400 py-16 text-lg">
-      No tienes servicios registrados aún.
-    </div>
+    @if (!loading() && !error() && services().length === 0) {
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100
+                  text-center py-16 px-8">
+        <div class="w-16 h-16 bg-teal-50 rounded-2xl flex items-center
+                    justify-center mx-auto mb-4">
+          <span class="text-3xl">📋</span>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">
+          No tienes servicios aún
+        </h3>
+        <p class="text-gray-500 text-sm mb-6">
+          Crea tu primer servicio para que los clientes puedan encontrarte
+        </p>
+        <button
+          (click)="onCreateNew()"
+          class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2.5
+                 rounded-xl font-medium transition-colors">
+          Crear primer servicio
+        </button>
+      </div>
+    }
 
     <!-- Service Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-      <div *ngFor="let service of services"
-        class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
+    @if (!loading() && !error() && services().length > 0) {
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        @for (service of services(); track service.id) {
+          <div class="bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col
+                      border border-gray-100 hover:shadow-md transition-shadow">
 
-        <!-- Badge -->
-        <div class="px-5 py-3 border-b border-gray-100">
-          <span class="inline-block px-3 py-0.5 rounded-full text-sm font-medium"
-            [ngClass]="isActive(service)
-              ? 'bg-green-100 text-green-700'
-              : 'bg-yellow-100 text-yellow-700'">
-            {{ isActive(service) ? 'Activo' : 'Pausado' }}
-          </span>
-        </div>
+            <!-- Badge estado -->
+            <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+              <span
+                class="inline-block px-3 py-0.5 rounded-full text-xs font-semibold"
+                [class]="isActive(service)
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : 'bg-amber-100 text-amber-700'">
+                {{ isActive(service) ? 'Activo' : 'Pausado' }}
+              </span>
+              <span class="text-xs text-gray-400">#{{ service.id }}</span>
+            </div>
 
-        <!-- Content -->
-        <div class="p-5 flex flex-col flex-1">
-          <h3 class="text-lg font-semibold text-gray-800">{{ service.title }}</h3>
-          <p class="text-gray-500 text-sm mb-3">{{ service.serviceCategory?.categoryName }}</p>
-          <p class="text-green-600 font-medium text-lg mb-3">
-            {{ formatPrice(service.basePrice, service.priceMode) }}
-          </p>
-          <p class="text-gray-600 text-sm mb-4 line-clamp-3">{{ service.serviceDescription }}</p>
+            <!-- Contenido -->
+            <div class="p-5 flex flex-col flex-1">
 
-          <!-- Actions -->
-          <div class="flex flex-wrap gap-2 mt-auto mb-3">
-            <button (click)="onEdit(service.id)"
-              class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium bg-teal-600 text-white hover:bg-teal-700 transition-colors">
-              <i class="fa-regular fa-pen-to-square"></i> Editar
-            </button>
-            <button (click)="toggleStatus(service.id)"
-              class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
-              [ngClass]="isActive(service)
-                ? 'bg-yellow-400 text-gray-800 hover:bg-yellow-500'
-                : 'bg-green-600 text-white hover:bg-green-700'">
-              <i class="fa-regular"
-                [ngClass]="isActive(service) ? 'fa-circle-pause' : 'fa-circle-play'"></i>
-              {{ isActive(service) ? 'Pausar' : 'Activar' }}
-            </button>
-            <button (click)="onView(service.id)"
-              class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium bg-gray-500 text-white hover:bg-gray-600 transition-colors">
-              <i class="fa-regular fa-eye"></i> Ver
-            </button>
+              <h3 class="text-base font-semibold text-gray-800 mb-1 line-clamp-2">
+                {{ service.title }}
+              </h3>
+
+              <p class="text-teal-600 text-xs font-medium mb-1">
+                {{ service.serviceCategory?.categoryName ?? 'Sin categoría' }}
+              </p>
+
+              <p class="text-emerald-600 font-bold text-lg mb-3">
+                {{ formatPrice(service.basePrice, service.priceMode) }}
+              </p>
+
+              <p class="text-gray-500 text-sm mb-4 line-clamp-3 flex-1 leading-relaxed">
+                {{ service.serviceDescription }}
+              </p>
+
+              @if (service.zone) {
+                <p class="text-xs text-gray-400 mb-3">📍 {{ service.zone }}</p>
+              }
+
+              <!-- Acciones -->
+              <div class="flex flex-wrap gap-2 mt-auto">
+                <button
+                  (click)="onEdit(service.id)"
+                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm
+                         font-medium bg-teal-600 text-white hover:bg-teal-700
+                         transition-colors">
+                  ✏️ Editar
+                </button>
+
+                <button
+                  (click)="toggleStatus(service.id)"
+                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm
+                         font-medium transition-colors"
+                  [class]="isActive(service)
+                    ? 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                    : 'bg-emerald-600 text-white hover:bg-emerald-700'">
+                  {{ isActive(service) ? '⏸ Pausar' : '▶ Activar' }}
+                </button>
+
+                <button
+                  (click)="onView(service.id)"
+                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm
+                         font-medium bg-gray-100 text-gray-700 hover:bg-gray-200
+                         transition-colors">
+                  👁 Ver
+                </button>
+              </div>
+
+              <p class="text-gray-400 text-xs mt-3">
+                Creado el {{ formatDate(service.created!) }}
+              </p>
+            </div>
+
           </div>
-
-          <p class="text-gray-400 text-xs mt-2">Creado el {{ formatDate(service.created!) }}</p>
-        </div>
+        }
       </div>
-    </div>
+    }
 
   </div>
 </div>

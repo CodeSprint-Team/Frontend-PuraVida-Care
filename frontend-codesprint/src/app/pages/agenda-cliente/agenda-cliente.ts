@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { timeout } from 'rxjs';
 import { ServiceCardClient } from '../../components/service-card-client/service-card-client';
 import { NavbarComponent } from '../../components/navbar/navbar';
@@ -19,6 +19,7 @@ export class AgendaCliente implements OnInit {
   private readonly agendaService = inject(AgendaClienteService);
   private readonly authService = inject(AuthService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
 
   loading = true;
   errorMessage = '';
@@ -31,6 +32,9 @@ export class AgendaCliente implements OnInit {
     this.loadAgenda();
   }
 
+  goToExplorar() {
+    this.router.navigate(['/explorar']);
+  }
   private loadAgenda(): void {
     const userId = this.getCurrentUserId();
     if (!userId) {

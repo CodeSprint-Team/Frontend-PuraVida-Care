@@ -11,7 +11,6 @@ import { AdminProfile, AdminProfileUpdateDTO } from '../models/admin-profile.mod
 export class ProfileService {
   private http = inject(HttpClient);
 
-  // ✅ Base URL unificada
   private baseUrl = 'http://localhost:8081/api/v1/profiles';
 
   // ═══════════════════════════════════════════════════════════════

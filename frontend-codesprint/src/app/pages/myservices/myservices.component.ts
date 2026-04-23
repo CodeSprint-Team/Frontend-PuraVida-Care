@@ -1,104 +1,144 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import {
+  Component, OnInit, inject,
+  signal, computed,
+  ChangeDetectionStrategy
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { ServiceService, Service, ServiceStats } from '../../services/service.service';
 import { NavbarComponent } from '../../components/navbar/navbar';
+import { NotificationService } from '../../components/notification/notification.service';
 
 @Component({
   selector: 'app-myservices',
   standalone: true,
   imports: [CommonModule, NavbarComponent],
   templateUrl: './myservices.component.html',
-  styleUrls: ['./myservices.component.css']
+  styleUrls: ['./myservices.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush // ← clave
 })
 export class MyServicesComponent implements OnInit {
-  services: Service[] = [];
-  stats: ServiceStats = { total: 0, active: 0, paused: 0 };
-  loading = true;
-  error = '';
+  private serviceService = inject(ServiceService);
+  private notifications  = inject(NotificationService);
+  private router         = inject(Router);
+
+  // Signals en lugar de propiedades planas
+  services = signal<Service[]>([]);
+  stats    = signal<ServiceStats>({ total: 0, active: 0, paused: 0 });
+  loading  = signal(true);
+  error    = signal('');
   providerId!: number;
 
-  constructor(
-    private serviceService: ServiceService,
-    private cdr: ChangeDetectorRef
-  ) {}
+  // Computed — solo se recalcula cuando cambia stats()
+  totalServices  = computed(() => this.stats().total);
+  activeServices = computed(() => this.stats().active);
+  pausedServices = computed(() => this.stats().paused);
 
   ngOnInit(): void {
-    const userId = localStorage.getItem('user_id');
+    const profileId = localStorage.getItem('profile_id');
 
-    if (!userId) {
-      this.error = 'No se encontró el usuario. Iniciá sesión nuevamente.';
-      this.loading = false;
+    if (!profileId) {
+      this.error.set('No se encontró el perfil. Abre tu perfil de proveedor primero.');
+      this.loading.set(false);
+      this.notifications.error(
+        'Perfil no encontrado',
+        'Navega a tu perfil de proveedor antes de continuar'
+      );
       return;
     }
 
-    this.providerId = Number(userId);
+    this.providerId = Number(profileId);
     this.loadServices();
     this.loadStats();
   }
 
   loadServices(): void {
-    this.loading = true;
+    this.loading.set(true);
+    this.error.set('');
+
     this.serviceService.getServicesByProvider(this.providerId).subscribe({
       next: (data) => {
-        console.log('Datos recibidos:', data);
-        this.services = data;
-        this.loading = false;
-        this.cdr.detectChanges();
+        this.services.set(data);
+        this.loading.set(false);
       },
       error: (err) => {
-        console.error('Error HTTP:', err);
-        this.error = 'Error al cargar servicios';
-        this.loading = false;
-        this.cdr.detectChanges();
+        console.error('Error al cargar servicios:', err);
+        this.error.set('No se pudieron cargar los servicios.');
+        this.loading.set(false);
+        this.notifications.error(
+          'Error al cargar servicios',
+          'Verifica tu conexión e intenta de nuevo'
+        );
       }
     });
   }
 
   loadStats(): void {
     this.serviceService.getStats(this.providerId).subscribe({
-      next: (data) => {
-        console.log('Stats recibidas:', data);
-        this.stats = data;
-        this.cdr.detectChanges();
-      },
-      error: (err) => console.error('Error al cargar estadísticas', err)
+      next: (data)  => this.stats.set(data),
+      error: (err)  => console.error('Error al cargar estadísticas:', err)
     });
   }
 
   toggleStatus(serviceId: number): void {
     this.serviceService.toggleStatus(serviceId).subscribe({
       next: (updatedService) => {
-        const index = this.services.findIndex(s => s.id === serviceId);
-        if (index !== -1) {
-          this.services[index] = updatedService;
-        }
+        // Inmutable update — OnPush detecta el cambio
+        this.services.update(list =>
+          list.map(s => s.id === serviceId ? updatedService : s)
+        );
         this.loadStats();
-        this.cdr.detectChanges();
+
+        const isNowActive = updatedService.publicationState === 'published';
+        this.notifications.success(
+          isNowActive ? 'Servicio activado' : 'Servicio pausado',
+          isNowActive
+            ? 'Tu servicio ya es visible para los clientes'
+            : 'Tu servicio está oculto temporalmente'
+        );
       },
-      error: (err) => console.error('Error al cambiar estado', err)
+      error: (err) => {
+        console.error('Error al cambiar estado:', err);
+        this.notifications.error(
+          'Error al cambiar estado',
+          'No se pudo actualizar el servicio'
+        );
+      }
     });
   }
 
-  onEdit(serviceId: number): void { console.log('Editar servicio:', serviceId); }
-  onView(serviceId: number): void { console.log('Ver servicio:', serviceId); }
-  onCreateNew(): void { console.log('Crear nuevo servicio'); }
+  onEdit(serviceId: number): void {
+    this.router.navigate(['/edit-service', serviceId]);
+  }
 
-  get totalServices(): number { return this.stats.total; }
-  get activeServices(): number { return this.stats.active; }
-  get pausedServices(): number { return this.stats.paused; }
+  onView(serviceId: number): void {
+    this.router.navigate(['/service-detail', serviceId]);
+  }
+
+  onCreateNew(): void {
+    this.router.navigate(['/create-services']);
+  }
 
   isActive(service: Service): boolean {
     return service.publicationState === 'published';
   }
 
   formatPrice(price: number, unit: string): string {
-    return `₡${price.toLocaleString('es-CR')}/${unit}`;
+    const units: Record<string, string> = {
+      PER_HOUR:    'hora',
+      PER_SERVICE: 'servicio',
+      PER_DAY:     'día'
+    };
+    return `₡${price.toLocaleString('es-CR')} / ${units[unit] ?? unit}`;
   }
 
   formatDate(date: string): string {
     if (!date) return '';
     const d = new Date(date);
-    const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const months = [
+      'enero','febrero','marzo','abril','mayo','junio',
+      'julio','agosto','septiembre','octubre','noviembre','diciembre'
+    ];
     return `${d.getDate()} de ${months[d.getMonth()]} de ${d.getFullYear()}`;
   }
 }

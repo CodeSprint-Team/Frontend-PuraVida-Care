@@ -66,8 +66,6 @@ export class AgendaClienteService {
     );
   }
 
-}
-
   createPaypalOrderForBooking(bookingId: number): Observable<any> {
     return this.http.post<any>(
       `${this.paypalApiUrl}/create-order/booking/${bookingId}`,
