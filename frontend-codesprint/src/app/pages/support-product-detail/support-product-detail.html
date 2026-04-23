@@ -31,6 +31,53 @@
           </div>
         </div>
       }
+      @if (paymentSuccess) {
+        <div class="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 shadow-sm">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex items-start gap-3">
+              <div class="mt-0.5 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 font-bold">
+                ✓
+              </div>
+
+              <div>
+                <h3 class="text-sm font-bold text-emerald-800">Pago completado</h3>
+                <p class="mt-1 text-sm text-emerald-700">
+                  {{ paymentSuccess }}
+                </p>
+              </div>
+            </div>
+
+            <button
+              class="text-emerald-700 hover:text-emerald-900 text-xl leading-none"
+              (click)="paymentSuccess = ''"
+              aria-label="Cerrar mensaje"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      }
+
+      @if (paymentError) {
+        <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-4 shadow-sm">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h3 class="text-sm font-bold text-red-800">Error al procesar el pago</h3>
+              <p class="mt-1 text-sm text-red-700">
+                {{ paymentError }}
+              </p>
+            </div>
+
+            <button
+              class="text-red-700 hover:text-red-900 text-xl leading-none"
+              (click)="paymentError = ''"
+              aria-label="Cerrar mensaje"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      }
 
       @if (loading && !product) {
         <div class="bg-white rounded-2xl shadow-sm p-8 text-center">
@@ -190,29 +237,50 @@
               }
             </div>
 
-            <div class="mb-6">
-              @if (hasCurrentUserOffer) {
+            <div class="mb-6 space-y-3">
+
+              @if (isOwner()) {
                 <div
-                  class="w-full sm:w-auto rounded-xl border border-amber-200 bg-amber-50 px-5 py-3 text-amber-800 font-semibold"
+                  class="w-full sm:w-auto rounded-xl border border-blue-200 bg-blue-50 px-5 py-3 text-blue-800 font-semibold"
                 >
-                  Ya ofertaste por este artículo
+                  Esta publicación es tuya
                 </div>
-              } @else if (canMakeOffer()) {
-                <button
-                  class="w-full sm:w-auto rounded-xl bg-emerald-600 px-5 py-3 text-white font-semibold hover:bg-emerald-700 transition"
-                  (click)="openOfferModal()"
-                >
-                  Hacer oferta
-                </button>
               } @else {
-                <div
-                  class="w-full sm:w-auto rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 text-slate-600 font-medium"
-                >
-                  Este artículo no está disponible para nuevas ofertas
-                </div>
+
+                @if (canBuy()) {
+                  <button
+                    class="w-full sm:w-auto rounded-xl bg-blue-600 px-5 py-3 text-white font-semibold hover:bg-blue-700 transition"
+                    (click)="buyProduct()"
+                  >
+                    Comprar ahora
+                  </button>
+                }
+
+                @if (hasCurrentUserOffer) {
+                  <div
+                    class="w-full sm:w-auto rounded-xl border border-amber-200 bg-amber-50 px-5 py-3 text-amber-800 font-semibold"
+                  >
+                    Ya ofertaste por este artículo
+                  </div>
+
+                } @else if (canMakeOffer()) {
+                  <button
+                    class="w-full sm:w-auto rounded-xl bg-emerald-600 px-5 py-3 text-white font-semibold hover:bg-emerald-700 transition"
+                    (click)="openOfferModal()"
+                  >
+                    Hacer oferta
+                  </button>
+
+                } @else if (showUnavailableOfferMessage()) {
+                  <div
+                    class="w-full sm:w-auto rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 text-slate-600 font-medium"
+                  >
+                    Este artículo no está disponible para nuevas ofertas
+                  </div>
+                }
               }
             </div>
-
+            
             <div class="border-t pt-6">
               <h2 class="text-lg font-semibold text-gray-900 mb-3">Información del propietario</h2>
 
@@ -355,6 +423,56 @@
               [disabled]="offerLoading"
             >
               {{ offerLoading ? 'Enviando...' : 'Enviar oferta' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (isBuyModalOpen && product) {
+      <div
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+        (click)="closeBuyModal()"
+      >
+       <div
+          class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto"
+          (click)="$event.stopPropagation()"
+        >
+          <div class="mb-4">
+            <h2 class="text-xl font-bold text-gray-900">Confirmar compra</h2>
+            <p class="text-sm text-gray-600 mt-1">
+              Estás a punto de comprar este artículo.
+            </p>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-2">
+            <h3 class="text-lg font-semibold text-gray-900">
+              {{ product.title }}
+            </h3>
+
+            <p class="text-sm text-gray-600">
+              Tipo: {{ product.supportProductCatalogName || 'No especificado' }}
+            </p>
+
+            <p class="text-sm text-gray-600">
+              Ubicación: {{ product.locationText || 'No disponible' }}
+            </p>
+
+            <p class="text-2xl font-bold text-teal-700">
+              ₡{{ product.salePrice.toLocaleString() }}
+            </p>
+          </div>
+
+          <div class="mt-6">
+            <div id="paypal-button-container"></div>
+          </div>
+
+          <div class="mt-6 flex justify-end">
+            <button
+              class="rounded-xl border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
+              (click)="closeBuyModal()"
+            >
+              Cancelar
             </button>
           </div>
         </div>
