@@ -179,8 +179,6 @@ export const routes: Routes = [
     path: 'admin/service-categories',
     component: AdminServiceCategory
   },
-  {
-
 
   {
     path: 'my-services',
@@ -197,38 +195,37 @@ export const routes: Routes = [
     path: 'checklist-hogar', 
     component: ChecklistHogarComponent
   },
-  
-  },
 
+  {
     path: 'chat-ia',
     component: ChatIAComponent
   },
+
   {
     path: 'resultados-recomendados',
     component: ResultadosRecomendadosComponent
   },
+
   {
   path: 'mensajes',
   component: ConversationListComponent
   },
+
   {
     path: 'chat/:id',
     component: ChatComponent
   },
 
+  {
     path: 'telemedicina/doctor-view/:sessionId',
     component: DoctorViewComponent
   },
+
   {path: 'telemedicina/patient-view/:sessionId',
     component: PatientViewComponent
   },
 
-
-
-
-
   { path: '**', redirectTo: 'landing' }
-
 
 ];
 
