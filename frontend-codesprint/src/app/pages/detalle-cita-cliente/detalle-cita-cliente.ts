@@ -206,7 +206,6 @@ export class DetalleCitaCliente implements OnInit {
           icon: 'success',
           title: 'Cita cancelada',
           text: 'La cita fue cancelada correctamente y el proveedor será notificado.',
-          text: 'El proveedor fue notificado de la cancelación.',
 
           confirmButtonColor: '#14b8a6'
         });

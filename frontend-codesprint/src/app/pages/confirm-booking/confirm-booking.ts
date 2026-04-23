@@ -65,6 +65,7 @@ export class ConfirmBooking implements OnInit, AfterViewInit, OnDestroy {
   submitted = false;
 
   agreedPriceMode: 'PAYPAL' | 'CARD' = 'CARD';
+  seniorProfileId: number | null = null;
 
   map!: L.Map;
   originMarker!: L.Marker;
@@ -122,6 +123,19 @@ export class ConfirmBooking implements OnInit, AfterViewInit, OnDestroy {
       if (this.providerId) {
         this.loadProvider();
       }
+
+      const userId = this.obtenerUsuarioLogueadoId();
+      if (userId) {
+        this.profileService.getSeniorProfileByUserId(userId).subscribe({
+          next: (profile) => {
+            this.seniorProfileId = profile.id;
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            this.seniorProfileId = null;
+          }
+        });
+      }
     });
   }
 
@@ -131,14 +145,14 @@ export class ConfirmBooking implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-  if (this.map) {
-    this.map.remove();
-  }
+    if (this.map) {
+      this.map.remove();
+    }
 
-  if (this.destinationMap) {
-    this.destinationMap.remove();
+    if (this.destinationMap) {
+      this.destinationMap.remove();
+    }
   }
-}
 
   loadProvider(): void {
     this.profileService.getProviderProfile(this.providerId).subscribe({
@@ -156,65 +170,65 @@ export class ConfirmBooking implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-private initOriginMap(): void {
-  const defaultLat = 9.9281;
-  const defaultLng = -84.0907;
+  private initOriginMap(): void {
+    const defaultLat = 9.9281;
+    const defaultLng = -84.0907;
 
-  this.map = L.map('booking-map').setView([defaultLat, defaultLng], 13);
+    this.map = L.map('booking-map').setView([defaultLat, defaultLng], 13);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(this.map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(this.map);
 
-  this.map.on('click', (e: L.LeafletMouseEvent) => {
-    const { lat, lng } = e.latlng;
+    this.map.on('click', (e: L.LeafletMouseEvent) => {
+      const { lat, lng } = e.latlng;
 
-    this.originLatitude = lat;
-    this.originLongitude = lng;
+      this.originLatitude = lat;
+      this.originLongitude = lng;
 
-    if (this.originMarker) {
-      this.originMarker.setLatLng([lat, lng]);
-    } else {
-      this.originMarker = L.marker([lat, lng]).addTo(this.map);
-    }
+      if (this.originMarker) {
+        this.originMarker.setLatLng([lat, lng]);
+      } else {
+        this.originMarker = L.marker([lat, lng]).addTo(this.map);
+      }
 
-    this.cdr.detectChanges();
-  });
+      this.cdr.detectChanges();
+    });
 
-  setTimeout(() => {
-    this.map.invalidateSize();
-  }, 0);
-}
+    setTimeout(() => {
+      this.map.invalidateSize();
+    }, 0);
+  }
 
-private initDestinationMap(): void {
-  const defaultLat = 9.9281;
-  const defaultLng = -84.0907;
+  private initDestinationMap(): void {
+    const defaultLat = 9.9281;
+    const defaultLng = -84.0907;
 
-  this.destinationMap = L.map('destination-map').setView([defaultLat, defaultLng], 13);
+    this.destinationMap = L.map('destination-map').setView([defaultLat, defaultLng], 13);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(this.destinationMap);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(this.destinationMap);
 
-  this.destinationMap.on('click', (e: L.LeafletMouseEvent) => {
-    const { lat, lng } = e.latlng;
+    this.destinationMap.on('click', (e: L.LeafletMouseEvent) => {
+      const { lat, lng } = e.latlng;
 
-    this.destinationLatitude = lat;
-    this.destinationLongitude = lng;
+      this.destinationLatitude = lat;
+      this.destinationLongitude = lng;
 
-    if (this.destinationMarker) {
-      this.destinationMarker.setLatLng([lat, lng]);
-    } else {
-      this.destinationMarker = L.marker([lat, lng]).addTo(this.destinationMap);
-    }
+      if (this.destinationMarker) {
+        this.destinationMarker.setLatLng([lat, lng]);
+      } else {
+        this.destinationMarker = L.marker([lat, lng]).addTo(this.destinationMap);
+      }
 
-    this.cdr.detectChanges();
-  });
+      this.cdr.detectChanges();
+    });
 
-  setTimeout(() => {
-    this.destinationMap.invalidateSize();
-  }, 0);
-}
+    setTimeout(() => {
+      this.destinationMap.invalidateSize();
+    }, 0);
+  }
 
   setAgreedPriceMode(mode: 'PAYPAL' | 'CARD'): void {
     this.agreedPriceMode = mode;
@@ -274,7 +288,7 @@ private initDestinationMap(): void {
     const payload: CreateServiceBookingRequest = {
       userId: loggedUserId,
       clientProfileId: null,
-      seniorProfileId: null,
+      seniorProfileId: this.seniorProfileId,
       careServiceId: Number(this.selectedService.id),
       scheduledAt,
       originText: this.origen || null,

@@ -36,6 +36,8 @@ export class NavbarComponent implements OnInit, OnChanges {
     { label: 'Agenda',   path: '/agenda-cliente',   icon: 'heroCalendarDays' },
     { label: 'Chat IA',  path: '/chat-ia',  icon: 'heroCpuChip' },
     { label: 'Mensajes', path: '/mensajes', icon: 'heroChatBubbleLeftRight' },
+    { label: 'Marketplace',  path: '/support-products',       icon: 'heroShoppingBag'              },
+
   ];
 
   ngOnInit(): void {
@@ -85,8 +87,9 @@ export class NavbarComponent implements OnInit, OnChanges {
           { label: 'Explorar', path: '/explorar', icon: 'heroMagnifyingGlass'     },
           { label: 'Agenda',   path: '/agenda',   icon: 'heroCalendarDays'        },
           { label: 'Mensajes', path: '/mensajes', icon: 'heroChatBubbleLeftRight' },
-          { label: 'Perfil',   path: `/profile/${userId}`, icon: 'heroUser'       },
           { label: 'Marketplace',  path: '/support-products',       icon: 'heroShoppingBag'              },
+          { label: 'Perfil',   path: `/profile/${userId}`, icon: 'heroUser'       },
+
         ];
         this.panelLabel = '';
         break;
