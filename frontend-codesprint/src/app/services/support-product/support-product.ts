@@ -11,6 +11,7 @@ import { OfferActionRequest } from '../../interfaces/support-product/offer-actio
 })
 export class SupportProductService {
   private apiUrl = 'http://127.0.0.1:8081/api/v1/support-products';
+  private paypalUrl = 'http://127.0.0.1:8081/paypal';
 
   constructor(private http: HttpClient) {}
 
@@ -53,4 +54,22 @@ export class SupportProductService {
   getOffersMade(buyerUserId: number): Observable<ArticleOfferResponse[]> {
     return this.http.get<ArticleOfferResponse[]>(`${this.apiUrl}/offers/made/${buyerUserId}`);
   }
+createPaypalOrder(amount: number): Observable<string> {
+  return this.http.post(
+    `http://localhost:8081/api/v1/paypal/create-order?amount=${amount}`,
+    null,
+    { responseType: 'text' }
+  );
+}
+
+capturePaypalOrder(orderId: string, productId: number): Observable<string> {
+  return this.http.post(
+    `http://localhost:8081/api/v1/paypal/capture-order?orderId=${orderId}&productId=${productId}`,
+    null,
+    { responseType: 'text' }
+  );
+}
+
+
+
 }

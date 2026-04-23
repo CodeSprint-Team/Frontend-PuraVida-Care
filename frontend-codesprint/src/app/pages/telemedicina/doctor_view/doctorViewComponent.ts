@@ -1,4 +1,14 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy,
+  NgZone
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -46,12 +56,14 @@ type ActiveTab = 'checklist' | 'notas' | 'transcripcion' | 'resumen';
   ],
   templateUrl: './doctorViewComponent.html',
   styleUrls: ['./doctorViewComponent.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DoctorViewComponent implements OnInit, AfterViewInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  private shouldScrollTranscription = false;
 
-  // Referencia al contenedor del video Jitsi
   @ViewChild('jitsiContainer') jitsiContainer!: ElementRef;
+  @ViewChild('transcriptionContainer') transcriptionContainer!: ElementRef;
 
   // ─── Session data ───
   sessionId = '';
@@ -68,11 +80,11 @@ export class DoctorViewComponent implements OnInit, AfterViewInit, OnDestroy {
   activeTab: ActiveTab = 'checklist';
 
   tabs: { key: ActiveTab; label: string }[] = [
-  { key: 'checklist', label: 'Checklist' },
-  { key: 'notas', label: 'Notas' },
-  { key: 'transcripcion', label: 'Transcripción' },
-  { key: 'resumen', label: 'Resumen' }
-];
+    { key: 'checklist', label: 'Checklist' },
+    { key: 'notas', label: 'Notas' },
+    { key: 'transcripcion', label: 'Transcripción' },
+    { key: 'resumen', label: 'Resumen' }
+  ];
 
   // ─── Modal states ───
   showConsentModal = false;
@@ -122,52 +134,62 @@ export class DoctorViewComponent implements OnInit, AfterViewInit, OnDestroy {
   errorMessage = '';
   isEndingSession = false;
 
-constructor(
-  private router: Router,
-  private route: ActivatedRoute,
-  private telemedApi: TelemedApiService,
-  private wsService: TelemedWebsocketService,
-  private audioCapture: AudioCaptureService,
-  private jitsiService: JitsiService,
-  private connectionMonitor: ConnectionMonitorService,
-  private notification: NotificationService,
-  private cdr: ChangeDetectorRef      
-) {}
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private telemedApi: TelemedApiService,
+    private wsService: TelemedWebsocketService,
+    private audioCapture: AudioCaptureService,
+    private jitsiService: JitsiService,
+    private connectionMonitor: ConnectionMonitorService,
+    private notification: NotificationService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
+  ) {}
+
   ngOnInit(): void {
-    // Obtener sessionId de la ruta: /telemedicina/doctor/:sessionId
     this.sessionId = this.route.snapshot.paramMap.get('sessionId') || '';
 
     if (!this.sessionId) {
       this.errorMessage = 'No se encontró el ID de sesión';
+      this.cdr.markForCheck();
       return;
     }
 
-    // Cargar datos del doctor desde localStorage
-    // Tu LoginComponent guarda: localStorage.setItem('user_name', response.userName)
     this.providerName = localStorage.getItem('user_name') || 'Doctor';
 
-    // TODO: Cargar datos del paciente desde tu API de booking/sesión
-    // Ejemplo: this.loadSessionData();
-
-    // Iniciar timer de duración
+    // Timer FUERA de la zona de Angular para no disparar detección de cambios cada segundo
     this.startDurationTimer();
 
-    // Verificar salud del servicio de IA
     this.checkAiHealth();
 
-    // Mostrar modal de consentimiento al inicio
     this.showConsentModal = true;
+    this.cdr.markForCheck();
 
-    // Iniciar monitoreo de conexión
     this.startConnectionMonitoring();
   }
 
   // ─── Jitsi video call ───
   ngAfterViewInit(): void {
-    // Inicializar Jitsi Meet embebido
-    // Se ejecuta después de que el DOM está listo
     if (this.jitsiContainer) {
       this.initJitsiCall();
+    }
+  }
+
+  // ─── Scroll controlado: solo cuando hay nueva transcripción ───
+  ngAfterViewChecked(): void {
+    if (this.shouldScrollTranscription && this.transcriptionContainer) {
+      this.scrollTranscriptionToBottom();
+      this.shouldScrollTranscription = false;
+    }
+  }
+
+  private scrollTranscriptionToBottom(): void {
+    try {
+      const el = this.transcriptionContainer.nativeElement;
+      el.scrollTop = el.scrollHeight;
+    } catch (e) {
+      // Ignorar si el elemento no existe
     }
   }
 
@@ -180,17 +202,22 @@ constructor(
 
     Promise.resolve().then(() => {
       this.jitsiReady = true;
-      this.cdr.detectChanges();
+      this.cdr.markForCheck();
     });
 
     this.jitsiService.onParticipantLeft(() => {
-      this.notification.showWarning('El paciente se desconectó de la llamada');
+      this.ngZone.run(() => {
+        this.notification.showWarning('El paciente se desconectó de la llamada');
+        this.cdr.markForCheck();
+      });
     });
 
     this.jitsiService.onCallEnded(() => {
-      if (!this.isEndingSession && !this.showEndCallModal) {
-        this.openEndCallModal();
-      }
+      this.ngZone.run(() => {
+        if (!this.isEndingSession && !this.showEndCallModal) {
+          this.openEndCallModal();
+        }
+      });
     });
   }
 
@@ -209,21 +236,27 @@ constructor(
         } else {
           this.showPoorConnectionBanner = false;
         }
+        this.cdr.markForCheck();
       });
   }
 
   switchToAudioOnly(): void {
     this.showPoorConnectionBanner = false;
     this.isCameraOn = false;
-    this.jitsiService.toggleVideo(); // Apagar cámara en Jitsi
+    this.jitsiService.toggleVideo();
     this.notification.showInfo('Continuando en modo solo audio');
+    this.cdr.markForCheck();
   }
 
-  // ─── Timer de duración ───
+  // ─── Timer FUERA de NgZone para no disparar change detection cada segundo ───
   private startDurationTimer(): void {
-    this.durationInterval = setInterval(() => {
-      this.duration++;
-    }, 1000);
+    this.ngZone.runOutsideAngular(() => {
+      this.durationInterval = setInterval(() => {
+        this.duration++;
+        // Solo actualizar la UI cada 1 segundo, sin disparar detección global
+        this.cdr.detectChanges();
+      }, 1000);
+    });
   }
 
   formatDuration(seconds: number): string {
@@ -242,17 +275,19 @@ constructor(
       .subscribe({
         next: (response) => {
           this.aiConnected = response.aiAvailable;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.aiConnected = false;
+          this.cdr.markForCheck();
         },
       });
   }
+
   onConsentDecision(accepted: boolean): void {
     this.consentLoading = true;
-
-    // Cerrar el modal de una vez para no bloquear la pantalla
     this.showConsentModal = false;
+    this.cdr.markForCheck();
 
     this.telemedApi
       .registerConsent(this.sessionId, accepted)
@@ -261,6 +296,7 @@ constructor(
         next: () => {
           this.consentLoading = false;
           this.aiActive = accepted;
+          this.cdr.markForCheck();
 
           if (accepted) {
             this.connectWebSocket();
@@ -272,9 +308,7 @@ constructor(
           this.aiActive = false;
           this.errorMessage = 'Error al registrar consentimiento';
           console.error(err);
-
-          // Opcional: si quieres, puedes decidir reabrirlo
-          // this.showConsentModal = true;
+          this.cdr.markForCheck();
         },
       });
   }
@@ -286,24 +320,25 @@ constructor(
       .pipe(takeUntil(this.destroy$))
       .subscribe((connected) => {
         this.wsConnected = connected;
+        this.cdr.markForCheck();
       });
 
     this.wsService.transcription$
       .pipe(takeUntil(this.destroy$))
       .subscribe((result: TranscriptionResult) => {
-        console.log('[Transcription recibida]', result);
         this.handleNewTranscription(result);
         this.errorMessage = '';
+        this.cdr.markForCheck();
       });
 
     this.wsService.analysis$
       .pipe(takeUntil(this.destroy$))
       .subscribe((analysis: ClinicalAnalysisResult) => {
-        console.log('[Analysis recibido]', analysis);
         this.clinicalAnalysis = analysis;
         this.analysisLoading = false;
         this.errorMessage = '';
         this.activeTab = 'resumen';
+        this.cdr.markForCheck();
       });
 
     this.wsService.error$
@@ -312,8 +347,10 @@ constructor(
         console.error('[WebSocket Error]', err.message);
         this.errorMessage = err.message;
         this.analysisLoading = false;
+        this.cdr.markForCheck();
       });
   }
+
   // ─── Audio Capture ───
   private async startAudioCapture(): Promise<void> {
     try {
@@ -321,6 +358,7 @@ constructor(
     } catch (error) {
       this.errorMessage =
         'No se pudo acceder al micrófono. Verifique los permisos.';
+      this.cdr.markForCheck();
     }
   }
 
@@ -333,16 +371,18 @@ constructor(
       symptoms: result.detectedSymptoms,
     };
 
-    this.transcriptionEntries.push(entry);
+    this.transcriptionEntries = [...this.transcriptionEntries, entry];
     this.lastSubtitleText = result.cleanText;
+
+    // Activar flag de scroll — se ejecuta en ngAfterViewChecked UNA vez
+    this.shouldScrollTranscription = true;
   }
 
   // ─── Controles de video ───
   toggleMic(): void {
     this.isMicOn = !this.isMicOn;
-    // Sincronizar con Jitsi
     this.jitsiService.toggleAudio();
-    // Sincronizar con AudioCapture (transcripción IA)
+
     if (this.isMicOn) {
       this.audioCapture.resumeCapture();
     } else {
@@ -351,19 +391,21 @@ constructor(
     this.notification.showInfo(
       this.isMicOn ? 'Micrófono activado' : 'Micrófono desactivado'
     );
+    this.cdr.markForCheck();
   }
 
   toggleCamera(): void {
     this.isCameraOn = !this.isCameraOn;
-    // Sincronizar con Jitsi
     this.jitsiService.toggleVideo();
     this.notification.showInfo(
       this.isCameraOn ? 'Cámara activada' : 'Cámara desactivada'
     );
+    this.cdr.markForCheck();
   }
 
   toggleSubtitles(): void {
     this.showSubtitles = !this.showSubtitles;
+    this.cdr.markForCheck();
   }
 
   // ─── Checklist ───
@@ -371,6 +413,7 @@ constructor(
     const item = this.checklist.find((i) => i.id === id);
     if (item) {
       item.checked = !item.checked;
+      this.cdr.markForCheck();
     }
   }
 
@@ -381,21 +424,28 @@ constructor(
   requestAnalysis(): void {
     if (!this.wsConnected) {
       this.errorMessage = 'WebSocket no conectado';
+      this.cdr.markForCheck();
       return;
     }
 
     this.analysisLoading = true;
     this.errorMessage = '';
+    this.cdr.markForCheck();
 
-    console.log('[Analysis] solicitando análisis...');
     this.wsService.requestAnalysis('');
 
-    setTimeout(() => {
-      if (this.analysisLoading) {
-        this.analysisLoading = false;
-        this.errorMessage = 'El análisis tardó demasiado o no llegó al frontend.';
-      }
-    }, 15000);
+    // Timeout fuera de NgZone para no contaminar change detection
+    this.ngZone.runOutsideAngular(() => {
+      setTimeout(() => {
+        this.ngZone.run(() => {
+          if (this.analysisLoading) {
+            this.analysisLoading = false;
+            this.errorMessage = 'El análisis tardó demasiado o no llegó al frontend.';
+            this.cdr.markForCheck();
+          }
+        });
+      }, 15000);
+    });
   }
 
   // ─── Desactivar IA ───
@@ -407,45 +457,33 @@ constructor(
         next: () => {
           this.aiActive = false;
           this.audioCapture.stopCapture();
+          this.cdr.markForCheck();
         },
         error: (err) => {
           this.errorMessage = 'Error al desactivar IA';
           console.error(err);
+          this.cdr.markForCheck();
         },
       });
   }
 
-
-    confirmEndCall(): void {
-    console.log('[EndSession] click en finalizar');
-
+  confirmEndCall(): void {
     if (this.loading) {
-      console.log('[EndSession] ya estaba loading');
       return;
     }
 
     this.loading = true;
     this.isEndingSession = true;
+    this.cdr.markForCheck();
 
     const durationMinutes = Math.ceil(this.duration / 60);
-
-    console.log('[EndSession] enviando request REST', {
-      sessionId: this.sessionId,
-      providerName: this.providerName,
-      durationMinutes
-    });
 
     this.telemedApi
       .endSession(this.sessionId, this.providerName, durationMinutes)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          console.log('[EndSession] next', response);
-          console.log('[EndSession] iaStatus:', response.iaStatus);
-          console.log('[EndSession] record:', response.record);
-          console.log('[EndSession] clinical_summary:', response.record?.clinical_summary);
-
-          // Detener todo PRIMERO
+          // Detener todo primero
           this.audioCapture.stopCapture();
           this.wsService.disconnect();
           this.jitsiService.dispose();
@@ -460,18 +498,15 @@ constructor(
           this.aiActive = false;
           this.wsConnected = false;
 
-          this.cdr.detectChanges();
+          this.cdr.markForCheck();
         },
         error: (err) => {
           console.error('[EndSession] error', err);
           this.loading = false;
           this.isEndingSession = false;
           this.errorMessage = 'Error al finalizar la consulta';
-          this.cdr.detectChanges();
+          this.cdr.markForCheck();
         },
-        complete: () => {
-          console.log('[EndSession] complete');
-        }
       });
   }
 
@@ -480,19 +515,23 @@ constructor(
       return;
     }
     this.showEndCallModal = true;
+    this.cdr.markForCheck();
   }
 
   cancelEndCall(): void {
     this.showEndCallModal = false;
+    this.cdr.markForCheck();
   }
+
   // ─── Emergencia ───
   openEmergencyModal(): void {
     this.showEmergencyModal = true;
+    this.cdr.markForCheck();
   }
 
   handleEmergency(type: 'emergency' | 'family'): void {
     this.showEmergencyModal = false;
-    // TODO: Integrar con tu sistema de alertas
+    this.cdr.markForCheck();
     alert(
       type === 'emergency'
         ? 'Contactando servicios de emergencia...'
@@ -502,7 +541,6 @@ constructor(
 
   // ─── Navegación ───
   goBack(): void {
-    // Tu login redirige PROVIDER a /provider-profile/{userId}
     const userId = localStorage.getItem('user_id');
     if (userId) {
       this.router.navigate(['/provider-profile', userId]);

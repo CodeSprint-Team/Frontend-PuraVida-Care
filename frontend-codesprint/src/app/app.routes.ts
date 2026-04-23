@@ -141,37 +141,42 @@ export const routes: Routes = [
   { path: 'admin-dashboard/providers',
     component: AdminDashboard
   },
+
   { path: 'provider-requests-service/:id',
     component: ProviderRequestsComponent
   },
+  
   { path: 'provider-booking-detail/:id',
     component: ProviderBookingDetail
   },
+
   { path: 'provider-start-service/:id',
     component: ProviderStartBooking
   },
+
   { path: 'provider-in-service/:id',
     component: ProviderInService
   },
+
   { path: 'family-tracking/:sessionId',
     component: FamilyTrackingComponent
   },
-  {
-    path: 'my-services',
-    component: MyServicesComponent
-  },
+
   {
     path: 'create-service',
     component: CreateServicesComponent
   },
+
   {
     path: 'my-completed-services',
     component: MyCompletedServicesComponent
   },
+  
   {
     path: 'create-review/:providerId',
     component: CreateReviewComponent
   },
+
   {path: 'admin/product-support-catalog',
     component: AdminProductSupportCatalog      
   },
@@ -228,5 +233,3 @@ export const routes: Routes = [
   { path: '**', redirectTo: 'landing' }
 
 ];
-
-

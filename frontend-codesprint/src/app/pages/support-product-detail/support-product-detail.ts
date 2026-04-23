@@ -18,6 +18,8 @@ import { SupportProductService } from '../../services/support-product/support-pr
 import { SupportProductPostResponse } from '../../interfaces/support-product/support-product-response.interface';
 import { ArticleOfferResponse } from '../../interfaces/support-product/article-offer-response.interface';
 
+declare var paypal: any;
+
 @Component({
   selector: 'app-support-product-detail',
   standalone: true,
@@ -47,14 +49,20 @@ export class SupportProductDetail implements OnInit {
   currentUserId: number | null = null;
 
   isOfferModalOpen = false;
+  isBuyModalOpen = false;
+
   offerAmount: number | null = null;
   offerMessage = '';
   offerLoading = false;
   offerError = '';
   offerSuccess = '';
+  paymentSuccess = '';
+  paymentError = '';
 
   hasCurrentUserOffer = false;
   userOfferMessage = '';
+
+  paypalRendered = false;
 
   private offerSuccessTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -206,6 +214,16 @@ export class SupportProductDetail implements OnInit {
     return !!this.product && !!this.currentUserId && this.product.userId === this.currentUserId;
   }
 
+  isAvailableForOffers(): boolean {
+  return !!this.product &&
+    this.product.acceptsOffers === true &&
+    (this.product.publicationState === 'ACTIVE' || this.product.publicationState === 'RESERVED');
+  } 
+
+  showUnavailableOfferMessage(): boolean {
+    return !this.isOwner() && !this.canMakeOffer();
+  }
+
   canMakeOffer(): boolean {
     return !!this.product &&
       !!this.currentUserId &&
@@ -213,6 +231,13 @@ export class SupportProductDetail implements OnInit {
       (this.product.publicationState === 'ACTIVE' || this.product.publicationState === 'RESERVED') &&
       this.product.userId !== this.currentUserId &&
       !this.hasCurrentUserOffer;
+  }
+
+  canBuy(): boolean {
+    return !!this.product &&
+      !!this.currentUserId &&
+      (this.product.publicationState === 'ACTIVE' || this.product.publicationState === 'RESERVED') &&
+      this.product.userId !== this.currentUserId;
   }
 
   openOfferModal(): void {
@@ -254,6 +279,36 @@ export class SupportProductDetail implements OnInit {
     }
   }
 
+  buyProduct(): void {
+    if (!this.canBuy()) {
+      return;
+    }
+
+    this.isBuyModalOpen = true;
+    this.paypalRendered = false;
+
+    setTimeout(() => {
+      this.renderPaypalButton();
+    }, 100);
+  }
+
+  closeBuyModal(): void {
+    this.isBuyModalOpen = false;
+    this.paypalRendered = false;
+
+    const container = document.getElementById('paypal-button-container');
+    if (container) {
+      container.innerHTML = '';
+    }
+  }
+
+  refreshProductAfterPayment(): void {
+  setTimeout(() => {
+    this.loadProduct();
+    this.cdr.detectChanges();
+  }, 1500);
+  }
+
   submitOffer(): void {
     if (!this.product || !this.currentUserId) {
       this.offerError = 'No se pudo identificar al usuario.';
@@ -293,4 +348,96 @@ export class SupportProductDetail implements OnInit {
       }
     });
   }
+
+renderPaypalButton(): void {
+  if (!this.product || this.paypalRendered) {
+    return;
+  }
+
+  const container = document.getElementById('paypal-button-container');
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = '';
+
+  paypal.Buttons({
+    createOrder: async (_data: any, _actions: any) => {
+      try {
+        this.paymentSuccess = '';
+        this.paymentError = '';
+
+        const amount = Number(this.product!.salePrice).toFixed(2);
+        console.log('Monto enviado a backend:', amount);
+
+        const orderId = await this.supportProductService
+          .createPaypalOrder(Number(amount))
+          .toPromise();
+
+        console.log('Order ID recibido del backend:', orderId);
+
+        if (!orderId) {
+          throw new Error('El backend no devolvió un orderId válido');
+        }
+
+        return orderId;
+      } catch (error) {
+        console.error('Error creando orden en backend:', error);
+        this.paymentSuccess = '';
+        this.paymentError = 'No se pudo crear la orden de PayPal.';
+        this.cdr.detectChanges();
+        throw error;
+      }
+    },
+
+    onApprove: async (data: any, _actions: any) => {
+      try {
+        console.log('Order ID aprobado por PayPal:', data.orderID);
+
+        const status = await this.supportProductService
+          .capturePaypalOrder(data.orderID, this.product!.id)
+          .toPromise();
+
+        console.log('Status al capturar:', status);
+
+        if (status === 'COMPLETED') {
+          this.paymentError = '';
+          this.paymentSuccess = '¡Pago completado con éxito! Tu compra fue confirmada correctamente.';
+          this.closeBuyModal();
+          this.cdr.detectChanges();
+
+          this.refreshProductAfterPayment();
+
+          setTimeout(() => {
+            this.paymentSuccess = '';
+            this.cdr.detectChanges();
+          }, 5000);
+
+          return;
+        }
+
+        this.paymentSuccess = '';
+        this.paymentError = 'El pago no se completó correctamente.';
+        this.cdr.detectChanges();
+      } catch (error) {
+        console.error('Error capturando orden en backend:', error);
+        this.paymentSuccess = '';
+        this.paymentError = 'No se pudo capturar el pago.';
+        this.cdr.detectChanges();
+        throw error;
+      }
+    },
+
+    onError: (err: any) => {
+      console.error('Error PayPal SDK:', err);
+      this.paymentSuccess = '';
+      this.paymentError = 'Ocurrió un error durante el pago.';
+      this.cdr.detectChanges();
+    }
+  }).render('#paypal-button-container');
+
+  this.paypalRendered = true;
+}
+
+
 }
