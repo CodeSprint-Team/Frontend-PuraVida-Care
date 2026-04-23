@@ -196,7 +196,6 @@ export const routes: Routes = [
     component: ChecklistHogarComponent
   },
   
-  },
   {
 
     path: 'chat-ia',
