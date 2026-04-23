@@ -311,20 +311,21 @@
           </button>
         </section>
 
-        <div class="flex space-x-4 mt-4">
-          <button
-            class="px-6 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition"
-            (click)="verOfertasRecibidas()"
-          >
-            Ofertas Recibidas
-          </button>
-          <button
-            class="px-6 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition"
-            (click)="verOfertasRealizadas()"
-          >
-            Mis Ofertas Realizadas
-          </button>
-        </div>
+      <!-- DESPUÉS — mismo estilo que Contratar -->
+      <div class="flex flex-col sm:flex-row gap-3 mt-6 mb-6">
+        <button (click)="verOfertasRecibidas()"
+          class="flex-1 px-8 py-3.5 bg-teal-700 text-teal-50 rounded-xl
+                font-medium text-base hover:opacity-85 transition-opacity
+                text-center">
+          Ofertas Recibidas
+        </button>
+        <button (click)="verOfertasRealizadas()"
+          class="flex-1 px-8 py-3.5 bg-teal-700 text-teal-50 rounded-xl
+                font-medium text-base hover:opacity-85 transition-opacity
+                text-center">
+          Mis Ofertas Realizadas
+        </button>
+      </div>
 
       </ng-container>
     </div>

@@ -1,4 +1,11 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy,
+  NgZone
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ProviderBookingService } from '../../services/provider-booking-service';
@@ -27,6 +34,7 @@ interface ServiceState {
   imports: [CommonModule, NavbarComponent],
   templateUrl: './provider-in-service.html',
   styleUrls: ['./provider-in-service.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProviderInService implements OnInit, OnDestroy {
   role: 'client' | 'admin' | 'provider' | null = 'provider';
@@ -61,14 +69,21 @@ export class ProviderInService implements OnInit, OnDestroy {
   private originMarker: any = null;
   private destinationMarker: any = null;
   private previousLatLng: [number, number] | null = null;
+  private currentAngle = 0;
   private stompClient: Client | null = null;
+
+  // Buffer para suavizar movimiento del carro
+  private animationFrameId: number | null = null;
+  private targetLatLng: [number, number] | null = null;
+  private currentAnimatedLatLng: [number, number] | null = null;
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private bookingService: ProviderBookingService,
     private trackingService: TrackingService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {
     const nav = this.router.getCurrentNavigation();
     if (nav?.extras?.state) {
@@ -83,6 +98,7 @@ export class ProviderInService implements OnInit, OnDestroy {
     if (!this.providerProfileId) {
       this.error = 'No se pudo identificar el proveedor.';
       this.loading = false;
+      this.cdr.markForCheck();
       return;
     }
 
@@ -94,6 +110,7 @@ export class ProviderInService implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.stopTimer();
     this.stopSendingPoints();
+    this.cancelAnimation();
     if (this.stompClient) {
       this.stompClient.deactivate();
     }
@@ -101,6 +118,10 @@ export class ProviderInService implements OnInit, OnDestroy {
       this.map.remove();
     }
   }
+
+  // ═══════════════════════════════════════════════════════════════
+  // STATE PERSISTENCE
+  // ═══════════════════════════════════════════════════════════════
 
   private saveState(): void {
     if (!this.bookingId) return;
@@ -164,18 +185,18 @@ export class ProviderInService implements OnInit, OnDestroy {
       this.elapsedTime = Math.floor(this.pausedAccumulatedTime / 1000);
     } else {
       const running = Date.now() - this.startTimestamp;
-      this.elapsedTime = Math.floor(
-        (this.pausedAccumulatedTime + running - this.getRunningOffset()) / 1000
-      );
+      this.elapsedTime = Math.floor((this.pausedAccumulatedTime + running) / 1000);
     }
   }
 
-  private getRunningOffset(): number {
-    return 0;
-  }
+  // ═══════════════════════════════════════════════════════════════
+  // BOOKING
+  // ═══════════════════════════════════════════════════════════════
 
   loadBooking(): void {
     this.loading = true;
+    this.cdr.markForCheck();
+
     this.bookingService
       .getBookingsByProvider(this.providerProfileId)
       .subscribe({
@@ -185,29 +206,458 @@ export class ProviderInService implements OnInit, OnDestroy {
             this.error = 'No se encontró el servicio.';
           }
           this.loading = false;
-          this.cdr.detectChanges();
+          this.cdr.markForCheck();
 
           if (this.booking) {
-            setTimeout(() => {
-              this.loadLeaflet().then(() => {
-                this.initMap();
-                if (this.trackingSessionId && this.shareLocation) {
-                  this.startSendingPoints();
-                } else if (this.shareLocation) {
-                  this.startTracking();
-                }
-              });
-            }, 100);
+            // Inicializar mapa fuera de Angular para no contaminar change detection
+            this.ngZone.runOutsideAngular(() => {
+              setTimeout(() => {
+                this.loadLeaflet().then(() => {
+                  this.initMap();
+                  if (this.trackingSessionId && this.shareLocation) {
+                    this.startSendingPoints();
+                  } else if (this.shareLocation) {
+                    this.ngZone.run(() => this.startTracking());
+                  }
+                });
+              }, 100);
+            });
           }
         },
         error: (err) => {
           console.error('Error cargando servicio:', err);
           this.error = 'No se pudo cargar el servicio.';
           this.loading = false;
-          this.cdr.detectChanges();
+          this.cdr.markForCheck();
         },
       });
   }
+
+  // ═══════════════════════════════════════════════════════════════
+  // MAP
+  // ═══════════════════════════════════════════════════════════════
+
+  private loadLeaflet(): Promise<void> {
+    return new Promise((resolve) => {
+      if (!document.getElementById('leaflet-css')) {
+        const link = document.createElement('link');
+        link.id = 'leaflet-css';
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(link);
+      }
+      if (typeof L !== 'undefined') {
+        return resolve();
+      }
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.onload = () => resolve();
+      document.head.appendChild(script);
+    });
+  }
+
+  private initMap(): void {
+    if (!this.booking) return;
+
+    const originLat = this.booking.originLatitude;
+    const originLng = this.booking.originLongitude;
+    const destLat = this.booking.destinationLatitude;
+    const destLng = this.booking.destinationLongitude;
+
+    const centerLat = (originLat + destLat) / 2;
+    const centerLng = (originLng + destLng) / 2;
+
+    this.map = L.map('provider-map', {
+      zoomAnimation: true,
+      markerZoomAnimation: true,
+    }).setView([centerLat, centerLng], 14);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap',
+    }).addTo(this.map);
+
+    this.originMarker = L.marker([originLat, originLng], {
+      icon: this.createOriginIcon(),
+    }).addTo(this.map).bindPopup('Origen');
+
+    this.destinationMarker = L.marker([destLat, destLng], {
+      icon: this.createDestinationIcon(),
+    }).addTo(this.map).bindPopup('Destino');
+
+    this.routePolyline = L.polyline([], {
+      color: '#0d9488',
+      weight: 4,
+      opacity: 0.8,
+      smoothFactor: 1.5,
+    }).addTo(this.map);
+
+    this.map.fitBounds(
+      [
+        [originLat, originLng],
+        [destLat, destLng],
+      ],
+      { padding: [50, 50] }
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // ANIMATED CAR MOVEMENT — suavizado con requestAnimationFrame
+  // ═══════════════════════════════════════════════════════════════
+
+  private addPointToMap(lat: number, lng: number): void {
+    if (!this.map) return;
+
+    const latlng: [number, number] = [lat, lng];
+
+    this.routePolyline.addLatLng(latlng);
+
+    // Calcular ángulo de rotación
+    if (this.previousLatLng) {
+      this.currentAngle = this.calculateBearing(
+        this.previousLatLng[0], this.previousLatLng[1],
+        lat, lng
+      );
+    }
+
+    if (!this.currentMarker) {
+      // Primera vez: crear marcador
+      this.currentMarker = L.marker(latlng, {
+        icon: this.createCarIcon(this.currentAngle),
+        zIndexOffset: 1000,
+      }).addTo(this.map);
+      this.currentAnimatedLatLng = latlng;
+    } else {
+      // Actualizar ícono con nuevo ángulo (solo el ícono, no recrear el marcador)
+      this.currentMarker.setIcon(this.createCarIcon(this.currentAngle));
+    }
+
+    // Animar movimiento suave hacia el nuevo punto
+    this.targetLatLng = latlng;
+    if (!this.animationFrameId) {
+      this.animateCarMovement();
+    }
+
+    this.previousLatLng = latlng;
+    this.pointCount++;
+    this.saveState();
+
+    // Solo actualizar UI para el contador de puntos
+    this.ngZone.run(() => this.cdr.markForCheck());
+  }
+
+  private animateCarMovement(): void {
+    if (!this.currentAnimatedLatLng || !this.targetLatLng || !this.currentMarker) {
+      this.animationFrameId = null;
+      return;
+    }
+
+    const [curLat, curLng] = this.currentAnimatedLatLng;
+    const [tgtLat, tgtLng] = this.targetLatLng;
+
+    // Interpolación suave (lerp)
+    const factor = 0.08;
+    const newLat = curLat + (tgtLat - curLat) * factor;
+    const newLng = curLng + (tgtLng - curLng) * factor;
+
+    this.currentAnimatedLatLng = [newLat, newLng];
+    this.currentMarker.setLatLng([newLat, newLng]);
+
+    // Mover el mapa suavemente
+    this.map.panTo([newLat, newLng], { animate: true, duration: 0.3 });
+
+    // Si ya llegó (distancia menor a threshold), parar animación
+    const distance = Math.abs(tgtLat - newLat) + Math.abs(tgtLng - newLng);
+    if (distance < 0.000001) {
+      this.currentAnimatedLatLng = this.targetLatLng;
+      this.currentMarker.setLatLng(this.targetLatLng);
+      this.animationFrameId = null;
+      return;
+    }
+
+    this.animationFrameId = requestAnimationFrame(() => this.animateCarMovement());
+  }
+
+  private cancelAnimation(): void {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // TIMER — fuera de NgZone
+  // ═══════════════════════════════════════════════════════════════
+
+  startTimer(): void {
+    if (!this.startTimestamp) {
+      this.startTimestamp = Date.now();
+      this.pausedAccumulatedTime = 0;
+      this.pausedAt = null;
+      this.saveState();
+    }
+
+    this.ngZone.runOutsideAngular(() => {
+      this.timerInterval = setInterval(() => {
+        if (!this.isPaused) {
+          const runningTime = Date.now() - this.startTimestamp;
+          this.elapsedTime = Math.floor(
+            (this.pausedAccumulatedTime + runningTime) / 1000
+          );
+          this.cdr.detectChanges();
+        }
+      }, 1000);
+    });
+  }
+
+  stopTimer(): void {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+  }
+
+  togglePause(): void {
+    if (!this.isPaused) {
+      this.pausedAccumulatedTime += Date.now() - this.startTimestamp;
+      this.pausedAt = Date.now();
+    } else {
+      this.startTimestamp = Date.now();
+      this.pausedAt = null;
+    }
+    this.isPaused = !this.isPaused;
+    this.saveState();
+    this.cdr.markForCheck();
+  }
+
+  formatElapsedTime(seconds: number): string {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${this.pad(hours)}:${this.pad(minutes)}:${this.pad(secs)}`;
+  }
+
+  private pad(n: number): string {
+    return n.toString().padStart(2, '0');
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // TRACKING & GPS — fuera de NgZone
+  // ═══════════════════════════════════════════════════════════════
+
+  startTracking(): void {
+    this.trackingService
+      .startTracking(this.providerProfileId, { bookingId: this.bookingId })
+      .subscribe({
+        next: (session) => {
+          this.trackingSessionId = session.trackingSessionId;
+          this.saveState();
+          this.startSendingPoints();
+          this.cdr.markForCheck();
+        },
+        error: (err) => console.error('Error iniciando tracking:', err),
+      });
+  }
+
+  private startSendingPoints(): void {
+    if (!this.trackingSessionId) return;
+
+    // GPS fuera de NgZone para no disparar change detection en cada lectura
+    this.ngZone.runOutsideAngular(() => {
+      this.locationInterval = setInterval(() => {
+        if (this.isPaused || !this.trackingSessionId) return;
+
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const lat = position.coords.latitude;
+              const lng = position.coords.longitude;
+
+              // Filtrar puntos duplicados o muy cercanos
+              if (this.previousLatLng) {
+                const dist = Math.abs(lat - this.previousLatLng[0])
+                           + Math.abs(lng - this.previousLatLng[1]);
+                if (dist < 0.00005) return; // ~5 metros, ignorar micro-movimientos
+              }
+
+              this.addPointToMap(lat, lng);
+
+              this.trackingService
+                .addTrackingPoint(this.trackingSessionId!, this.providerProfileId, {
+                  latitude: lat,
+                  longitude: lng,
+                })
+                .subscribe({
+                  error: (err) => console.error('Error enviando punto:', err),
+                });
+            },
+            (err) => console.error('Error GPS:', err),
+            { enableHighAccuracy: true, timeout: 8000, maximumAge: 3000 }
+          );
+        }
+      }, 10000);
+    });
+  }
+
+  private stopSendingPoints(): void {
+    if (this.locationInterval) {
+      clearInterval(this.locationInterval);
+      this.locationInterval = null;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // SERVICE STATUS
+  // ═══════════════════════════════════════════════════════════════
+
+  setServiceStatus(status: 'en-camino' | 'en-servicio'): void {
+    this.serviceStatus = status;
+    this.saveState();
+    this.cdr.markForCheck();
+  }
+
+  openFinishModal(): void {
+    this.showFinishModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeFinishModal(): void {
+    this.showFinishModal = false;
+    this.cdr.markForCheck();
+  }
+
+  confirmFinish(): void {
+    if (!this.booking) return;
+    this.finishingService = true;
+    this.cdr.markForCheck();
+
+    if (this.trackingSessionId) {
+      this.stopSendingPoints();
+      this.trackingService
+        .endTracking(this.trackingSessionId, this.providerProfileId)
+        .subscribe({
+          error: (err) => console.error('Error finalizando tracking:', err),
+        });
+    }
+
+    this.bookingService
+      .completeService(this.booking.bookingId, this.providerProfileId)
+      .subscribe({
+        next: () => {
+          this.stopTimer();
+          this.cancelAnimation();
+          this.finishingService = false;
+          this.closeFinishModal();
+          this.clearState();
+          this.router.navigate(['/provider-requests-service', this.providerProfileId]);
+        },
+        error: (err) => {
+          console.error('Error completando servicio:', err);
+          this.finishingService = false;
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  openMaps(): void {
+    if (!this.booking) return;
+    const url = `https://www.google.com/maps/dir/${this.booking.originLatitude},${this.booking.originLongitude}/${this.booking.destinationLatitude},${this.booking.destinationLongitude}`;
+    window.open(url, '_blank');
+  }
+
+  formatPrice(price: number): string {
+    return price.toLocaleString('es-CR', {
+      style: 'currency',
+      currency: 'CRC',
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // WEBSOCKET — fuera de NgZone
+  // ═══════════════════════════════════════════════════════════════
+
+  private connectToWebSocket(onConnected: () => void): void {
+    this.ngZone.runOutsideAngular(() => {
+      this.stompClient = new Client({
+        brokerURL: 'ws://localhost:8081/api/v1/ws',
+        reconnectDelay: 5000,
+      });
+
+      this.stompClient.onConnect = () => {
+        this.stompClient!.subscribe(
+          `/topic/tracking/${this.trackingSessionId}`,
+          (message: IMessage) => {
+            const point = JSON.parse(message.body);
+            this.addPointToMap(Number(point.latitude), Number(point.longitude));
+          }
+        );
+
+        this.ngZone.run(() => onConnected());
+      };
+
+      this.stompClient.activate();
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // SIMULATION
+  // ═══════════════════════════════════════════════════════════════
+
+  simulateTrip(): void {
+    if (!this.booking) return;
+
+    if (!this.trackingSessionId) {
+      this.trackingService
+        .startTracking(this.providerProfileId, { bookingId: this.bookingId })
+        .subscribe({
+          next: (session) => {
+            this.trackingSessionId = session.trackingSessionId;
+            this.saveState();
+            this.cdr.markForCheck();
+            this.runSimulation();
+          },
+          error: (err: any) => console.error('Error creando sesión:', err),
+        });
+    } else {
+      this.runSimulation();
+    }
+  }
+
+  private runSimulation(): void {
+    if (!this.booking || !this.trackingSessionId) return;
+
+    this.routePolyline.setLatLngs([]);
+    this.pointCount = 0;
+    this.previousLatLng = null;
+    this.cancelAnimation();
+    this.currentAnimatedLatLng = null;
+
+    if (this.currentMarker) {
+      this.map.removeLayer(this.currentMarker);
+      this.currentMarker = null;
+    }
+
+    this.connectToWebSocket(() => {
+      const waypoints = [
+        [this.booking!.originLatitude, this.booking!.originLongitude],
+        [this.booking!.destinationLatitude, this.booking!.destinationLongitude],
+      ];
+
+      this.trackingService.simulateRoute(
+        this.trackingSessionId!,
+        this.providerProfileId,
+        waypoints,
+        40,
+        800
+      ).subscribe({
+        next: () => console.log('Simulación lanzada'),
+        error: (err: any) => console.error('Error simulando:', err),
+      });
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // MAP ICONS
+  // ═══════════════════════════════════════════════════════════════
 
   private createOriginIcon(): any {
     return L.divIcon({
@@ -354,322 +804,5 @@ export class ProviderInService implements OnInit, OnDestroy {
       Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLng);
 
     return (toDeg(Math.atan2(y, x)) + 360) % 360;
-  }
-
-  private loadLeaflet(): Promise<void> {
-    return new Promise((resolve) => {
-      if (!document.getElementById('leaflet-css')) {
-        const link = document.createElement('link');
-        link.id = 'leaflet-css';
-        link.rel = 'stylesheet';
-        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-        document.head.appendChild(link);
-      }
-      if (typeof L !== 'undefined') {
-        return resolve();
-      }
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-      script.onload = () => resolve();
-      document.head.appendChild(script);
-    });
-  }
-
-  private initMap(): void {
-    if (!this.booking) return;
-
-    const originLat = this.booking.originLatitude;
-    const originLng = this.booking.originLongitude;
-    const destLat = this.booking.destinationLatitude;
-    const destLng = this.booking.destinationLongitude;
-
-    const centerLat = (originLat + destLat) / 2;
-    const centerLng = (originLng + destLng) / 2;
-
-    this.map = L.map('provider-map').setView([centerLat, centerLng], 14);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap',
-    }).addTo(this.map);
-
-    this.originMarker = L.marker([originLat, originLng], {
-      icon: this.createOriginIcon(),
-    }).addTo(this.map).bindPopup('Origen');
-
-    this.destinationMarker = L.marker([destLat, destLng], {
-      icon: this.createDestinationIcon(),
-    }).addTo(this.map).bindPopup('Destino');
-
-    this.routePolyline = L.polyline([], {
-      color: '#0d9488',
-      weight: 4,
-      opacity: 0.8,
-    }).addTo(this.map);
-
-    this.map.fitBounds(
-      [
-        [originLat, originLng],
-        [destLat, destLng],
-      ],
-      { padding: [50, 50] }
-    );
-  }
-
-  private addPointToMap(lat: number, lng: number): void {
-    if (!this.map) return;
-
-    const latlng: [number, number] = [lat, lng];
-
-    this.routePolyline.addLatLng(latlng);
-
-    let angle = 0;
-    if (this.previousLatLng) {
-      angle = this.calculateBearing(
-        this.previousLatLng[0], this.previousLatLng[1],
-        lat, lng
-      );
-    }
-    this.previousLatLng = [lat, lng];
-
-    if (this.currentMarker) {
-      this.currentMarker.setLatLng(latlng);
-      this.currentMarker.setIcon(this.createCarIcon(angle));
-    } else {
-      this.currentMarker = L.marker(latlng, {
-        icon: this.createCarIcon(angle),
-      }).addTo(this.map);
-    }
-
-    this.map.panTo(latlng);
-    this.pointCount++;
-    this.saveState();
-    this.cdr.detectChanges();
-  }
-
-  startTimer(): void {
-    if (!this.startTimestamp) {
-      this.startTimestamp = Date.now();
-      this.pausedAccumulatedTime = 0;
-      this.pausedAt = null;
-      this.saveState();
-    }
-
-    this.timerInterval = setInterval(() => {
-      if (!this.isPaused) {
-        const runningTime = Date.now() - this.startTimestamp;
-        this.elapsedTime = Math.floor(
-          (this.pausedAccumulatedTime + runningTime) / 1000
-        );
-        this.cdr.detectChanges();
-      }
-    }, 1000);
-  }
-
-  stopTimer(): void {
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
-      this.timerInterval = null;
-    }
-  }
-
-  togglePause(): void {
-    if (!this.isPaused) {
-      this.pausedAccumulatedTime += Date.now() - this.startTimestamp;
-      this.pausedAt = Date.now();
-    } else {
-      this.startTimestamp = Date.now();
-      this.pausedAt = null;
-    }
-    this.isPaused = !this.isPaused;
-    this.saveState();
-  }
-
-  formatElapsedTime(seconds: number): string {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${this.pad(hours)}:${this.pad(minutes)}:${this.pad(secs)}`;
-  }
-
-  private pad(n: number): string {
-    return n.toString().padStart(2, '0');
-  }
-
-  startTracking(): void {
-    this.trackingService
-      .startTracking(this.providerProfileId, { bookingId: this.bookingId })
-      .subscribe({
-        next: (session) => {
-          this.trackingSessionId = session.trackingSessionId;
-          this.saveState();
-          this.startSendingPoints();
-          this.cdr.detectChanges();
-        },
-        error: (err) => console.error('Error iniciando tracking:', err),
-      });
-  }
-
-  private startSendingPoints(): void {
-    if (!this.trackingSessionId) return;
-
-    this.locationInterval = setInterval(() => {
-      if (this.isPaused || !this.trackingSessionId) return;
-
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-
-            this.addPointToMap(lat, lng);
-
-            this.trackingService
-              .addTrackingPoint(this.trackingSessionId!, this.providerProfileId, {
-                latitude: lat,
-                longitude: lng,
-              })
-              .subscribe({
-                error: (err) => console.error('Error enviando punto:', err),
-              });
-          },
-          (err) => console.error('Error GPS:', err),
-          { enableHighAccuracy: true }
-        );
-      }
-    }, 10000);
-  }
-
-  private stopSendingPoints(): void {
-    if (this.locationInterval) {
-      clearInterval(this.locationInterval);
-      this.locationInterval = null;
-    }
-  }
-
-  setServiceStatus(status: 'en-camino' | 'en-servicio'): void {
-    this.serviceStatus = status;
-    this.saveState();
-  }
-
-  openFinishModal(): void {
-    this.showFinishModal = true;
-  }
-
-  closeFinishModal(): void {
-    this.showFinishModal = false;
-  }
-
-  confirmFinish(): void {
-    if (!this.booking) return;
-    this.finishingService = true;
-
-    if (this.trackingSessionId) {
-      this.stopSendingPoints();
-      this.trackingService
-        .endTracking(this.trackingSessionId, this.providerProfileId)
-        .subscribe({
-          error: (err) => console.error('Error finalizando tracking:', err),
-        });
-    }
-
-    this.bookingService
-      .completeService(this.booking.bookingId, this.providerProfileId)
-      .subscribe({
-        next: () => {
-          this.stopTimer();
-          this.finishingService = false;
-          this.closeFinishModal();
-          this.clearState();
-          this.router.navigate(['/provider-requests-service', this.providerProfileId]);
-        },
-        error: (err) => {
-          console.error('Error completando servicio:', err);
-          this.finishingService = false;
-        },
-      });
-  }
-
-  openMaps(): void {
-    if (!this.booking) return;
-    const url = `https://www.google.com/maps/dir/${this.booking.originLatitude},${this.booking.originLongitude}/${this.booking.destinationLatitude},${this.booking.destinationLongitude}`;
-    window.open(url, '_blank');
-  }
-
-  formatPrice(price: number): string {
-    return price.toLocaleString('es-CR', {
-      style: 'currency',
-      currency: 'CRC',
-    });
-  }
-
-  private connectToWebSocket(onConnected: () => void): void {
-    this.stompClient = new Client({
-      brokerURL: 'ws://localhost:8081/api/v1/ws',
-      reconnectDelay: 5000,
-    });
-
-    this.stompClient.onConnect = () => {
-      this.stompClient!.subscribe(
-        `/topic/tracking/${this.trackingSessionId}`,
-        (message: IMessage) => {
-          const point = JSON.parse(message.body);
-          this.addPointToMap(Number(point.latitude), Number(point.longitude));
-        }
-      );
-
-      onConnected();
-    };
-
-    this.stompClient.activate();
-  }
-
-  simulateTrip(): void {
-    if (!this.booking) return;
-
-    if (!this.trackingSessionId) {
-      this.trackingService
-        .startTracking(this.providerProfileId, { bookingId: this.bookingId })
-        .subscribe({
-          next: (session) => {
-            this.trackingSessionId = session.trackingSessionId;
-            this.saveState();
-            this.cdr.detectChanges();
-            this.runSimulation();
-          },
-          error: (err: any) => console.error('Error creando sesión:', err),
-        });
-    } else {
-      this.runSimulation();
-    }
-  }
-
-  private runSimulation(): void {
-    if (!this.booking || !this.trackingSessionId) return;
-
-    this.routePolyline.setLatLngs([]);
-    this.pointCount = 0;
-    this.previousLatLng = null;
-    if (this.currentMarker) {
-      this.map.removeLayer(this.currentMarker);
-      this.currentMarker = null;
-    }
-
-    this.connectToWebSocket(() => {
-      const waypoints = [
-        [this.booking!.originLatitude, this.booking!.originLongitude],
-        [this.booking!.destinationLatitude, this.booking!.destinationLongitude],
-      ];
-
-      this.trackingService.simulateRoute(
-        this.trackingSessionId!,
-        this.providerProfileId,
-        waypoints,
-        40,
-        800
-      ).subscribe({
-        next: () => console.log('Simulación lanzada'),
-        error: (err: any) => console.error('Error simulando:', err),
-      });
-    });
   }
 }

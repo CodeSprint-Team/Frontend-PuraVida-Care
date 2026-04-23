@@ -179,8 +179,6 @@ export const routes: Routes = [
     path: 'admin/service-categories',
     component: AdminServiceCategory
   },
-  {
-
 
   {
     path: 'my-services',
@@ -199,10 +197,11 @@ export const routes: Routes = [
   },
   
   },
+  {
 
     path: 'chat-ia',
     component: ChatIAComponent
-  },
+},
   {
     path: 'resultados-recomendados',
     component: ResultadosRecomendadosComponent
@@ -215,7 +214,7 @@ export const routes: Routes = [
     path: 'chat/:id',
     component: ChatComponent
   },
-
+ {
     path: 'telemedicina/doctor-view/:sessionId',
     component: DoctorViewComponent
   },

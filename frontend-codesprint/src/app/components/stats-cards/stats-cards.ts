@@ -38,7 +38,6 @@ export class StatsCards {
       { icon: 'heroDocument',       value: this.providerTotalCount.toString(),    label: 'Solicitudes totales',     color: 'blue'    },
       { icon: 'heroInbox',          value: this.providerPendingCount.toString(),  label: 'Solicitudes pendientes',  color: 'orange'  },
       { icon: 'heroChartBar',       value: this.providerAcceptedCount.toString(), label: 'Solicitudes aceptadas',   color: 'emerald' },
-      { icon: 'heroCurrencyDollar', value: '₡125 000',                            label: 'Ganancias este mes',      color: 'emerald' },
     ];
 
     return this.role === 'admin' ? admin : provider;

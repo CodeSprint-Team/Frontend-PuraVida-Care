@@ -1,11 +1,17 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy,
+  NgZone
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TrackingService } from '../../services/tracking-service';
 import { NavbarComponent } from '../../components/navbar/navbar';
 import { Client, IMessage } from '@stomp/stompjs';
-
 
 declare let L: any;
 
@@ -29,6 +35,7 @@ interface FamilyTrackingState {
   imports: [CommonModule, NavbarComponent, FormsModule],
   templateUrl: './family-tracking.html',
   styleUrls: ['./family-tracking.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FamilyTrackingComponent implements OnInit, OnDestroy {
   role: 'client' | 'admin' | 'provider' | null = 'client';
@@ -37,20 +44,17 @@ export class FamilyTrackingComponent implements OnInit, OnDestroy {
   sessionStatus = '';
   providerName = 'Proveedor';
 
-  // Coordenadas del booking 
   originLatitude = 0;
   originLongitude = 0;
   destinationLatitude = 0;
   destinationLongitude = 0;
 
-  // Estado
   loading = true;
   error = '';
   pointCount = 0;
   lastPoint: { latitude: number; longitude: number } | null = null;
   lastUpdated = '';
 
-  // Timeline
   currentPhase: 'en-camino' | 'en-servicio' | 'completado' = 'en-camino';
   phaseTitle = 'En camino';
   phaseDescription = 'El proveedor se dirige a tu ubicación';
@@ -59,16 +63,12 @@ export class FamilyTrackingComponent implements OnInit, OnDestroy {
   timelineInService = '';
   timelineCompleted = '';
 
-  // Chat
   showChat = false;
   chatMessage = '';
 
-  // Para restaurar la ruta en el mapa
   private routePoints: [number, number][] = [];
-
   private readonly STORAGE_KEY = 'family-tracking-state';
 
-  // Leaflet
   private map: any = null;
   private routePolyline: any = null;
   private providerMarker: any = null;
@@ -77,11 +77,18 @@ export class FamilyTrackingComponent implements OnInit, OnDestroy {
   private previousLatLng: [number, number] | null = null;
   private stompClient: Client | null = null;
 
+  // Animación suave del carro
+  private animationFrameId: number | null = null;
+  private targetLatLng: [number, number] | null = null;
+  private currentAnimatedLatLng: [number, number] | null = null;
+  private currentAngle = 0;
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private trackingService: TrackingService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
@@ -90,6 +97,7 @@ export class FamilyTrackingComponent implements OnInit, OnDestroy {
     if (!this.sessionId) {
       this.error = 'ID de sesión no válido.';
       this.loading = false;
+      this.cdr.markForCheck();
       return;
     }
 
@@ -104,13 +112,16 @@ export class FamilyTrackingComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.disconnectWebSocket();
+    this.cancelAnimation();
     if (this.map) {
       this.map.remove();
     }
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // STATE PERSISTENCE
+  // ═══════════════════════════════════════════════════════════════
 
-  // PERSISTENCIA CON LOCALSTORAGE
   private saveState(): void {
     if (!this.sessionId) return;
 
@@ -155,8 +166,6 @@ export class FamilyTrackingComponent implements OnInit, OnDestroy {
       this.routePoints = state.routePoints || [];
 
       this.updatePhase(this.currentPhase);
-
-      console.log('Estado de tracking familiar restaurado');
     } catch (e) {
       console.error('Error restaurando estado de tracking:', e);
       this.clearState();
@@ -168,78 +177,71 @@ export class FamilyTrackingComponent implements OnInit, OnDestroy {
     this.routePoints = [];
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // SESSION
+  // ═══════════════════════════════════════════════════════════════
 
-  // SESIÓN
   private loadSession(): void {
     this.trackingService.getTrackingSession(this.sessionId).subscribe({
       next: (session) => {
         this.sessionStatus = session.trackingState;
-
-        // Coordenadas del booking 
         this.originLatitude = session.originLatitude;
         this.originLongitude = session.originLongitude;
         this.destinationLatitude = session.destinationLatitude;
         this.destinationLongitude = session.destinationLongitude;
-
         this.loading = false;
 
-        // ── SERVICIO FINALIZADO ──
         if (session.trackingState === 'ended') {
           const now = this.getCurrentTime();
-
-          if (!this.timelineOnTheWay) {
-            this.timelineOnTheWay = this.timelineConfirmed || now;
-          }
-          if (!this.timelineInService) {
-            this.timelineInService = this.timelineOnTheWay || now;
-          }
-          if (!this.timelineCompleted) {
-            this.timelineCompleted = now;
-          }
+          if (!this.timelineOnTheWay) this.timelineOnTheWay = this.timelineConfirmed || now;
+          if (!this.timelineInService) this.timelineInService = this.timelineOnTheWay || now;
+          if (!this.timelineCompleted) this.timelineCompleted = now;
 
           this.updatePhase('completado');
           this.saveState();
-          this.cdr.detectChanges();
+          this.cdr.markForCheck();
 
+          this.ngZone.runOutsideAngular(() => {
+            setTimeout(() => {
+              this.loadLeaflet().then(() => {
+                this.initMap();
+                this.restoreRouteOnMap();
+                this.loadHistoryPoints();
+              });
+            }, 200);
+          });
+          return;
+        }
+
+        this.cdr.markForCheck();
+
+        this.ngZone.runOutsideAngular(() => {
           setTimeout(() => {
             this.loadLeaflet().then(() => {
               this.initMap();
               this.restoreRouteOnMap();
-              this.loadHistoryPoints();
+              this.connectWebSocket();
             });
           }, 200);
-
-          return;
-        }
-
-        // ── SERVICIO ACTIVO ──
-        this.cdr.detectChanges();
-
-        setTimeout(() => {
-          this.loadLeaflet().then(() => {
-            this.initMap();
-            this.restoreRouteOnMap();
-            this.connectWebSocket();
-          });
-        }, 200);
+        });
       },
       error: (err) => {
         console.error('Error cargando sesión:', err);
         this.error = 'No se pudo cargar el seguimiento.';
         this.loading = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       },
     });
   }
 
-
-  // CARGAR HISTORIAL DE PUNTOS DESDE BACKEND
+  // ═══════════════════════════════════════════════════════════════
+  // HISTORY POINTS
+  // ═══════════════════════════════════════════════════════════════
 
   private loadHistoryPoints(): void {
     this.trackingService.getTrackingPoints(this.sessionId).subscribe({
       next: (points) => {
         if (!points || points.length === 0) return;
-
         if (this.routePoints.length > 0) return;
 
         for (const p of points) {
@@ -262,8 +264,10 @@ export class FamilyTrackingComponent implements OnInit, OnDestroy {
           } else {
             this.providerMarker = L.marker(last, {
               icon: this.createCarIcon(angle),
+              zIndexOffset: 1000,
             }).addTo(this.map);
           }
+          this.currentAnimatedLatLng = last;
           this.fitMapToAllPoints();
         }
 
@@ -275,7 +279,7 @@ export class FamilyTrackingComponent implements OnInit, OnDestroy {
         this.lastUpdated = this.getCurrentTime();
 
         this.saveState();
-        this.cdr.detectChanges();
+        this.ngZone.run(() => this.cdr.markForCheck());
       },
       error: (err) => console.error('Error cargando historial de puntos:', err),
     });
@@ -319,57 +323,60 @@ export class FamilyTrackingComponent implements OnInit, OnDestroy {
 
       this.providerMarker = L.marker(lastPoint, {
         icon: this.createCarIcon(angle),
+        zIndexOffset: 1000,
       }).addTo(this.map);
+      this.currentAnimatedLatLng = lastPoint;
 
       this.fitMapToAllPoints();
     }
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // WEBSOCKET — fuera de NgZone
+  // ═══════════════════════════════════════════════════════════════
 
-  // WEBSOCKET
   private connectWebSocket(): void {
     if (this.sessionStatus === 'ended' || this.currentPhase === 'completado') {
       return;
     }
 
-    this.stompClient = new Client({
-      brokerURL: 'ws://localhost:8081/api/v1/ws',
-      reconnectDelay: 5000,
-      debug: (str) => {
-        // console.log('STOMP: ' + str);
-      },
-    });
+    this.ngZone.runOutsideAngular(() => {
+      this.stompClient = new Client({
+        brokerURL: 'ws://localhost:8081/api/v1/ws',
+        reconnectDelay: 5000,
+      });
 
-    this.stompClient.onConnect = () => {
-      console.log('WebSocket conectado');
-
-      if (!this.timelineOnTheWay) {
-        this.timelineOnTheWay = this.getCurrentTime();
-      }
-
-      if (this.currentPhase !== 'completado' && this.currentPhase !== 'en-servicio') {
-        this.updatePhase('en-camino');
-      }
-
-      this.saveState();
-      this.cdr.detectChanges();
-
-      this.stompClient!.subscribe(
-        `/topic/tracking/${this.sessionId}`,
-        (message: IMessage) => {
-          const point = JSON.parse(message.body);
-          this.onPointReceived(point.latitude, point.longitude);
+      this.stompClient.onConnect = () => {
+        if (!this.timelineOnTheWay) {
+          this.timelineOnTheWay = this.getCurrentTime();
         }
-      );
-    };
 
-    this.stompClient.onStompError = (frame) => {
-      console.error('STOMP error:', frame.headers['message']);
-      this.error = 'Error de conexión con el servidor.';
-      this.cdr.detectChanges();
-    };
+        if (this.currentPhase !== 'completado' && this.currentPhase !== 'en-servicio') {
+          this.updatePhase('en-camino');
+        }
 
-    this.stompClient.activate();
+        this.saveState();
+        this.ngZone.run(() => this.cdr.markForCheck());
+
+        this.stompClient!.subscribe(
+          `/topic/tracking/${this.sessionId}`,
+          (message: IMessage) => {
+            const point = JSON.parse(message.body);
+            this.onPointReceived(point.latitude, point.longitude);
+          }
+        );
+      };
+
+      this.stompClient.onStompError = (frame) => {
+        console.error('STOMP error:', frame.headers['message']);
+        this.ngZone.run(() => {
+          this.error = 'Error de conexión con el servidor.';
+          this.cdr.markForCheck();
+        });
+      };
+
+      this.stompClient.activate();
+    });
   }
 
   private disconnectWebSocket(): void {
@@ -379,28 +386,46 @@ export class FamilyTrackingComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // ANIMATED CAR MOVEMENT
+  // ═══════════════════════════════════════════════════════════════
+
   private onPointReceived(lat: number, lng: number): void {
     const latlng: [number, number] = [lat, lng];
+
+    // Filtrar micro-movimientos
+    if (this.previousLatLng) {
+      const dist = Math.abs(lat - this.previousLatLng[0])
+                 + Math.abs(lng - this.previousLatLng[1]);
+      if (dist < 0.00005) return;
+    }
 
     this.routePoints.push(latlng);
     this.routePolyline.addLatLng(latlng);
 
-    let angle = 0;
+    // Calcular ángulo
     if (this.previousLatLng) {
-      angle = this.calculateBearing(
+      this.currentAngle = this.calculateBearing(
         this.previousLatLng[0], this.previousLatLng[1],
         lat, lng
       );
     }
     this.previousLatLng = [lat, lng];
 
-    if (this.providerMarker) {
-      this.providerMarker.setLatLng(latlng);
-      this.providerMarker.setIcon(this.createCarIcon(angle));
-    } else {
+    if (!this.providerMarker) {
       this.providerMarker = L.marker(latlng, {
-        icon: this.createCarIcon(angle),
+        icon: this.createCarIcon(this.currentAngle),
+        zIndexOffset: 1000,
       }).addTo(this.map);
+      this.currentAnimatedLatLng = latlng;
+    } else {
+      this.providerMarker.setIcon(this.createCarIcon(this.currentAngle));
+    }
+
+    // Animar movimiento suave
+    this.targetLatLng = latlng;
+    if (!this.animationFrameId) {
+      this.animateCarMovement();
     }
 
     this.lastPoint = { latitude: lat, longitude: lng };
@@ -413,12 +438,51 @@ export class FamilyTrackingComponent implements OnInit, OnDestroy {
     }
 
     this.saveState();
-    this.map.panTo(latlng);
-    this.cdr.detectChanges();
+
+    // Solo entrar a NgZone para actualizar UI
+    this.ngZone.run(() => this.cdr.markForCheck());
   }
 
+  private animateCarMovement(): void {
+    if (!this.currentAnimatedLatLng || !this.targetLatLng || !this.providerMarker) {
+      this.animationFrameId = null;
+      return;
+    }
 
+    const [curLat, curLng] = this.currentAnimatedLatLng;
+    const [tgtLat, tgtLng] = this.targetLatLng;
+
+    const factor = 0.08;
+    const newLat = curLat + (tgtLat - curLat) * factor;
+    const newLng = curLng + (tgtLng - curLng) * factor;
+
+    this.currentAnimatedLatLng = [newLat, newLng];
+    this.providerMarker.setLatLng([newLat, newLng]);
+
+    this.map.panTo([newLat, newLng], { animate: true, duration: 0.3 });
+
+    const distance = Math.abs(tgtLat - newLat) + Math.abs(tgtLng - newLng);
+    if (distance < 0.000001) {
+      this.currentAnimatedLatLng = this.targetLatLng;
+      this.providerMarker.setLatLng(this.targetLatLng);
+      this.animationFrameId = null;
+      return;
+    }
+
+    this.animationFrameId = requestAnimationFrame(() => this.animateCarMovement());
+  }
+
+  private cancelAnimation(): void {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
   // TIMELINE / PHASES
+  // ═══════════════════════════════════════════════════════════════
+
   private updatePhase(phase: 'en-camino' | 'en-servicio' | 'completado'): void {
     this.currentPhase = phase;
 
@@ -438,23 +502,105 @@ export class FamilyTrackingComponent implements OnInit, OnDestroy {
     }
   }
 
-
+  // ═══════════════════════════════════════════════════════════════
   // CHAT
+  // ═══════════════════════════════════════════════════════════════
+
   openChat(): void {
     this.showChat = true;
+    this.cdr.markForCheck();
   }
 
   closeChat(): void {
     this.showChat = false;
+    this.cdr.markForCheck();
   }
 
   sendMessage(): void {
     if (!this.chatMessage.trim()) return;
     console.log('Mensaje enviado:', this.chatMessage);
     this.chatMessage = '';
+    this.cdr.markForCheck();
   }
 
-  // CUSTOM ICONS (mismos del provider-in-service)
+  // ═══════════════════════════════════════════════════════════════
+  // MAP SETUP
+  // ═══════════════════════════════════════════════════════════════
+
+  private loadLeaflet(): Promise<void> {
+    return new Promise((resolve) => {
+      if (!document.getElementById('leaflet-css')) {
+        const link = document.createElement('link');
+        link.id = 'leaflet-css';
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(link);
+      }
+      if (typeof L !== 'undefined') {
+        return resolve();
+      }
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.onload = () => resolve();
+      document.head.appendChild(script);
+    });
+  }
+
+  private initMap(): void {
+    const container = document.getElementById('family-tracking-map');
+    if (!container) {
+      setTimeout(() => this.initMap(), 300);
+      return;
+    }
+
+    const originLat = this.originLatitude;
+    const originLng = this.originLongitude;
+    const destLat = this.destinationLatitude;
+    const destLng = this.destinationLongitude;
+
+    const hasCoords = originLat !== 0 && destLat !== 0;
+    const centerLat = hasCoords ? (originLat + destLat) / 2 : 9.935;
+    const centerLng = hasCoords ? (originLng + destLng) / 2 : -84.090;
+
+    this.map = L.map('family-tracking-map', {
+      zoomAnimation: true,
+      markerZoomAnimation: true,
+    }).setView([centerLat, centerLng], 14);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap',
+    }).addTo(this.map);
+
+    if (hasCoords) {
+      this.originMarker = L.marker([originLat, originLng], {
+        icon: this.createOriginIcon(),
+      }).addTo(this.map).bindPopup('Origen');
+
+      this.destinationMarker = L.marker([destLat, destLng], {
+        icon: this.createDestinationIcon(),
+      }).addTo(this.map).bindPopup('Destino');
+
+      this.map.fitBounds(
+        [
+          [originLat, originLng],
+          [destLat, destLng],
+        ],
+        { padding: [50, 50] }
+      );
+    }
+
+    this.routePolyline = L.polyline([], {
+      color: '#0d9488',
+      weight: 4,
+      opacity: 0.8,
+      smoothFactor: 1.5,
+    }).addTo(this.map);
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // MAP ICONS
+  // ═══════════════════════════════════════════════════════════════
+
   private createOriginIcon(): any {
     return L.divIcon({
       className: 'custom-marker-origin',
@@ -597,77 +743,10 @@ export class FamilyTrackingComponent implements OnInit, OnDestroy {
     return (toDeg(Math.atan2(y, x)) + 360) % 360;
   }
 
-  // LEAFLET (con marcadores de origen y destino)
-  private loadLeaflet(): Promise<void> {
-    return new Promise((resolve) => {
-      if (!document.getElementById('leaflet-css')) {
-        const link = document.createElement('link');
-        link.id = 'leaflet-css';
-        link.rel = 'stylesheet';
-        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-        document.head.appendChild(link);
-      }
-      if (typeof L !== 'undefined') {
-        return resolve();
-      }
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-      script.onload = () => resolve();
-      document.head.appendChild(script);
-    });
-  }
-
-  private initMap(): void {
-    const container = document.getElementById('family-tracking-map');
-    if (!container) {
-      console.error('Map container not found, retrying...');
-      setTimeout(() => this.initMap(), 300);
-      return;
-    }
-
-    const originLat = this.originLatitude;
-    const originLng = this.originLongitude;
-    const destLat = this.destinationLatitude;
-    const destLng = this.destinationLongitude;
-
-    const hasCoords = originLat !== 0 && destLat !== 0;
-    const centerLat = hasCoords ? (originLat + destLat) / 2 : 9.935;
-    const centerLng = hasCoords ? (originLng + destLng) / 2 : -84.090;
-
-    this.map = L.map('family-tracking-map').setView([centerLat, centerLng], 14);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap',
-    }).addTo(this.map);
-
-
-    if (hasCoords) {
-      this.originMarker = L.marker([originLat, originLng], {
-        icon: this.createOriginIcon(),
-      }).addTo(this.map).bindPopup('Origen');
-
-      this.destinationMarker = L.marker([destLat, destLng], {
-        icon: this.createDestinationIcon(),
-      }).addTo(this.map).bindPopup('Destino');
-
-      this.map.fitBounds(
-        [
-          [originLat, originLng],
-          [destLat, destLng],
-        ],
-        { padding: [50, 50] }
-      );
-    }
-
-    this.routePolyline = L.polyline([], {
-      color: '#0d9488',
-      weight: 4,
-      opacity: 0.8,
-    }).addTo(this.map);
-  }
-
-
+  // ═══════════════════════════════════════════════════════════════
   // HELPERS
+  // ═══════════════════════════════════════════════════════════════
+
   private getCurrentTime(): string {
     return new Date().toLocaleTimeString('es-CR', {
       hour: '2-digit',

@@ -1,5 +1,10 @@
-// src/app/viewProfile/family-profile-edit/family-profile-edit.ts
-import { Component, OnInit, inject } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder, FormGroup, ReactiveFormsModule, Validators,
@@ -24,25 +29,26 @@ import {
   })],
   templateUrl: './family-profile-edit.html',
   styleUrl: './family-profile-edit.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FamilyProfileEdit implements OnInit {
   private fb             = inject(FormBuilder);
   private router         = inject(Router);
   private route          = inject(ActivatedRoute);
   private profileService = inject(ProfileService);
+  private cdr            = inject(ChangeDetectorRef);
 
   profileForm!: FormGroup;
   originalProfile!: FamilyProfile;
   imagePreview: string | null = null;
+  imageRemoved = false;
   selectedFileError = '';
   isLoading         = false;
   isSubmitting      = false;
 
-  // profileId viene en la URL, userId viene del localStorage
   profileId = '';
   userId    = '';
 
-  // ── Contraseña ────────────────────────────────────────────────
   passwordForm!: FormGroup;
   showPasswordSection  = false;
   showCurrentPassword  = false;
@@ -59,7 +65,6 @@ export class FamilyProfileEdit implements OnInit {
     this.loadProfile();
   }
 
-  // ── Formulario principal ──────────────────────────────────────
   private buildForm(): void {
     this.profileForm = this.fb.group({
       fullName:         ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
@@ -74,41 +79,64 @@ export class FamilyProfileEdit implements OnInit {
   }
 
   private loadProfile(): void {
-    // Carga por profileId (el PUT también usa profileId)
+    this.isLoading = true;
+    this.cdr.markForCheck();
+
     this.profileService.getFamilyProfile(this.profileId).subscribe({
       next: (data) => {
         this.originalProfile = data;
         this.imagePreview    = data.profileImage || null;
+        this.imageRemoved    = false;
 
         this.profileForm.patchValue({
           fullName:          data.fullName,
-          email:             data.email                                         ?? '',
+          email:             data.email ?? '',
           phone:             data.phone,
-          relationToSenior:  data.relationToSenior                              ?? '',
-          emergencyName:     data.emergencyContactName ?? data.emergencyName    ?? '',
+          relationToSenior:  data.relationToSenior ?? '',
+          emergencyName:     data.emergencyContactName ?? data.emergencyName ?? '',
           emergencyRelation: data.emergencyContactRelation ?? data.emergencyRelation ?? '',
-          emergencyPhone:    data.emergencyContactPhone ?? data.emergencyPhone  ?? '',
-          importantNotes:    data.importantNotes ?? data.notes                  ?? '',
+          emergencyPhone:    data.emergencyContactPhone ?? data.emergencyPhone ?? '',
+          importantNotes:    data.importantNotes ?? data.notes ?? '',
         });
+
+        this.isLoading = false;
+        this.cdr.markForCheck();
       },
-      error: (err) => console.error('Error cargando perfil familiar:', err)
+      error: () => {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 
   handleSave(): void {
     if (this.profileForm.invalid) {
       this.profileForm.markAllAsTouched();
+      this.cdr.markForCheck();
       return;
     }
+
     this.isSubmitting = true;
+    this.cdr.markForCheck();
+
     const v = this.profileForm.value;
+
+    let finalProfileImage: string | null;
+
+    if (this.imageRemoved) {
+      finalProfileImage = null;
+    } else if (this.imagePreview) {
+      finalProfileImage = this.imagePreview;
+    } else {
+      finalProfileImage = null;
+    }
 
     const updatedProfile: Partial<FamilyProfile> = {
       ...this.originalProfile,
       fullName:          v.fullName.trim(),
       email:             v.email.trim(),
       phone:             v.phone.trim(),
-      profileImage:      this.imagePreview,
+      profileImage:      finalProfileImage,
       relationToSenior:  v.relationToSenior.trim(),
       emergencyName:     v.emergencyName.trim(),
       emergencyRelation: v.emergencyRelation.trim(),
@@ -116,26 +144,23 @@ export class FamilyProfileEdit implements OnInit {
       importantNotes:    v.importantNotes?.trim() || '',
     };
 
-    // Actualiza por profileId
     this.profileService.updateFamilyProfile(this.profileId, updatedProfile).subscribe({
       next: () => {
         this.isSubmitting = false;
-        // Regresa al perfil usando el userId del localStorage
+        this.cdr.markForCheck();
         this.router.navigate(['/family-profile', this.userId]);
       },
-      error: (err) => {
-        console.error('Error guardando perfil:', err);
+      error: () => {
         this.isSubmitting = false;
+        this.cdr.markForCheck();
       }
     });
   }
 
   handleCancel(): void {
-    // Regresa al perfil usando el userId del localStorage
     this.router.navigate(['/family-profile', this.userId]);
   }
 
-  // ── Imagen ────────────────────────────────────────────────────
   handleImageUpload(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     this.selectedFileError = '';
@@ -144,24 +169,32 @@ export class FamilyProfileEdit implements OnInit {
     const allowed = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowed.includes(file.type)) {
       this.selectedFileError = 'Solo se permiten imágenes JPG, PNG o WEBP.';
+      this.cdr.markForCheck();
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
       this.selectedFileError = 'La imagen no puede superar los 5MB.';
+      this.cdr.markForCheck();
       return;
     }
 
     const reader = new FileReader();
-    reader.onload = () => { this.imagePreview = reader.result as string; };
+    reader.onload = () => {
+      this.imagePreview = reader.result as string;
+      this.imageRemoved = false;
+      this.cdr.markForCheck();
+    };
     reader.readAsDataURL(file);
   }
 
   removePhoto(): void {
     this.imagePreview      = null;
+    this.imageRemoved      = true;
     this.selectedFileError = '';
+
+    this.cdr.markForCheck();
   }
 
-  // ── Contraseña ────────────────────────────────────────────────
   private buildPasswordForm(): void {
     this.passwordForm = this.fb.group({
       currentPassword: ['', Validators.required],
@@ -192,21 +225,29 @@ export class FamilyProfileEdit implements OnInit {
       this.passwordForm.reset();
       this.passwordStatus = { text: '', type: null };
     }
+    this.cdr.markForCheck();
   }
 
   handleChangePassword(): void {
     if (this.passwordForm.invalid) {
       this.passwordForm.markAllAsTouched();
+      this.cdr.markForCheck();
       return;
     }
+
     this.isChangingPassword = true;
+    this.cdr.markForCheck();
+
     setTimeout(() => {
       this.isChangingPassword = false;
       this.passwordStatus = { text: 'Contraseña actualizada correctamente.', type: 'success' };
       this.passwordForm.reset();
+      this.cdr.markForCheck();
+
       setTimeout(() => {
         this.passwordStatus = { text: '', type: null };
         this.showPasswordSection = false;
+        this.cdr.markForCheck();
       }, 2500);
     }, 1000);
   }
@@ -215,8 +256,9 @@ export class FamilyProfileEdit implements OnInit {
     const c = this.passwordForm.get(field);
     if (!c?.touched || !c.errors) return '';
     if (c.errors['required'])     return 'Campo obligatorio.';
-    if (c.errors['weakPassword'])
+    if (c.errors['weakPassword']) {
       return 'Mín. 8 caracteres, mayúscula, minúscula, número y símbolo.';
+    }
     return '';
   }
 
@@ -230,10 +272,12 @@ export class FamilyProfileEdit implements OnInit {
     if (!field?.touched || !field.errors) return '';
     if (field.errors['required'])  return 'Este campo es obligatorio.';
     if (field.errors['email'])     return 'Correo electrónico inválido.';
-    if (field.errors['minlength'])
+    if (field.errors['minlength']) {
       return `Debe tener al menos ${field.errors['minlength'].requiredLength} caracteres.`;
-    if (field.errors['maxlength'])
+    }
+    if (field.errors['maxlength']) {
       return `No debe superar ${field.errors['maxlength'].requiredLength} caracteres.`;
+    }
     if (field.errors['pattern'])   return 'Usa el formato 8888-7777.';
     return 'Campo inválido.';
   }
