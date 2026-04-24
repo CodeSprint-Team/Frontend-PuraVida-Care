@@ -1,24 +1,40 @@
 <div class="flex overflow-hidden">
   <app-navbar [role]="'client'"></app-navbar>
 
-  <div class="flex-1 lg:ml-64 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8 bg-gray-50 min-h-screen overflow-x-hidden">
+  <div class="flex-1 lg:ml-64 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8
+              bg-gray-50 min-h-screen overflow-x-hidden">
     <div class="max-w-6xl mx-auto">
 
-      <button (click)="goBack()" class="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-6 transition-colors">
+      <button (click)="goBack()"
+              class="flex items-center gap-2 text-gray-500 hover:text-gray-700
+                     mb-6 transition-colors">
         <ng-icon name="heroArrowLeft" size="18"></ng-icon>
         Volver
       </button>
 
       <h1 class="text-2xl font-bold mb-1">Confirmar Detalles</h1>
-      <p class="text-gray-500 text-sm mb-8">Completa la información para tu servicio</p>
+      <p class="text-gray-500 text-sm mb-8">
+        Completa la información para tu servicio
+      </p>
 
-      <div *ngIf="errorMessage" class="bg-red-50 text-red-600 border border-red-200 rounded-xl p-4 mb-6">
-        {{ errorMessage }}
-      </div>
+      <!-- Badge telemedicina -->
+      @if (isTelemedicine()) {
+        <div class="inline-flex items-center gap-2 bg-teal-50 border border-teal-200
+                    text-teal-700 text-sm font-medium px-4 py-2 rounded-xl mb-6">
+          🖥️ Servicio de telemedicina — no requiere desplazamiento
+        </div>
+      }
+
+      @if (errorMessage()) {
+        <div class="bg-red-50 text-red-600 border border-red-200
+                    rounded-xl p-4 mb-6">
+          {{ errorMessage() }}
+        </div>
+      }
 
       <div class="flex flex-col xl:flex-row gap-6 items-start">
 
-        <!-- Formulario -->
+        <!-- ── Formulario ──────────────────────────────────────── -->
         <div class="flex-1 w-full flex flex-col gap-4 min-w-0">
 
           <!-- Fecha y Hora -->
@@ -35,222 +51,225 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
                   Fecha <span class="text-red-500">*</span>
                 </label>
-                <input
-                  type="date"
-                  [(ngModel)]="fecha"
-                  class="w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
-                  [ngClass]="(submitted && !fecha) || fechaEsPasada ? 'border-red-400 bg-red-50' : 'border-gray-200'"
-                />
-
-                <p *ngIf="submitted && !fecha" class="text-xs text-red-500 mt-1">
-                  Campo requerido
-                </p>
-
-                <div
-                  *ngIf="fechaEsPasada"
-                  class="flex items-center gap-2 mt-2 bg-red-50 border border-red-200 text-red-600 text-xs rounded-lg px-3 py-2"
-                >
-                  <ng-icon name="heroExclamationCircle" size="14"></ng-icon>
-                  La fecha ingresada ya pasó. Por favor selecciona una fecha válida.
-                </div>
+                <input type="date" [(ngModel)]="fecha"
+                       class="w-full border rounded-xl px-4 py-2.5 text-sm
+                              focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+                       [ngClass]="(submitted() && !fecha) || fechaEsPasada()
+                         ? 'border-red-400 bg-red-50' : 'border-gray-200'" />
+                @if (submitted() && !fecha) {
+                  <p class="text-xs text-red-500 mt-1">Campo requerido</p>
+                }
+                @if (fechaEsPasada()) {
+                  <div class="flex items-center gap-2 mt-2 bg-red-50 border border-red-200
+                              text-red-600 text-xs rounded-lg px-3 py-2">
+                    <ng-icon name="heroExclamationCircle" size="14"></ng-icon>
+                    La fecha ingresada ya pasó. Selecciona una fecha válida.
+                  </div>
+                }
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
                   Hora <span class="text-red-500">*</span>
                 </label>
-                <input
-                  type="time"
-                  [(ngModel)]="hora"
-                  class="w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
-                  [ngClass]="submitted && !hora ? 'border-red-400 bg-red-50' : 'border-gray-200'"
-                />
-                <p *ngIf="submitted && !hora" class="text-xs text-red-500 mt-1">Campo requerido</p>
+                <input type="time" [(ngModel)]="hora"
+                       class="w-full border rounded-xl px-4 py-2.5 text-sm
+                              focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+                       [ngClass]="submitted() && !hora
+                         ? 'border-red-400 bg-red-50' : 'border-gray-200'" />
+                @if (submitted() && !hora) {
+                  <p class="text-xs text-red-500 mt-1">Campo requerido</p>
+                }
               </div>
             </div>
           </div>
 
-          <!-- Ubicaciones -->
-          <div class="bg-white rounded-2xl border border-gray-100 p-6">
-            <div class="flex items-center gap-2 mb-5">
-              <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
-                <ng-icon name="heroMapPin" size="16" class="text-blue-500"></ng-icon>
+          <!-- Ubicaciones — solo si NO es telemedicina -->
+          @if (!isTelemedicine()) {
+            <div class="bg-white rounded-2xl border border-gray-100 p-6">
+              <div class="flex items-center gap-2 mb-5">
+                <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
+                  <ng-icon name="heroMapPin" size="16" class="text-blue-500"></ng-icon>
+                </div>
+                <h2 class="font-bold text-gray-800">Ubicaciones</h2>
               </div>
-              <h2 class="font-bold text-gray-800">Ubicaciones</h2>
+
+              <div class="flex flex-col gap-6">
+
+                <!-- Origen -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                    Punto de origen <span class="text-red-500">*</span>
+                  </label>
+                  <div id="booking-map"
+                       class="w-full h-52 rounded-xl border border-gray-200 mb-3">
+                  </div>
+                  <p class="text-gray-500 text-sm mb-3">
+                    Haz click en el mapa para marcar el origen
+                  </p>
+                  @if (originLatitude() !== null) {
+                    <p class="text-xs text-teal-600 mb-2">
+                      ✓ Origen seleccionado
+                      ({{ originLatitude()!.toFixed(4) }},
+                       {{ originLongitude()!.toFixed(4) }})
+                    </p>
+                  }
+                  @if (submitted() && originLatitude() === null) {
+                    <p class="text-xs text-red-500 mb-2">
+                      Selecciona el origen en el mapa
+                    </p>
+                  }
+                  <input type="text" [(ngModel)]="origen"
+                         placeholder="Ej: Frente al parque, casa azul"
+                         class="w-full border rounded-xl px-4 py-2.5 text-sm
+                                focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+                         [ngClass]="submitted() && !origen
+                           ? 'border-red-400 bg-red-50' : 'border-gray-200'" />
+                  <p class="text-xs text-gray-400 mt-1">
+                    Agregue una referencia para identificar el lugar
+                  </p>
+                  @if (submitted() && !origen) {
+                    <p class="text-xs text-red-500 mt-1">Campo requerido</p>
+                  }
+                </div>
+
+                <!-- Destino -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                    Destino <span class="text-red-500">*</span>
+                  </label>
+                  <div id="destination-map"
+                       class="w-full h-52 rounded-xl border border-gray-200 mb-3">
+                  </div>
+                  <p class="text-gray-500 text-sm mb-3">
+                    Haz click en el mapa para marcar el destino
+                  </p>
+                  @if (destinationLatitude() !== null) {
+                    <p class="text-xs text-teal-600 mb-2">
+                      ✓ Destino seleccionado
+                      ({{ destinationLatitude()!.toFixed(4) }},
+                       {{ destinationLongitude()!.toFixed(4) }})
+                    </p>
+                  }
+                  @if (submitted() && destinationLatitude() === null) {
+                    <p class="text-xs text-red-500 mb-2">
+                      Selecciona el destino en el mapa
+                    </p>
+                  }
+                  <input type="text" [(ngModel)]="destino"
+                         placeholder="Ej: Hospital San Juan de Dios"
+                         class="w-full border rounded-xl px-4 py-2.5 text-sm
+                                focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+                         [ngClass]="submitted() && !destino
+                           ? 'border-red-400 bg-red-50' : 'border-gray-200'" />
+                  <p class="text-xs text-gray-400 mt-1">
+                    Agregue una referencia para identificar el destino
+                  </p>
+                  @if (submitted() && !destino) {
+                    <p class="text-xs text-red-500 mt-1">Campo requerido</p>
+                  }
+                </div>
+
+              </div>
             </div>
+          }
 
-            <div class="flex flex-col gap-6">
-              <!-- Punto de origen con mapa -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                  Punto de origen <span class="text-red-500">*</span>
-                </label>
-
-                <div id="booking-map" class="w-full h-52 rounded-xl border border-gray-200 mb-3"></div>
-
-                <p class="text-gray-500 text-sm mb-3">Haz click en el mapa para marcar el origen</p>
-
-                <input
-                  type="text"
-                  [(ngModel)]="origen"
-                  placeholder="Ej: Frente al parque, casa azul"
-                  class="w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
-                  [ngClass]="submitted && !origen ? 'border-red-400 bg-red-50' : 'border-gray-200'"
-                />
-
-                <p class="text-xs text-gray-400 mt-1">
-                  Agregue una referencia para facilitar la identificación del lugar
-                </p>
-
-                <p *ngIf="submitted && !origen" class="text-xs text-red-500 mt-1">
-                  Campo requerido
-                </p>
-              </div>
-
-              <!-- Punto de destino con mapa -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                  Destino <span class="text-red-500">*</span>
-                </label>
-
-                <div id="destination-map" class="w-full h-52 rounded-xl border border-gray-200 mb-3"></div>
-
-                <p class="text-gray-500 text-sm mb-3">Haz click en el mapa para marcar el destino</p>
-
-                <input
-                  type="text"
-                  [(ngModel)]="destino"
-                  placeholder="Ej: Hospital San Juan de Dios"
-                  class="w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
-                  [ngClass]="submitted && !destino ? 'border-red-400 bg-red-50' : 'border-gray-200'"
-                />
-
-                <p class="text-xs text-gray-400 mt-1">
-                  Agregue una referencia para facilitar la identificación del lugar de destino
-                </p>
-
-                <p *ngIf="submitted && !destino" class="text-xs text-red-500 mt-1">
-                  Campo requerido
-                </p>
+          <!-- Info telemedicina -->
+          @if (isTelemedicine()) {
+            <div class="bg-teal-50 border border-teal-200 rounded-2xl p-5">
+              <div class="flex items-start gap-3">
+                <span class="text-2xl">🖥️</span>
+                <div>
+                  <h3 class="font-semibold text-teal-800 mb-1">
+                    Consulta virtual
+                  </h3>
+                  <p class="text-sm text-teal-700">
+                    Este servicio se realiza de forma remota. No es necesario
+                    indicar ubicación. El proveedor se pondrá en contacto contigo
+                    para coordinar el enlace de videollamada.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          }
 
-          
         </div>
 
-        <!-- Resumen -->
+        <!-- ── Resumen lateral ─────────────────────────────────── -->
         <div class="w-full xl:w-80 shrink-0 flex flex-col gap-4">
-          <div class="bg-white rounded-2xl border border-gray-100 p-6 xl:sticky xl:top-6">
+          <div class="bg-white rounded-2xl border border-gray-100 p-6
+                      xl:sticky xl:top-6">
             <h2 class="font-bold text-gray-800 mb-4">Resumen de la reserva</h2>
 
-            <div *ngIf="!provider" class="animate-pulse flex flex-col gap-3">
-              <div class="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div class="h-4 bg-gray-100 rounded w-1/2"></div>
-              <div class="h-4 bg-gray-100 rounded w-2/3"></div>
-            </div>
+            <!-- Skeleton -->
+            @if (!provider()) {
+              <div class="animate-pulse flex flex-col gap-3">
+                <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div class="h-4 bg-gray-100 rounded w-1/2"></div>
+                <div class="h-4 bg-gray-100 rounded w-2/3"></div>
+              </div>
+            }
 
-            <div *ngIf="provider" class="flex flex-col gap-2 text-sm">
-              <div class="flex justify-between gap-2">
-                <span class="text-gray-500 shrink-0">Servicio:</span>
-                <span class="font-medium text-gray-800 text-right">{{ selectedService?.name ?? '—' }}</span>
-              </div>
-              <div class="flex justify-between gap-2">
-                <span class="text-gray-500 shrink-0">Proveedor:</span>
-                <span class="font-medium text-gray-800 text-right">{{ provider.fullName }}</span>
-              </div>
-              <div class="flex justify-between gap-2">
-                <span class="text-gray-500 shrink-0">Tarifa base:</span>
-                <span class="font-medium text-gray-800">{{ selectedService?.price ?? '—' }}/hora</span>
-              </div>
-
-              <div class="border-t border-gray-100 pt-3 mt-2">
-                <div class="flex justify-between items-start gap-2">
-                  <span class="text-gray-500 shrink-0">Total estimado:</span>
-                  <span class="font-bold text-teal-600 text-right">{{ totalEstimado }}</span>
+            @if (provider()) {
+              <div class="flex flex-col gap-2 text-sm">
+                <div class="flex justify-between gap-2">
+                  <span class="text-gray-500 shrink-0">Servicio:</span>
+                  <span class="font-medium text-gray-800 text-right">
+                    {{ selectedService()?.name ?? selectedService()?.title ?? '—' }}
+                  </span>
                 </div>
-                <p class="text-xs text-gray-400 mt-2 leading-relaxed">
-                  El costo final dependerá de la duración exacta del servicio
-                </p>
-              </div>
-            </div>
-
-            <!-- Método de pago -->
-            <div class="mt-6 border-t border-gray-100 pt-5">
-              <div class="flex items-center gap-2 mb-4">
-                <div class="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center">
-                  💳
+                <div class="flex justify-between gap-2">
+                  <span class="text-gray-500 shrink-0">Proveedor:</span>
+                  <span class="font-medium text-gray-800 text-right">
+                    {{ provider().fullName }}
+                  </span>
                 </div>
-                <h2 class="font-bold text-gray-800">Método de pago</h2>
+                <div class="flex justify-between gap-2">
+                  <span class="text-gray-500 shrink-0">Tarifa base:</span>
+                  <span class="font-medium text-gray-800">
+                    {{ selectedService()?.price ?? selectedService()?.basePrice ?? '—' }}
+                    {{ priceLabel() }}
+                  </span>
+                </div>
+
+                @if (isTelemedicine()) {
+                  <div class="flex items-center gap-2 mt-1 text-teal-600 text-xs
+                              bg-teal-50 px-3 py-2 rounded-lg">
+                    🖥️ Servicio virtual
+                  </div>
+                }
+
+                <div class="border-t border-gray-100 pt-3 mt-2">
+                  <div class="flex justify-between items-start gap-2">
+                    <span class="text-gray-500 shrink-0">Total estimado:</span>
+                    <span class="font-bold text-teal-600 text-right">
+                      {{ totalEstimado() }}
+                    </span>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-2 leading-relaxed">
+                    El costo final dependerá de la duración del servicio
+                  </p>
+                </div>
               </div>
+            }
 
-              <div class="flex gap-3">
-                <button
-                  type="button"
-                  (click)="setAgreedPriceMode('CARD')"
-                  [ngClass]="{
-                    'bg-teal-700 text-white border-teal-700': agreedPriceMode === 'CARD',
-                    'bg-white text-gray-600 border-gray-200 hover:border-teal-400': agreedPriceMode !== 'CARD'
-                  }"
-                  class="flex-1 py-3 rounded-xl border text-sm font-semibold transition-all"
-                >
-                  Tarjeta
-                </button>
-
-                <button
-                  type="button"
-                  (click)="setAgreedPriceMode('PAYPAL')"
-                  [ngClass]="{
-                    'bg-teal-700 text-white border-teal-700': agreedPriceMode === 'PAYPAL',
-                    'bg-white text-gray-600 border-gray-200 hover:border-teal-400': agreedPriceMode !== 'PAYPAL'
-                  }"
-                  class="flex-1 py-3 rounded-xl border text-sm font-semibold transition-all"
-                >
-                  PayPal
-                </button>
-              </div>
-            </div>
-
-            <button
-              (click)="confirmar()"
-              [disabled]="loading"
-              class="w-full mt-6 py-3.5 rounded-xl font-semibold text-sm text-white transition-all duration-200"
-              [ngClass]="loading
-                ? 'bg-teal-400 opacity-60 cursor-not-allowed'
-                : 'bg-teal-700 hover:bg-teal-800 shadow-md cursor-pointer'"
-            >
-              {{ loading ? 'Procesando...' : 'Confirmar reserva' }}
+            <button (click)="confirmar()"
+                    [disabled]="loading()"
+                    class="w-full mt-6 py-3.5 rounded-xl font-semibold text-sm
+                           text-white transition-all duration-200"
+                    [ngClass]="loading()
+                      ? 'bg-teal-400 opacity-60 cursor-not-allowed'
+                      : 'bg-teal-700 hover:bg-teal-800 shadow-md cursor-pointer'">
+              {{ loading() ? 'Procesando...' : 'Confirmar reserva' }}
             </button>
 
-            <p *ngIf="submitted && !formValido" class="text-xs text-red-500 text-center mt-2">
-              Completa todos los campos obligatorios
-            </p>
+            @if (submitted() && !formValido()) {
+              <p class="text-xs text-red-500 text-center mt-2">
+                Completa todos los campos obligatorios
+              </p>
+            }
           </div>
-          <!-- Preferencias -->
-          <div class="bg-white rounded-2xl border border-gray-100 p-6">
-            <div class="flex items-center gap-2 mb-5">
-              <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center">
-                <ng-icon name="heroHeart" size="16" class="text-red-400"></ng-icon>
-              </div>
-              <h2 class="font-bold text-gray-800">Preferencias</h2>
-            </div>
 
-            <label class="flex items-start gap-3 cursor-pointer group">
-              <input
-                type="checkbox"
-                [(ngModel)]="marcarFavorito"
-                class="mt-0.5 accent-teal-600 w-4 h-4 cursor-pointer"
-              />
-              <div>
-                <p class="text-sm font-medium text-gray-800 group-hover:text-teal-700 transition-colors">
-                  Marcar como proveedor favorito
-                </p>
-                <p class="text-xs text-gray-400 mt-0.5">
-                  Podrás acceder rápidamente a este proveedor en el futuro
-                </p>
-              </div>
-            </label>
-          </div>
         </div>
 
       </div>

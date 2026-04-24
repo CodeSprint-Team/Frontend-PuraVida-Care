@@ -25,10 +25,13 @@ export interface AgendaBookingResponseDTO {
   clientProfileId: number;
   clientFullName: string;
 
-  originLatitude: number;
-  originLongitude: number;
-  destinationLatitude: number;
-  destinationLongitude: number;
+  originLatitude: number | null;
+  originLongitude: number | null;
+  destinationLatitude: number | null;
+  destinationLongitude: number | null;
+
+  appointmentType?: string;
+  telemedSessionId?: number | null;
 }
 
 export interface RescheduleRequestDTO {

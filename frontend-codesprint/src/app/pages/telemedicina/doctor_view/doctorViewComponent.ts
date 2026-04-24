@@ -158,9 +158,7 @@ export class DoctorViewComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.providerName = localStorage.getItem('user_name') || 'Doctor';
 
-    // Timer FUERA de la zona de Angular para no disparar detección de cambios cada segundo
     this.startDurationTimer();
-
     this.checkAiHealth();
 
     this.showConsentModal = true;
@@ -169,14 +167,12 @@ export class DoctorViewComponent implements OnInit, AfterViewInit, OnDestroy {
     this.startConnectionMonitoring();
   }
 
-  // ─── Jitsi video call ───
   ngAfterViewInit(): void {
     if (this.jitsiContainer) {
       this.initJitsiCall();
     }
   }
 
-  // ─── Scroll controlado: solo cuando hay nueva transcripción ───
   ngAfterViewChecked(): void {
     if (this.shouldScrollTranscription && this.transcriptionContainer) {
       this.scrollTranscriptionToBottom();
@@ -188,9 +184,7 @@ export class DoctorViewComponent implements OnInit, AfterViewInit, OnDestroy {
     try {
       const el = this.transcriptionContainer.nativeElement;
       el.scrollTop = el.scrollHeight;
-    } catch (e) {
-      // Ignorar si el elemento no existe
-    }
+    } catch (e) {}
   }
 
   private initJitsiCall(): void {
@@ -221,7 +215,6 @@ export class DoctorViewComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  // ─── Connection monitoring ───
   private startConnectionMonitoring(): void {
     this.connectionMonitor.startMonitoring(environment.apiUrl);
 
@@ -248,12 +241,10 @@ export class DoctorViewComponent implements OnInit, AfterViewInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  // ─── Timer FUERA de NgZone para no disparar change detection cada segundo ───
   private startDurationTimer(): void {
     this.ngZone.runOutsideAngular(() => {
       this.durationInterval = setInterval(() => {
         this.duration++;
-        // Solo actualizar la UI cada 1 segundo, sin disparar detección global
         this.cdr.detectChanges();
       }, 1000);
     });
@@ -267,7 +258,6 @@ export class DoctorViewComponent implements OnInit, AfterViewInit, OnDestroy {
       .padStart(2, '0')}`;
   }
 
-  // ─── Health check ───
   private checkAiHealth(): void {
     this.telemedApi
       .checkAiHealth()
@@ -351,18 +341,15 @@ export class DoctorViewComponent implements OnInit, AfterViewInit, OnDestroy {
       });
   }
 
-  // ─── Audio Capture ───
   private async startAudioCapture(): Promise<void> {
     try {
       await this.audioCapture.startCapture();
     } catch (error) {
-      this.errorMessage =
-        'No se pudo acceder al micrófono. Verifique los permisos.';
+      this.errorMessage = 'No se pudo acceder al micrófono. Verifique los permisos.';
       this.cdr.markForCheck();
     }
   }
 
-  // ─── Transcripción ───
   private handleNewTranscription(result: TranscriptionResult): void {
     const entry: TranscriptionEntry = {
       id: this.transcriptionEntries.length + 1,
@@ -373,12 +360,9 @@ export class DoctorViewComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.transcriptionEntries = [...this.transcriptionEntries, entry];
     this.lastSubtitleText = result.cleanText;
-
-    // Activar flag de scroll — se ejecuta en ngAfterViewChecked UNA vez
     this.shouldScrollTranscription = true;
   }
 
-  // ─── Controles de video ───
   toggleMic(): void {
     this.isMicOn = !this.isMicOn;
     this.jitsiService.toggleAudio();
@@ -408,7 +392,6 @@ export class DoctorViewComponent implements OnInit, AfterViewInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  // ─── Checklist ───
   toggleChecklist(id: number): void {
     const item = this.checklist.find((i) => i.id === id);
     if (item) {
@@ -434,7 +417,6 @@ export class DoctorViewComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.wsService.requestAnalysis('');
 
-    // Timeout fuera de NgZone para no contaminar change detection
     this.ngZone.runOutsideAngular(() => {
       setTimeout(() => {
         this.ngZone.run(() => {
@@ -448,7 +430,6 @@ export class DoctorViewComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  // ─── Desactivar IA ───
   deactivateAi(): void {
     this.telemedApi
       .deactivateAi(this.sessionId)
@@ -467,11 +448,9 @@ export class DoctorViewComponent implements OnInit, AfterViewInit, OnDestroy {
       });
   }
 
+  // ─── Finalizar consulta ───────────────────────────────────────
   confirmEndCall(): void {
-    if (this.loading) {
-      return;
-    }
-
+    if (this.loading) return;
     this.loading = true;
     this.isEndingSession = true;
     this.cdr.markForCheck();
@@ -483,37 +462,60 @@ export class DoctorViewComponent implements OnInit, AfterViewInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          // Detener todo primero
           this.audioCapture.stopCapture();
           this.wsService.disconnect();
           this.jitsiService.dispose();
           this.connectionMonitor.stopMonitoring();
           clearInterval(this.durationInterval);
 
-          // Actualizar estado
           this.endSessionResult = response;
           this.showEndCallModal = false;
           this.loading = false;
           this.activeTab = 'resumen';
           this.aiActive = false;
           this.wsConnected = false;
-
           this.cdr.markForCheck();
         },
         error: (err) => {
           console.error('[EndSession] error', err);
+
+          // ── Limpiar recursos siempre ──
+          this.audioCapture.stopCapture();
+          this.wsService.disconnect();
+          this.jitsiService.dispose();
+          this.connectionMonitor.stopMonitoring();
+          clearInterval(this.durationInterval);
+
+          this.showEndCallModal = false;
           this.loading = false;
-          this.isEndingSession = false;
-          this.errorMessage = 'Error al finalizar la consulta';
+          this.activeTab = 'resumen';
+          this.aiActive = false;
+          this.wsConnected = false;
+
+          // ── Intentar recuperar el body del error (400 incluye EndSessionResponse) ──
+          if (err?.error) {
+            try {
+              this.endSessionResult = typeof err.error === 'string'
+                ? JSON.parse(err.error)
+                : err.error;
+            } catch {
+              this.endSessionResult = null;
+            }
+          }
+
+          // Solo mostrar error si NO hubo respuesta recuperable
+          if (!this.endSessionResult) {
+            this.isEndingSession = false;
+            this.errorMessage = 'Error al finalizar la consulta. Intenta nuevamente.';
+          }
+
           this.cdr.markForCheck();
         },
       });
   }
 
   openEndCallModal(): void {
-    if (this.isEndingSession) {
-      return;
-    }
+    if (this.isEndingSession) return;
     this.showEndCallModal = true;
     this.cdr.markForCheck();
   }
@@ -523,7 +525,6 @@ export class DoctorViewComponent implements OnInit, AfterViewInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  // ─── Emergencia ───
   openEmergencyModal(): void {
     this.showEmergencyModal = true;
     this.cdr.markForCheck();
@@ -539,7 +540,6 @@ export class DoctorViewComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  // ─── Navegación ───
   goBack(): void {
     const userId = localStorage.getItem('user_id');
     if (userId) {
@@ -549,7 +549,6 @@ export class DoctorViewComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  // ─── Cleanup ───
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();

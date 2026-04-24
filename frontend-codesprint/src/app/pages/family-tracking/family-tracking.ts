@@ -71,13 +71,13 @@ export class FamilyTrackingComponent implements OnInit, OnDestroy {
 
   private map: any = null;
   private routePolyline: any = null;
+  private fullRoutePolyline: any = null;
   private providerMarker: any = null;
   private originMarker: any = null;
   private destinationMarker: any = null;
   private previousLatLng: [number, number] | null = null;
   private stompClient: Client | null = null;
 
-  // Animación suave del carro
   private animationFrameId: number | null = null;
   private targetLatLng: [number, number] | null = null;
   private currentAnimatedLatLng: [number, number] | null = null;
@@ -332,7 +332,7 @@ export class FamilyTrackingComponent implements OnInit, OnDestroy {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // WEBSOCKET — fuera de NgZone
+  // WEBSOCKET
   // ═══════════════════════════════════════════════════════════════
 
   private connectWebSocket(): void {
@@ -439,7 +439,6 @@ export class FamilyTrackingComponent implements OnInit, OnDestroy {
 
     this.saveState();
 
-    // Solo entrar a NgZone para actualizar UI
     this.ngZone.run(() => this.cdr.markForCheck());
   }
 
@@ -452,16 +451,24 @@ export class FamilyTrackingComponent implements OnInit, OnDestroy {
     const [curLat, curLng] = this.currentAnimatedLatLng;
     const [tgtLat, tgtLng] = this.targetLatLng;
 
-    const factor = 0.08;
+    const factor = 0.12;
     const newLat = curLat + (tgtLat - curLat) * factor;
     const newLng = curLng + (tgtLng - curLng) * factor;
 
     this.currentAnimatedLatLng = [newLat, newLng];
     this.providerMarker.setLatLng([newLat, newLng]);
 
-    this.map.panTo([newLat, newLng], { animate: true, duration: 0.3 });
-
     const distance = Math.abs(tgtLat - newLat) + Math.abs(tgtLng - newLng);
+
+    // Solo mover el mapa si el carro sale del viewport
+    if (this.map && distance > 0.0001) {
+      const bounds = this.map.getBounds();
+      const latLng = L.latLng(newLat, newLng);
+      if (!bounds.contains(latLng)) {
+        this.map.panTo([newLat, newLng], { animate: true, duration: 0.5 });
+      }
+    }
+
     if (distance < 0.000001) {
       this.currentAnimatedLatLng = this.targetLatLng;
       this.providerMarker.setLatLng(this.targetLatLng);
@@ -581,18 +588,25 @@ export class FamilyTrackingComponent implements OnInit, OnDestroy {
       }).addTo(this.map).bindPopup('Destino');
 
       this.map.fitBounds(
-        [
-          [originLat, originLng],
-          [destLat, destLng],
-        ],
+        [[originLat, originLng], [destLat, destLng]],
         { padding: [50, 50] }
       );
     }
 
+    // Ruta OSRM completa (estática, punteada)
+    this.fullRoutePolyline = L.polyline([], {
+      color: '#0d9488',
+      weight: 5,
+      opacity: 0.3,
+      smoothFactor: 1.5,
+      dashArray: '10, 6',
+    }).addTo(this.map);
+
+    // Ruta recorrida (sólida, progresiva)
     this.routePolyline = L.polyline([], {
       color: '#0d9488',
-      weight: 4,
-      opacity: 0.8,
+      weight: 5,
+      opacity: 0.9,
       smoothFactor: 1.5,
     }).addTo(this.map);
   }

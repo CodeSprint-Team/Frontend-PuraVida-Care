@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CreateServiceBookingRequest } from '../interfaces/booking-model';
+import { CreateServiceBookingRequest, ServiceBookingResponse } from '../interfaces/booking-model';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +12,7 @@ export class ServiceBookingService {
 
   constructor(private http: HttpClient) {}
 
-  createBooking(data: CreateServiceBookingRequest): Observable<any> {
-    return this.http.post<any>(this.apiUrl, data);
+  createBooking(data: CreateServiceBookingRequest): Observable<ServiceBookingResponse> {
+    return this.http.post<ServiceBookingResponse>(this.apiUrl, data);
   }
 }

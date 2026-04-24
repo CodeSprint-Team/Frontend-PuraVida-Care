@@ -29,4 +29,12 @@ export class ProfileService {
   getProviderProfile(providerId: string): Observable<ProviderProfile> {
     return this.http.get<ProviderProfile>(`${this.apiUrl}/provider/${providerId}`);
   }
+
+  getSeniorProfileByUserId(userId: number): Observable<any> {
+  return this.http.get<any>(`${this.apiUrl}/senior/by-user/${userId}`);
+  }
+
+  getClientProfileByUserId(userId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/client/by-user/${userId}`);
+  }
 }
