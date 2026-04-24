@@ -68,8 +68,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       description: 'Atención profesional en casa',
       color: 'bg-pink-50',
       iconColor: 'text-pink-600',
-      // Navega al mapa del hogar en vez de explorar
-      path: '/mapa-hogar',
+      path: '/home-filter',
       isMap: true,
     },
     {
@@ -148,16 +147,13 @@ export class HomeComponent implements OnInit, OnDestroy {
    * para que HomeMapPageComponent precargue los marcadores correctos.
    */
   navigateToMap(): void {
-    const bookingId = localStorage.getItem('current_booking_id');
-    if (bookingId) {
-      this.router.navigate(['/mapa-hogar'], {
-        queryParams: { bookingId: Number(bookingId) },
-      });
-    } else {
-      this.router.navigate(['/mapa-hogar']);
-    }
+    this.router.navigate(['/home-filter']);
   }
 
+  /**
+   * Despacha la navegación correcta según el tipo de categoría.
+   * Usada por el template para no duplicar lógica en el HTML.
+   */
   onCategoryClick(category: Category): void {
     if (category.isMap) {
       this.navigateToMap();
