@@ -346,40 +346,42 @@ export class ProviderInService implements OnInit, OnDestroy {
     this.ngZone.run(() => this.cdr.markForCheck());
   }
 
-  // ── NUEVO: solo mueve el carro, sin tocar routePolyline ──
   private moveCarOnly(lat: number, lng: number): void {
-    if (!this.map) return;
+        if (!this.map) return;
 
-    const latlng: [number, number] = [lat, lng];
+        const latlng: [number, number] = [lat, lng];
 
-    if (this.previousLatLng) {
-      this.currentAngle = this.calculateBearing(
-        this.previousLatLng[0], this.previousLatLng[1],
-        lat, lng
-      );
-    }
+        // Dibujar la ruta progresivamente
+        this.routePolyline.addLatLng(latlng);
 
-    if (!this.currentMarker) {
-      this.currentMarker = L.marker(latlng, {
-        icon: this.createCarIcon(this.currentAngle),
-        zIndexOffset: 1000,
-      }).addTo(this.map);
-      this.currentAnimatedLatLng = latlng;
-    } else {
-      this.currentMarker.setIcon(this.createCarIcon(this.currentAngle));
-    }
+        if (this.previousLatLng) {
+          this.currentAngle = this.calculateBearing(
+            this.previousLatLng[0], this.previousLatLng[1],
+            lat, lng
+          );
+        }
 
-    this.targetLatLng = latlng;
-    if (!this.animationFrameId) {
-      this.animateCarMovement();
-    }
+        if (!this.currentMarker) {
+          this.currentMarker = L.marker(latlng, {
+            icon: this.createCarIcon(this.currentAngle),
+            zIndexOffset: 1000,
+          }).addTo(this.map);
+          this.currentAnimatedLatLng = latlng;
+        } else {
+          this.currentMarker.setIcon(this.createCarIcon(this.currentAngle));
+        }
 
-    this.previousLatLng = latlng;
-    this.pointCount++;
-    this.saveState();
+        this.targetLatLng = latlng;
+        if (!this.animationFrameId) {
+          this.animateCarMovement();
+        }
 
-    this.ngZone.run(() => this.cdr.markForCheck());
-  }
+        this.previousLatLng = latlng;
+        this.pointCount++;
+        this.saveState();
+
+        this.ngZone.run(() => this.cdr.markForCheck());
+      }
 
   private animateCarMovement(): void {
     if (!this.currentAnimatedLatLng || !this.targetLatLng || !this.currentMarker) {
