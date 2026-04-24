@@ -342,19 +342,18 @@
         </div>
       </div>
 
-      <!-- Categoría -->
       <div>
         <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
           Tipo de servicio
         </p>
         <div class="flex flex-wrap gap-2">
           <button *ngFor="let cat of categories"
-                  (click)="filters.category = filters.category === cat ? '' : cat"
+                  (click)="filters.category = filters.category === cat.categoryName ? '' : cat.categoryName"
                   class="px-4 py-2 rounded-full border-2 text-sm transition"
-                  [ngClass]="filters.category === cat
+                  [ngClass]="filters.category === cat.categoryName
                     ? 'border-teal-600 bg-teal-50 text-teal-800 font-medium'
                     : 'border-gray-200 text-gray-600 hover:border-gray-300'">
-            {{ cat }}
+            {{ cat.categoryName }}
           </button>
         </div>
       </div>

@@ -52,26 +52,13 @@
         <div class="mb-6">
           <div class="h-7 w-44 bg-gray-200 rounded-xl animate-pulse mb-4"></div>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+            <div *ngFor="let i of [1,2,3]"
+                 class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
               <div class="h-5 w-32 bg-gray-200 rounded-xl animate-pulse mb-3"></div>
               <div class="h-4 w-full bg-gray-100 rounded-xl animate-pulse mb-2"></div>
               <div class="h-4 w-2/3 bg-gray-100 rounded-xl animate-pulse mb-4"></div>
               <div class="h-6 w-24 bg-gray-200 rounded-xl animate-pulse mb-2"></div>
               <div class="h-4 w-20 bg-gray-100 rounded-xl animate-pulse"></div>
-            </div>
-            <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-              <div class="h-5 w-28 bg-gray-200 rounded-xl animate-pulse mb-3"></div>
-              <div class="h-4 w-full bg-gray-100 rounded-xl animate-pulse mb-2"></div>
-              <div class="h-4 w-3/4 bg-gray-100 rounded-xl animate-pulse mb-4"></div>
-              <div class="h-6 w-20 bg-gray-200 rounded-xl animate-pulse mb-2"></div>
-              <div class="h-4 w-24 bg-gray-100 rounded-xl animate-pulse"></div>
-            </div>
-            <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 hidden lg:block">
-              <div class="h-5 w-36 bg-gray-200 rounded-xl animate-pulse mb-3"></div>
-              <div class="h-4 w-full bg-gray-100 rounded-xl animate-pulse mb-2"></div>
-              <div class="h-4 w-1/2 bg-gray-100 rounded-xl animate-pulse mb-4"></div>
-              <div class="h-6 w-28 bg-gray-200 rounded-xl animate-pulse mb-2"></div>
-              <div class="h-4 w-16 bg-gray-100 rounded-xl animate-pulse"></div>
             </div>
           </div>
         </div>
@@ -143,6 +130,7 @@
               <img *ngIf="hasProfileImage()"
                    [src]="provider.profileImage"
                    [alt]="provider.fullName"
+                   loading="lazy"
                    class="w-full h-full object-cover" />
               <ng-icon *ngIf="!hasProfileImage()"
                        name="heroUserCircle" class="text-7xl text-teal-700">
@@ -170,20 +158,22 @@
                     <span class="text-gray-600">({{ provider.totalReviews ?? 0 }} reseñas)</span>
                   </div>
                 </div>
-                <button (click)="editProviderProfile()"
-                  class="inline-flex items-center justify-center gap-2 px-5 py-3
-                         bg-white border border-gray-200 text-gray-700 rounded-xl
-                         hover:bg-gray-50 transition font-medium">
-                  <ng-icon name="heroPencilSquare" class="text-lg"></ng-icon>
-                  Editar perfil
-                </button>
-                <button (click)="logout()"
-                  class="inline-flex items-center justify-center gap-2 px-5 py-3
-                        bg-white border border-red-200 text-red-600 rounded-xl
-                        hover:bg-red-50 transition font-medium">
-                  <ng-icon name="heroArrowRightOnRectangle" class="text-lg"></ng-icon>
-                  Cerrar sesión
-                </button>
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <button (click)="editProviderProfile()"
+                    class="inline-flex items-center justify-center gap-2 px-5 py-3
+                           bg-white border border-gray-200 text-gray-700 rounded-xl
+                           hover:bg-gray-50 transition font-medium">
+                    <ng-icon name="heroPencilSquare" class="text-lg"></ng-icon>
+                    Editar perfil
+                  </button>
+                  <button (click)="logout()"
+                    class="inline-flex items-center justify-center gap-2 px-5 py-3
+                          bg-white border border-red-200 text-red-600 rounded-xl
+                          hover:bg-red-50 transition font-medium">
+                    <ng-icon name="heroArrowRightOnRectangle" class="text-lg"></ng-icon>
+                    Cerrar sesión
+                  </button>
+                </div>
               </div>
 
               <p *ngIf="provider.bio" class="text-gray-700 mb-5 leading-relaxed">
@@ -246,9 +236,17 @@
           </div>
         </div>
 
-        <!-- ── Servicios ────────────────────────────────────────────── -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- ── Servicios ofrecidos ───────────────────────────────── -->
+        <!-- ══════════════════════════════════════════════════════════ -->
         <div class="mb-6">
-          <h2 class="text-2xl font-bold text-gray-900 mb-4">Servicios ofrecidos</h2>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold text-gray-900">Servicios ofrecidos</h2>
+            <span *ngIf="provider.services && provider.services.length > 0"
+                  class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+              {{ provider.services.length }} servicio{{ provider.services.length > 1 ? 's' : '' }}
+            </span>
+          </div>
 
           <div *ngIf="!provider.services || provider.services.length === 0"
                class="bg-white rounded-2xl shadow-sm p-8 text-center text-gray-400">
@@ -257,34 +255,73 @@
 
           <div *ngIf="provider.services && provider.services.length > 0"
                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div *ngFor="let service of provider.services"
-                 class="bg-white rounded-2xl shadow-sm p-6 hover:shadow-md
-                        transition-shadow border border-gray-100">
+
+            <div *ngFor="let service of visibleServices"
+                 class="service-card bg-white rounded-2xl shadow-sm p-6
+                        hover:shadow-md transition-shadow border border-gray-100
+                        flex flex-col">
+
+              <!-- Header del servicio -->
               <div class="flex items-start justify-between gap-3 mb-3">
-                <h3 class="text-lg font-bold text-gray-900">{{ service.name }}</h3>
-                <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center flex-shrink-0">
+                <h3 class="text-lg font-bold text-gray-900 line-clamp-2 flex-1">
+                  {{ service.name }}
+                </h3>
+                <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center
+                            justify-center flex-shrink-0">
                   <ng-icon name="heroBriefcase" class="text-xl text-teal-600"></ng-icon>
                 </div>
               </div>
-              <p class="text-gray-600 text-sm mb-4 leading-relaxed">{{ service.description }}</p>
-              <span class="text-teal-600 font-bold text-lg block mb-2">{{ service.price }}</span>
-              <div class="flex items-center gap-2 text-sm text-gray-600">
-                <ng-icon name="heroClock" class="text-base"></ng-icon>
-                <span>{{ service.priceMode }}</span>
+
+              <!-- Descripción con line-clamp -->
+              <p class="text-gray-600 text-sm mb-4 leading-relaxed line-clamp-3 flex-1">
+                {{ service.description }}
+              </p>
+
+              <!-- Footer del servicio (siempre abajo) -->
+              <div class="mt-auto pt-3 border-t border-gray-50">
+                <span class="text-teal-600 font-bold text-lg block mb-1">
+                  {{ service.price }}
+                </span>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 text-sm text-gray-500">
+                    <ng-icon name="heroClock" class="text-base"></ng-icon>
+                    <span>{{ service.priceMode }}</span>
+                  </div>
+                  <span *ngIf="service.category"
+                        class="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
+                    {{ service.category }}
+                  </span>
+                </div>
               </div>
-              <span *ngIf="service.category"
-                    class="inline-block mt-3 text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
-                {{ service.category }}
-              </span>
             </div>
+          </div>
+
+          <!-- Botón Ver más / Ver menos servicios -->
+          <div *ngIf="hasMoreServices" class="flex justify-center mt-5">
+            <button (click)="toggleShowAllServices()"
+              class="inline-flex items-center gap-2 px-8 py-3.5 bg-teal-700
+                     text-teal-50 rounded-xl font-medium text-base
+                     hover:opacity-85 transition-opacity">
+              <ng-icon [name]="showAllServices ? 'heroChevronUp' : 'heroChevronDown'"
+                       class="text-lg"></ng-icon>
+              {{ showAllServices
+                 ? 'Ver menos'
+                 : 'Ver más (' + remainingServicesCount + ')' }}
+            </button>
           </div>
         </div>
 
-        <!-- ── Reseñas ───────────────────────────────────────────────── -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- ── Reseñas ──────────────────────────────────────────── -->
+        <!-- ══════════════════════════════════════════════════════════ -->
         <div class="mb-6">
-          <h2 class="text-2xl font-bold text-gray-900 mb-4">
-            Reseñas ({{ provider.totalReviews ?? 0 }})
-          </h2>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold text-gray-900">Reseñas</h2>
+            <span *ngIf="provider.reviewsList && provider.reviewsList.length > 0"
+                  class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+              {{ provider.totalReviews ?? provider.reviewsList.length }} reseña{{ (provider.totalReviews ?? provider.reviewsList.length) > 1 ? 's' : '' }}
+            </span>
+          </div>
 
           <div *ngIf="!provider.reviewsList || provider.reviewsList.length === 0"
                class="bg-white rounded-2xl shadow-sm p-8 text-center text-gray-400">
@@ -293,18 +330,19 @@
 
           <div *ngIf="provider.reviewsList && provider.reviewsList.length > 0"
                class="space-y-4">
-            <div *ngFor="let review of provider.reviewsList"
+
+            <div *ngFor="let review of visibleReviews"
                  class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
               <div class="flex items-start gap-4">
                 <div class="w-12 h-12 rounded-full bg-teal-100 flex items-center
                             justify-center flex-shrink-0">
                   <ng-icon name="heroUserCircle" class="text-2xl text-teal-600"></ng-icon>
                 </div>
-                <div class="flex-1">
+                <div class="flex-1 min-w-0">
                   <div class="flex flex-col sm:flex-row sm:items-center
                               sm:justify-between gap-2 mb-2">
-                    <h4 class="font-semibold text-gray-900">{{ review.author }}</h4>
-                    <span class="text-sm text-gray-500">{{ review.date }}</span>
+                    <h4 class="font-semibold text-gray-900 truncate">{{ review.author }}</h4>
+                    <span class="text-sm text-gray-500 flex-shrink-0">{{ review.date }}</span>
                   </div>
                   <div class="flex items-center gap-1 mb-3">
                     <ng-container *ngFor="let star of getStarsArray(review.rating)">
@@ -313,58 +351,46 @@
                       </ng-icon>
                     </ng-container>
                   </div>
-                  <p class="text-gray-700 leading-relaxed">{{ review.comment }}</p>
+                  <p class="text-gray-700 leading-relaxed line-clamp-4">
+                    {{ review.comment }}
+                  </p>
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- Botón Ver más / Ver menos reseñas -->
+          <div *ngIf="hasMoreReviews" class="flex justify-center mt-5">
+            <button (click)="toggleShowAllReviews()"
+              class="inline-flex items-center gap-2 px-8 py-3.5 bg-teal-700
+                     text-teal-50 rounded-xl font-medium text-base
+                     hover:opacity-85 transition-opacity">
+              <ng-icon [name]="showAllReviews ? 'heroChevronUp' : 'heroChevronDown'"
+                       class="text-lg"></ng-icon>
+              {{ showAllReviews
+                 ? 'Ver menos'
+                 : 'Ver más (' + remainingReviewsCount + ')' }}
+            </button>
           </div>
         </div>
 
-        <!-- ── CTA Contratar ─────────────────────────────────────────── -->
-        <div class="bg-white rounded-2xl p-6 border border-gray-200 mb-6">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-            <div class="flex items-center gap-6">
-              <div class="border-r border-gray-200 pr-6">
-                <p class="text-xs text-gray-400 mb-1">Precio desde</p>
-                <p class="text-3xl font-semibold text-gray-900 tracking-tight">
-                  {{ startingPrice }}
-                </p>
-                <p class="text-xs text-gray-500 mt-1">por hora</p>
-              </div>
-              <div class="flex flex-col gap-1.5">
-                <div class="flex items-center gap-2">
-                  <span class="w-2 h-2 rounded-full bg-teal-500"></span>
-                  <span class="text-sm text-gray-500">Disponible ahora</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <ng-icon name="heroStar" class="text-amber-400 text-sm"></ng-icon>
-                  <span class="text-sm text-gray-500">
-                    {{ ratingDisplay }} · {{ provider.totalReviews ?? 0 }} reseñas
-                  </span>
-                </div>
-              </div>
-            </div>
-            <button (click)="hireProvider()"
-              class="px-8 py-3.5 bg-teal-700 text-teal-50 rounded-xl font-medium
-                    text-base hover:opacity-85 transition-opacity">
-              Contratar
-            </button>
-          </div>
-          <div class="border-t border-gray-100 mt-5 pt-4 flex flex-wrap gap-5">
-            <span class="text-xs text-gray-400 flex items-center gap-1.5">
-              <ng-icon name="heroClock" class="text-xs"></ng-icon>
-              Responde en menos de 1 hora
-            </span>
-            <span class="text-xs text-gray-400 flex items-center gap-1.5">
-              <ng-icon name="heroCheckBadge" class="text-xs"></ng-icon>
-              Proveedor verificado
-            </span>
-            <span class="text-xs text-gray-400 flex items-center gap-1.5">
-              <ng-icon name="heroShieldCheck" class="text-xs"></ng-icon>
-              Sin cobro hasta confirmar
-            </span>
-          </div>
+
+        <!-- ── Ofertas (mismo estilo que Contratar) ──────────────── -->
+        <div class="flex flex-col sm:flex-row gap-3 mt-4 mb-6">
+          <button (click)="verOfertasRecibidas()"
+            class="flex-1 px-8 py-3.5 bg-teal-700 text-teal-50 rounded-xl
+                   font-medium text-base hover:opacity-85 transition-opacity
+                   text-center">
+            Ofertas Recibidas
+          </button>
+          <button (click)="verOfertasRealizadas()"
+            class="flex-1 px-8 py-3.5 bg-teal-700 text-teal-50 rounded-xl
+                   font-medium text-base hover:opacity-85 transition-opacity
+                   text-center">
+            Mis Ofertas Realizadas
+          </button>
         </div>
+
       </ng-container>
     </div>
   </main>

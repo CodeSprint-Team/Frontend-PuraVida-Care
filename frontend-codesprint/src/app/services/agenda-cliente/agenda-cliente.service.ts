@@ -4,6 +4,7 @@ import { Observable, switchMap, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   AgendaBookingResponseDTO,
+  CancelBookingRequestDTO,
   RescheduleRequestDTO
 } from '../../interfaces/client/agenda-booking.interface';
 
@@ -18,6 +19,7 @@ export class AgendaClienteService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/agenda-cliente`;
   private readonly profileApiUrl = `${environment.apiUrl}/profiles/client`;
+  private readonly paypalApiUrl = `${environment.apiUrl}/paypal`;
 
   getClientProfileIdByUserId(userId: number): Observable<number> {
     return this.http
@@ -41,13 +43,6 @@ export class AgendaClienteService {
     );
   }
 
-  cancelBooking(clientProfileId: number, bookingId: number): Observable<AgendaBookingResponseDTO> {
-    return this.http.put<AgendaBookingResponseDTO>(
-      `${this.apiUrl}/${clientProfileId}/cancel/${bookingId}`,
-      {}
-    );
-  }
-
   rescheduleBooking(
     clientProfileId: number,
     bookingId: number,
@@ -58,4 +53,33 @@ export class AgendaClienteService {
       dto
     );
   }
+
+
+  cancelBooking(
+    clientProfileId: number,
+    bookingId: number,
+    dto: CancelBookingRequestDTO
+  ) {
+    return this.http.put<AgendaBookingResponseDTO>(
+      `${this.apiUrl}/${clientProfileId}/cancel/${bookingId}`,
+      dto
+    );
+  }
+
+
+
+  createPaypalOrderForBooking(bookingId: number): Observable<any> {
+    return this.http.post<any>(
+      `${this.paypalApiUrl}/create-order/booking/${bookingId}`,
+      {}
+    );
+  }
+
+  capturePaypalOrderForBooking(orderId: string, bookingId: number): Observable<any> {
+    return this.http.post<any>(
+      `${this.paypalApiUrl}/capture-order/booking?orderId=${orderId}&bookingId=${bookingId}`,
+      {}
+    );
+  }
 }
+

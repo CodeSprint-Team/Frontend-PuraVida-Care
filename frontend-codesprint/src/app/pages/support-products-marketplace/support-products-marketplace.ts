@@ -82,8 +82,6 @@ export class SupportProductsMarketplace implements OnInit {
     this.supportProductService.getAllPosts().subscribe({
       next: (data) => {
         this.ngZone.run(() => {
-          console.log('Productos cargados:', data);
-          console.log('Primera imagen:', data?.[0]?.imageUrl, data?.[0]?.imagePath);
           this.products = data ?? [];
           this.loadingProducts = false;
           this.cdr.detectChanges();
@@ -124,72 +122,77 @@ export class SupportProductsMarketplace implements OnInit {
   }
 
   get filteredProducts(): SupportProductPostResponse[] {
-    let filtered = this.products.filter((product) => {
+  let filtered = this.products.filter((product) => {
+    const publicationState = this.normalizeText(product.publicationState);
 
-      const title = this.normalizeText(product.title);
-      const categoryName = this.normalizeText(product.supportProductCatalogName);
-      const locationText = this.normalizeText(product.locationText);
-      const search = this.normalizeText(this.searchQuery);
-      const locationSearch = this.normalizeText(this.locationQuery);
-
-      const matchesSearch =
-        !search ||
-        title.includes(search) ||
-        categoryName.includes(search);
-
-      const productCondition = this.normalizeCondition(product.condition);
-
-      const matchesCondition =
-        this.selectedCondition === 'all' ||
-        productCondition === this.selectedCondition;
-
-      const matchesCategory =
-        this.selectedCategory === 'all' ||
-        categoryName === this.normalizeText(this.selectedCategory);
-
-      const price = Number(product.salePrice) || 0;
-      const minPrice = Number(this.priceRange.min) || 0;
-      const maxPrice =
-        this.priceRange.max === null || this.priceRange.max === undefined || this.priceRange.max === 0
-          ? Number.MAX_SAFE_INTEGER
-          : Number(this.priceRange.max);
-
-      const matchesPrice =
-        price >= minPrice &&
-        price <= maxPrice;
-
-      const matchesOffers =
-        !this.acceptsOffersOnly || !!product.acceptsOffers;
-
-      const matchesLocation =
-        !locationSearch || locationText.includes(locationSearch);
-
-      return (
-        matchesSearch &&
-        matchesCondition &&
-        matchesCategory &&
-        matchesPrice &&
-        matchesOffers &&
-        matchesLocation
-      );
-    });
-
-    if (this.sortBy === 'priceAsc') {
-      filtered = [...filtered].sort(
-        (a, b) => (Number(a.salePrice) || 0) - (Number(b.salePrice) || 0)
-      );
-    } else if (this.sortBy === 'priceDesc') {
-      filtered = [...filtered].sort(
-        (a, b) => (Number(b.salePrice) || 0) - (Number(a.salePrice) || 0)
-      );
-    } else {
-      filtered = [...filtered].sort(
-        (a, b) => (Number(b.id) || 0) - (Number(a.id) || 0)
-      );
+    if (publicationState === 'sold' || publicationState === 'unpaid') {
+      return false;
     }
 
-    return filtered;
+    const title = this.normalizeText(product.title);
+    const categoryName = this.normalizeText(product.supportProductCatalogName);
+    const locationText = this.normalizeText(product.locationText);
+    const search = this.normalizeText(this.searchQuery);
+    const locationSearch = this.normalizeText(this.locationQuery);
+
+    const matchesSearch =
+      !search ||
+      title.includes(search) ||
+      categoryName.includes(search);
+
+    const productCondition = this.normalizeCondition(product.condition);
+
+    const matchesCondition =
+      this.selectedCondition === 'all' ||
+      productCondition === this.selectedCondition;
+
+    const matchesCategory =
+      this.selectedCategory === 'all' ||
+      categoryName === this.normalizeText(this.selectedCategory);
+
+    const price = Number(product.salePrice) || 0;
+    const minPrice = Number(this.priceRange.min) || 0;
+    const maxPrice =
+      this.priceRange.max === null || this.priceRange.max === undefined || this.priceRange.max === 0
+        ? Number.MAX_SAFE_INTEGER
+        : Number(this.priceRange.max);
+
+    const matchesPrice =
+      price >= minPrice &&
+      price <= maxPrice;
+
+    const matchesOffers =
+      !this.acceptsOffersOnly || !!product.acceptsOffers;
+
+    const matchesLocation =
+      !locationSearch || locationText.includes(locationSearch);
+
+    return (
+      matchesSearch &&
+      matchesCondition &&
+      matchesCategory &&
+      matchesPrice &&
+      matchesOffers &&
+      matchesLocation
+    );
+  });
+
+  if (this.sortBy === 'priceAsc') {
+    filtered = [...filtered].sort(
+      (a, b) => (Number(a.salePrice) || 0) - (Number(b.salePrice) || 0)
+    );
+  } else if (this.sortBy === 'priceDesc') {
+    filtered = [...filtered].sort(
+      (a, b) => (Number(b.salePrice) || 0) - (Number(a.salePrice) || 0)
+    );
+  } else {
+    filtered = [...filtered].sort(
+      (a, b) => (Number(b.id) || 0) - (Number(a.id) || 0)
+    );
   }
+
+  return filtered;
+}
 
   toggleCondition(condition: 'new' | 'used'): void {
     this.selectedCondition =
@@ -242,4 +245,12 @@ export class SupportProductsMarketplace implements OnInit {
 
     return null;
   }
+
+    verOfertasRecibidas(): void {
+  this.router.navigate(['/support-products/received-offers']);
+}
+
+verOfertasRealizadas(): void {
+  this.router.navigate(['/support-products/made-offers']);
+}
 }

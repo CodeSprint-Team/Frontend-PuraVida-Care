@@ -34,3 +34,9 @@ export const EMPTY_FILTERS: ProviderSearchFilters = {
   category:     '',
   verifiedOnly: false,
 };
+
+export interface ServiceCategory {
+  id: number;
+  categoryName: string;
+  categoryState: string;
+}

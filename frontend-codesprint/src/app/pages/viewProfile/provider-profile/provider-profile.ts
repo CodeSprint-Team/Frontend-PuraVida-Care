@@ -1,5 +1,10 @@
-// src/app/pages/viewProfile/provider-profile/provider-profile.ts
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -11,7 +16,7 @@ import {
   heroArrowLeft, heroCheckBadge, heroMapPin, heroShieldCheck,
   heroPhone, heroEnvelope, heroClock, heroPencilSquare,
   heroStar, heroBriefcase, heroUserCircle, heroClipboardDocumentList,
-  heroArrowRightOnRectangle
+  heroArrowRightOnRectangle, heroChevronDown, heroChevronUp
 } from '@ng-icons/heroicons/outline';
 
 @Component({
@@ -22,10 +27,11 @@ import {
     heroArrowLeft, heroCheckBadge, heroMapPin, heroShieldCheck,
     heroPhone, heroEnvelope, heroClock, heroPencilSquare,
     heroStar, heroBriefcase, heroUserCircle, heroClipboardDocumentList,
-    heroArrowRightOnRectangle
+    heroArrowRightOnRectangle, heroChevronDown, heroChevronUp
   })],
   templateUrl: './provider-profile.html',
   styleUrls: ['./provider-profile.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProviderProfileComponent implements OnInit {
   private route          = inject(ActivatedRoute);
@@ -40,6 +46,12 @@ export class ProviderProfileComponent implements OnInit {
   userId       = '';
   profileId    = '';
 
+  // ─── Show more / less ───
+  readonly INITIAL_VISIBLE = 3;
+
+  showAllServices = false;
+  showAllReviews  = false;
+
   ngOnInit(): void {
     this.userId = this.route.snapshot.paramMap.get('id') ?? '';
     this.loadProfile();
@@ -47,22 +59,65 @@ export class ProviderProfileComponent implements OnInit {
 
   loadProfile(): void {
     this.errorMessage = '';
+    this.isLoading = true;
+    this.cdr.markForCheck();
+
     this.profileService.getProviderProfileByUserId(this.userId).subscribe({
       next: (data: ProviderProfile) => {
         this.provider  = data;
         this.profileId = String(data.id);
+        this.isLoading = false;
         localStorage.setItem('profile_id', this.profileId);
         localStorage.setItem('user_id', this.userId);
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       },
       error: (err: unknown) => {
         console.error('Error cargando proveedor:', err);
         this.errorMessage = 'No se pudo cargar el perfil del proveedor.';
-        this.cdr.detectChanges();
+        this.isLoading = false;
+        this.cdr.markForCheck();
       }
     });
   }
 
+  // ─── Visible slices ───
+  get visibleServices(): any[] {
+    const all = this.provider?.services ?? [];
+    return this.showAllServices ? all : all.slice(0, this.INITIAL_VISIBLE);
+  }
+
+  get hasMoreServices(): boolean {
+    return (this.provider?.services?.length ?? 0) > this.INITIAL_VISIBLE;
+  }
+
+  get remainingServicesCount(): number {
+    return Math.max(0, (this.provider?.services?.length ?? 0) - this.INITIAL_VISIBLE);
+  }
+
+  toggleShowAllServices(): void {
+    this.showAllServices = !this.showAllServices;
+    this.cdr.markForCheck();
+  }
+
+  get visibleReviews(): any[] {
+    const all = this.provider?.reviewsList ?? [];
+    return this.showAllReviews ? all : all.slice(0, this.INITIAL_VISIBLE);
+  }
+
+  get hasMoreReviews(): boolean {
+    return (this.provider?.reviewsList?.length ?? 0) > this.INITIAL_VISIBLE;
+  }
+
+  get remainingReviewsCount(): number {
+    return Math.max(0, (this.provider?.reviewsList?.length ?? 0) - this.INITIAL_VISIBLE);
+  }
+
+  toggleShowAllReviews(): void {
+    this.showAllReviews = !this.showAllReviews;
+    this.cdr.markForCheck();
+  }
+
+  // ─── Existing methods ───
   logout(): void {
     this.authService.logout();
   }
@@ -99,5 +154,13 @@ export class ProviderProfileComponent implements OnInit {
     return this.provider?.services?.length
       ? this.provider.services[0].price
       : 'Consultar';
+  }
+
+  verOfertasRecibidas(): void {
+    this.router.navigate(['/support-products/received-offers']);
+  }
+
+  verOfertasRealizadas(): void {
+    this.router.navigate(['/support-products/made-offers']);
   }
 }

@@ -11,4 +11,7 @@ export interface ServiceCard {
   price?: string;
   isHistory?: boolean;
   historyDate?: string;
+
+  appointmentType?: string;
+  telemedSessionId?: number | null;
 }

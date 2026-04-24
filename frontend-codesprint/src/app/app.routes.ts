@@ -3,6 +3,8 @@ import { Landing } from './pages/landing/landing';
 import { LoginComponent } from './pages/login/login.component';
 import { HomeComponent } from './pages/client/home-client/home-client';
 import { MyServicesComponent } from './pages/myservices/myservices.component';
+import { HomeFilterComponent } from './pages/home-filter/home-filter.component';
+import { ChecklistHogarComponent } from './pages/checklist-hogar/checklist-hogar.component';
 
 // Auth / Registro
 import { Register } from './pages/auth/register/register';
@@ -56,12 +58,23 @@ import {ConfirmBooking} from './pages/confirm-booking/confirm-booking';
 import { CreateSupportProductPostComponent } from './pages/create-support-product-post/create-support-product-post';
 import { SupportProductsMarketplace } from './pages/support-products-marketplace/support-products-marketplace';
 import { SupportProductDetail } from './pages/support-product-detail/support-product-detail';
+import { SupportProductReceivedOffers } from './pages/support-product-received-offers/support-product-received-offers';
+import { SupportProductMadeOffers } from './pages/support-product-made-offers/support-product-made-offers';
+
 
 import { MyCompletedServicesComponent } from './pages/my-completed-services/my-completed-services';
 import { CreateReviewComponent } from './pages/create-review/create-review';
 import { AdminProductSupportCatalog } from './pages/admin-product-support-catalog/admin-product-support-catalog';
 import { AdminServiceCategory } from './pages/admin-service-category/admin-service-category';
+import { CreateServicesComponent } from './pages/createServices/create-services/create-services';
+import { FilteredHome } from './pages/filtered-home/filtered-home';
 
+import { ChatIAComponent } from './pages/chat-AI/chat-ia/chat-ia';
+import { ResultadosRecomendadosComponent } from './pages/chat-AI/resultadosrecomendados/resultadosrecomendados';
+import { ChatComponent } from './pages/chatMessage/chat.component/chat.component';
+import { ConversationListComponent } from './pages/chatMessage/conversation-list.component/conversation-list.component';
+import { DoctorViewComponent } from './pages/telemedicina/doctor_view/doctorViewComponent';
+import {PatientViewComponent} from './pages/telemedicina/patient_view/patient_view_component';
 
 
 export const routes: Routes = [
@@ -101,6 +114,7 @@ export const routes: Routes = [
   //Cliente
   { path: 'select-service', component: SelectService },
   { path: 'confirm-booking', component: ConfirmBooking },
+  { path: 'filtered-home', component: FilteredHome },
 
 
   // Proveedor
@@ -116,7 +130,11 @@ export const routes: Routes = [
   { path: 'proveedor/:id', component: PublicProviderProfileComponent },
   { path: 'support-products/create', component: CreateSupportProductPostComponent },
   { path: 'support-products', component: SupportProductsMarketplace },
+  {path: 'support-products/received-offers', component: SupportProductReceivedOffers },
+  {path: 'support-products/made-offers', component: SupportProductMadeOffers },
   {path: 'support-products/:id', component: SupportProductDetail },
+
+
 
 
 
@@ -143,6 +161,10 @@ export const routes: Routes = [
     component: MyServicesComponent
   },
   {
+    path: 'create-service',
+    component: CreateServicesComponent
+  },
+  {
     path: 'my-completed-services',
     component: MyCompletedServicesComponent
   },
@@ -158,8 +180,54 @@ export const routes: Routes = [
     component: AdminServiceCategory
   },
 
+  {
+    path: 'my-services',
+    component: MyServicesComponent
+  },
+
+  {
+    path: 'home-filter',
+    component: HomeFilterComponent
+
+  },  
+
+  {
+    path: 'checklist-hogar', 
+    component: ChecklistHogarComponent
+  },
+  
+  {
+
+    path: 'chat-ia',
+    component: ChatIAComponent
+},
+  {
+    path: 'resultados-recomendados',
+    component: ResultadosRecomendadosComponent
+  },
+  {
+  path: 'mensajes',
+  component: ConversationListComponent
+  },
+  {
+    path: 'chat/:id',
+    component: ChatComponent
+  },
+ {
+    path: 'telemedicina/doctor-view/:sessionId',
+    component: DoctorViewComponent
+  },
+  {path: 'telemedicina/patient-view/:sessionId',
+    component: PatientViewComponent
+  },
+
+
+
+
 
   { path: '**', redirectTo: 'landing' }
 
+
 ];
+
 

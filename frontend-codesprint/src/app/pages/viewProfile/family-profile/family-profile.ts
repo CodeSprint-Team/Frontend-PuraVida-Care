@@ -1,4 +1,10 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProfileService } from '../services/profile.services';
@@ -8,11 +14,14 @@ import { NavbarComponent } from '../../../components/navbar/navbar';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import {
   heroPencilSquare, heroUser, heroPhone, heroEnvelope, heroUsers,
   heroExclamationTriangle, heroShieldCheck, heroDocumentText, heroPhoto,
   heroArrowRightOnRectangle, heroStar, heroHeart, heroTrash
 } from '@ng-icons/heroicons/outline';
+import { TelemedHistoryComponent } from '../../../components/telemedicina/telemed-history.component';
 
 interface FavoriteProviderItem {
   id: number;
@@ -26,7 +35,7 @@ interface FavoriteProviderItem {
 @Component({
   selector: 'app-family-profile',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, NgIconComponent],
+  imports: [CommonModule, NavbarComponent, NgIconComponent, TelemedHistoryComponent],
   viewProviders: [provideIcons({
     heroPencilSquare, heroUser, heroPhone, heroEnvelope, heroUsers,
     heroExclamationTriangle, heroShieldCheck, heroDocumentText, heroPhoto,
@@ -34,6 +43,7 @@ interface FavoriteProviderItem {
   })],
   templateUrl: './family-profile.html',
   styleUrl: './family-profile.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FamilyProfileComponent implements OnInit {
   private profileService = inject(ProfileService);
@@ -47,8 +57,10 @@ export class FamilyProfileComponent implements OnInit {
   errorMessage = '';
   userId       = '';
   profileId    = '';
+  seniorProfileId = '';
 
   favorites: FavoriteProviderItem[] = [];
+  loadingFavorites = false;
 
   ngOnInit(): void {
     this.userId = this.route.snapshot.paramMap.get('id')
@@ -59,6 +71,7 @@ export class FamilyProfileComponent implements OnInit {
 
   loadProfile(): void {
     this.errorMessage = '';
+
     this.profileService.getFamilyProfileByUserId(this.userId).subscribe({
       next: (data) => {
         this.profile = {
@@ -70,44 +83,77 @@ export class FamilyProfileComponent implements OnInit {
           relationToSenior:  data.relationToSenior         ?? '',
         };
         this.profileId = String(data.id);
+        this.seniorProfileId = String(
+          (data as any).seniorProfileId
+          ?? (data as any).seniorId
+          ?? (data as any).senior_profile_id
+          ?? ''
+        );
         localStorage.setItem('profile_id', this.profileId);
-        this.cdr.detectChanges();
-        // Carga favoritos después de tener el profileId
+        this.cdr.markForCheck();
         this.loadFavorites();
       },
       error: (err) => {
         console.error('Error cargando perfil familiar:', err);
         this.errorMessage = 'No se pudo cargar el perfil. Intenta nuevamente.';
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       }
     });
   }
 
+  // ── OPTIMIZADO: una sola actualización de UI en vez de N ──
   private loadFavorites(): void {
+    this.loadingFavorites = true;
+    this.cdr.markForCheck();
+
     this.http.get<number[]>(
       `${environment.apiUrl}/profiles/client/${this.profileId}/favorites`
     ).subscribe({
       next: (ids) => {
-        // Por cada id de proveedor favorito, carga su perfil
-        ids.forEach(providerId => {
+        if (!ids || ids.length === 0) {
+          this.favorites = [];
+          this.loadingFavorites = false;
+          this.cdr.markForCheck();
+          return;
+        }
+
+        // Cargar TODOS los proveedores en paralelo con forkJoin
+        // En vez de forEach + detectChanges por cada uno
+        const requests = ids.map(providerId =>
           this.http.get<any>(
             `${environment.apiUrl}/profiles/provider/${providerId}`
-          ).subscribe({
-            next: (provider) => {
-              this.favorites.push({
-                id:              provider.id,
+          ).pipe(
+            catchError(() => of(null)) // Si uno falla, no rompe los demás
+          )
+        );
+
+        forkJoin(requests).subscribe({
+          next: (providers) => {
+            this.favorites = providers
+              .filter(p => p !== null)
+              .map(provider => ({
+                id:                provider.id,
                 providerProfileId: provider.id,
-                fullName:        provider.fullName,
-                providerType:    provider.providerType ?? null,
-                averageRating:   provider.averageRating ?? 0,
-                providerState:   provider.providerState ?? '',
-              });
-              this.cdr.detectChanges();
-            }
-          });
+                fullName:          provider.fullName,
+                providerType:      provider.providerType ?? null,
+                averageRating:     provider.averageRating ?? 0,
+                providerState:     provider.providerState ?? '',
+              }));
+            this.loadingFavorites = false;
+            // UN solo markForCheck para todos los favoritos
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.loadingFavorites = false;
+            this.cdr.markForCheck();
+          }
         });
       },
-      error: () => console.warn('No se pudieron cargar los favoritos')
+      error: () => {
+        console.warn('No se pudieron cargar los favoritos');
+        this.loadingFavorites = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -117,7 +163,7 @@ export class FamilyProfileComponent implements OnInit {
     ).subscribe({
       next: () => {
         this.favorites = this.favorites.filter(f => f.providerProfileId !== providerProfileId);
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Error eliminando favorito:', err)
     });
@@ -145,5 +191,13 @@ export class FamilyProfileComponent implements OnInit {
 
   goToMyServices(): void {
     this.router.navigate(['/my-completed-services']);
+  }
+
+  verOfertasRecibidas(): void {
+    this.router.navigate(['/support-products/received-offers']);
+  }
+
+  verOfertasRealizadas(): void {
+    this.router.navigate(['/support-products/made-offers']);
   }
 }
