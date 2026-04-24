@@ -5,32 +5,37 @@
     <main class="pb-24 lg:pb-8">
       <div class="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-4xl">
 
-        <!-- Back Button -->
+        <!-- Volver -->
         <button
           (click)="goBack()"
-          class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 sm:mb-6 min-h-[44px] text-sm sm:text-base"
-        >
-          <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+          class="flex items-center gap-2 text-gray-600 hover:text-gray-900
+                 mb-4 sm:mb-6 min-h-[44px] text-sm sm:text-base">
+          <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+               viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/>
           </svg>
-          <span>Volver a solicitudes</span>
+          Volver a solicitudes
         </button>
 
         <!-- Loading -->
         <div *ngIf="loading" class="bg-white rounded-2xl shadow-sm p-12 text-center">
-          <div class="animate-spin w-10 h-10 border-4 border-teal-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <div class="animate-spin w-10 h-10 border-4 border-teal-600
+                      border-t-transparent rounded-full mx-auto mb-4"></div>
           <p class="text-sm text-gray-600">Cargando solicitud...</p>
         </div>
 
         <!-- Error -->
         <div *ngIf="!loading && error" class="bg-red-50 rounded-2xl shadow-sm p-8 text-center">
           <p class="text-red-600 mb-4">{{ error }}</p>
-          <button (click)="loadBooking()" class="px-4 py-2 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-colors text-sm">
+          <button (click)="loadBooking()"
+                  class="px-4 py-2 bg-teal-600 text-white rounded-xl
+                         hover:bg-teal-700 transition-colors text-sm">
             Reintentar
           </button>
         </div>
 
-        <!-- Content -->
+        <!-- Contenido -->
         <ng-container *ngIf="!loading && !error && booking">
 
           <!-- Header -->
@@ -40,22 +45,35 @@
                 <h1 class="text-2xl sm:text-3xl font-bold mb-2">Detalle de Solicitud</h1>
                 <p class="text-gray-600">Solicitud #{{ padId(booking.bookingId) }}</p>
               </div>
-              <span
-                [ngClass]="getStatusStyle(booking.bookingStatus)"
-                class="px-4 py-2 rounded-xl text-sm font-medium"
-              >
-                {{ getStatusText(booking.bookingStatus) }}
-              </span>
+              <div class="flex flex-col items-end gap-2">
+                <span
+                  [ngClass]="getStatusStyle(booking.bookingStatus)"
+                  class="px-4 py-2 rounded-xl text-sm font-medium">
+                  {{ getStatusText(booking.bookingStatus) }}
+                </span>
+                <!-- Badge telemedicina -->
+                <span *ngIf="isTelemedicine()"
+                      class="inline-flex items-center gap-1.5 bg-teal-50 border
+                             border-teal-200 text-teal-700 text-xs font-medium
+                             px-3 py-1 rounded-full">
+                  🖥️ Telemedicina
+                </span>
+              </div>
             </div>
           </div>
 
-          <!-- Client Info -->
+          <!-- Información del solicitante -->
           <div class="bg-white rounded-2xl shadow-sm p-5 sm:p-6 mb-4 sm:mb-6">
             <h3 class="font-semibold text-lg mb-4">Información del solicitante</h3>
             <div class="flex items-start gap-4">
-              <div class="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <svg class="w-6 h-6 text-teal-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+              <div class="w-12 h-12 bg-teal-100 rounded-xl flex items-center
+                          justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-teal-600" xmlns="http://www.w3.org/2000/svg"
+                     fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5
+                       0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933
+                       0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/>
                 </svg>
               </div>
               <div>
@@ -65,7 +83,7 @@
             </div>
           </div>
 
-          <!-- Service Info -->
+          <!-- Información del servicio -->
           <div class="bg-white rounded-2xl shadow-sm p-5 sm:p-6 mb-4 sm:mb-6">
             <h3 class="font-semibold text-lg mb-4">Información del servicio</h3>
             <div class="space-y-4">
@@ -75,10 +93,15 @@
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Date -->
                 <div class="flex items-start gap-3">
-                  <svg class="w-5 h-5 text-gray-600 mt-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                  <svg class="w-5 h-5 text-gray-600 mt-0.5" xmlns="http://www.w3.org/2000/svg"
+                       fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1
+                         2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18
+                         0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21
+                         18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25
+                         2.25 0 0 1 21 11.25v7.5"/>
                   </svg>
                   <div>
                     <p class="text-sm text-gray-600">Fecha</p>
@@ -86,10 +109,11 @@
                   </div>
                 </div>
 
-                <!-- Time -->
                 <div class="flex items-start gap-3">
-                  <svg class="w-5 h-5 text-gray-600 mt-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                  <svg class="w-5 h-5 text-gray-600 mt-0.5" xmlns="http://www.w3.org/2000/svg"
+                       fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                   </svg>
                   <div>
                     <p class="text-sm text-gray-600">Hora</p>
@@ -98,155 +122,277 @@
                 </div>
               </div>
 
-              <!-- Origin / Destination -->
-              <div class="pt-4 border-t border-gray-200">
+              <!-- Ubicaciones: solo si NO es telemedicina -->
+              <div *ngIf="!isTelemedicine()"
+                   class="pt-4 border-t border-gray-200">
                 <div class="space-y-3">
                   <div class="flex items-start gap-3">
-                    <div class="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div class="w-8 h-8 bg-teal-100 rounded-lg flex items-center
+                                justify-center flex-shrink-0">
                       <div class="w-3 h-3 bg-teal-600 rounded-full"></div>
                     </div>
                     <div>
                       <p class="text-sm text-gray-600">Origen</p>
                       <p class="text-gray-900">
-                        Lat: {{ booking.originLatitude }}, Lng: {{ booking.originLongitude }}
+                        Lat: {{ booking.originLatitude }},
+                        Lng: {{ booking.originLongitude }}
                       </p>
                     </div>
                   </div>
 
                   <div class="flex items-start gap-3">
-                    <svg class="w-5 h-5 text-red-600 ml-1.5 mt-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                    <svg class="w-5 h-5 text-red-600 ml-1.5 mt-0.5"
+                         xmlns="http://www.w3.org/2000/svg" fill="none"
+                         viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5
+                           17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/>
                     </svg>
                     <div>
                       <p class="text-sm text-gray-600">Destino</p>
                       <p class="text-gray-900">
-                        Lat: {{ booking.destinationLatitude }}, Lng: {{ booking.destinationLongitude }}
+                        Lat: {{ booking.destinationLatitude }},
+                        Lng: {{ booking.destinationLongitude }}
                       </p>
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Info telemedicina -->
+              <div *ngIf="isTelemedicine()"
+                   class="pt-4 border-t border-gray-200">
+                <div class="bg-teal-50 border border-teal-200 rounded-xl p-4
+                            flex items-start gap-3">
+                  <span class="text-xl">🖥️</span>
+                  <div>
+                    <p class="text-sm font-semibold text-teal-800">Consulta virtual</p>
+                    <p class="text-xs text-teal-700 mt-0.5">
+                      Este servicio se realiza de forma remota. No requiere desplazamiento.
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Price -->
+          <!-- Precio -->
           <div class="bg-white rounded-2xl shadow-sm p-5 sm:p-6 mb-4 sm:mb-6">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-gray-600 mb-1">Precio del servicio</p>
-                <p class="text-3xl font-bold text-teal-600">{{ formatPrice(booking.agreedPrice) }}</p>
+                <p class="text-3xl font-bold text-teal-600">
+                  {{ formatPrice(booking.agreedPrice) }}
+                </p>
               </div>
-              <span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-lg">{{ booking.agreedPriceMode }}</span>
+              <span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-lg">
+                {{ booking.agreedPriceMode }}
+              </span>
             </div>
           </div>
 
-          <!-- Actions -->
-          <div class="sticky bottom-0 lg:bottom-8 bg-white rounded-2xl shadow-lg p-5 sm:p-6 border border-gray-200">
+          <!-- ─── Acciones según estado ──────────────────── -->
+          <div class="sticky bottom-0 lg:bottom-8 bg-white rounded-2xl shadow-lg
+                      p-5 sm:p-6 border border-gray-200">
 
             <!-- PENDIENTE -->
-            <div *ngIf="booking.bookingStatus === 'PENDIENTE'" class="flex flex-col md:flex-row gap-3">
+            <div *ngIf="booking.bookingStatus === 'PENDIENTE'"
+                 class="flex flex-col md:flex-row gap-3">
               <button
                 (click)="openConfirmModal('RECHAZAR')"
-                class="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors font-medium"
-              >
-                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                class="flex-1 flex items-center justify-center gap-2 px-4 py-3
+                       border border-gray-300 rounded-xl text-gray-700
+                       hover:bg-gray-50 transition-colors font-medium">
+                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0
+                       1 1-18 0 9 9 0 0 1 18 0Z"/>
                 </svg>
-                <span>Rechazar solicitud</span>
+                Rechazar solicitud
               </button>
               <button
                 (click)="openConfirmModal('ACEPTAR')"
-                class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-colors font-medium"
-              >
-                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                class="flex-1 flex items-center justify-center gap-2 px-4 py-3
+                       bg-teal-600 text-white rounded-xl hover:bg-teal-700
+                       transition-colors font-medium">
+                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18
+                       0 9 9 0 0 1 18 0Z"/>
                 </svg>
-                <span>Aceptar solicitud</span>
+                Aceptar solicitud
               </button>
             </div>
 
             <!-- ACEPTADA -->
             <div *ngIf="booking.bookingStatus === 'ACEPTADA'" class="space-y-3">
-              <div class="bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3">
-                <svg class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              <div class="bg-green-50 border border-green-200 rounded-xl p-4
+                          flex items-start gap-3">
+                <svg class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5"
+                     xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18
+                       0 9 9 0 0 1 18 0Z"/>
                 </svg>
                 <div>
                   <p class="text-green-900 font-medium mb-1">Solicitud aceptada</p>
-                  <p class="text-sm text-green-800">El cliente ha sido notificado. Cuando llegue la fecha del servicio, podrás iniciarlo.</p>
+                  <p class="text-sm text-green-800">
+                    {{ isTelemedicine()
+                       ? 'Puedes iniciar la consulta virtual cuando el cliente esté listo.'
+                       : 'El cliente ha sido notificado. Cuando llegue la fecha, podrás iniciar el servicio.' }}
+                  </p>
                 </div>
               </div>
+
+              <!-- Botón telemedicina -->
               <button
-                (click)="navigateToStartService()"
-                class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-colors font-medium"
-              >
-                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+                *ngIf="isTelemedicine()"
+                (click)="startTelemedicine()"
+                class="w-full flex items-center justify-center gap-2 px-4 py-3
+                       bg-teal-600 text-white rounded-xl hover:bg-teal-700
+                       transition-colors font-medium">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0
+                       01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012
+                       2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
                 </svg>
-                <span>{{ actionLoading ? 'Iniciando...' : 'Iniciar servicio' }}</span>
+                Empezar telemedicina
+              </button>
+
+              <!-- Botón presencial -->
+              <button
+                *ngIf="!isTelemedicine()"
+                (click)="navigateToStartService()"
+                class="w-full flex items-center justify-center gap-2 px-4 py-3
+                       bg-teal-600 text-white rounded-xl hover:bg-teal-700
+                       transition-colors font-medium">
+                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125
+                       1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0
+                       1-1.667-.986V5.653Z"/>
+                </svg>
+                Iniciar servicio
               </button>
             </div>
 
             <!-- EN_CURSO -->
             <div *ngIf="booking.bookingStatus === 'EN_CURSO'" class="space-y-3">
-              <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
-                <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+              <div class="bg-blue-50 border border-blue-200 rounded-xl p-4
+                          flex items-start gap-3">
+                <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                     xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125
+                       1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0
+                       1-1.667-.986V5.653Z"/>
                 </svg>
                 <div>
                   <p class="text-blue-900 font-medium mb-1">Servicio en curso</p>
-                  <p class="text-sm text-blue-800">Este servicio está actualmente en progreso.</p>
+                  <p class="text-sm text-blue-800">
+                    {{ isTelemedicine()
+                       ? 'Consulta virtual en progreso.'
+                       : 'Este servicio está actualmente en progreso.' }}
+                  </p>
                 </div>
               </div>
+
+              <!-- Botón telemedicina -->
               <button
-                (click)="goToActiveService()"
-                class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium"
-              >
-                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+                *ngIf="isTelemedicine()"
+                (click)="startTelemedicine()"
+                class="w-full flex items-center justify-center gap-2 px-4 py-3
+                       bg-teal-600 text-white rounded-xl hover:bg-teal-700
+                       transition-colors font-medium">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0
+                       01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012
+                       2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
                 </svg>
-                <span>Ir al servicio activo</span>
+                Ir a sala de telemedicina
+              </button>
+
+              <!-- Botón presencial -->
+              <button
+                *ngIf="!isTelemedicine()"
+                (click)="goToActiveService()"
+                class="w-full flex items-center justify-center gap-2 px-4 py-3
+                       bg-blue-600 text-white rounded-xl hover:bg-blue-700
+                       transition-colors font-medium">
+                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125
+                       1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0
+                       1-1.667-.986V5.653Z"/>
+                </svg>
+                Ir al servicio activo
               </button>
             </div>
 
             <!-- COMPLETADA -->
             <div *ngIf="booking.bookingStatus === 'COMPLETADA'">
-              <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 flex items-start gap-3">
-                <svg class="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              <div class="bg-purple-50 border border-purple-200 rounded-xl p-4
+                          flex items-start gap-3">
+                <svg class="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5"
+                     xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18
+                       0 9 9 0 0 1 18 0Z"/>
                 </svg>
                 <div>
-                  <p class="text-purple-900 font-medium mb-1">Servicio completado</p>
-                  <p class="text-sm text-purple-800">Este servicio ha sido completado exitosamente.</p>
+                  <p class="text-purple-900 font-medium mb-1">
+                    {{ isTelemedicine() ? 'Consulta completada' : 'Servicio completado' }}
+                  </p>
+                  <p class="text-sm text-purple-800">
+                    {{ isTelemedicine()
+                       ? 'Esta consulta virtual fue completada exitosamente.'
+                       : 'Este servicio ha sido completado exitosamente.' }}
+                  </p>
                 </div>
               </div>
             </div>
 
             <!-- RECHAZADA -->
             <div *ngIf="booking.bookingStatus === 'RECHAZADA'">
-              <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-start gap-3">
-                <svg class="w-5 h-5 text-gray-600 flex-shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              <div class="bg-gray-50 border border-gray-200 rounded-xl p-4
+                          flex items-start gap-3">
+                <svg class="w-5 h-5 text-gray-600 flex-shrink-0 mt-0.5"
+                     xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0
+                       1 1-18 0 9 9 0 0 1 18 0Z"/>
                 </svg>
                 <div>
                   <p class="text-gray-900 font-medium mb-1">Solicitud rechazada</p>
-                  <p class="text-sm text-gray-600">Has rechazado esta solicitud. El cliente ha sido notificado.</p>
+                  <p class="text-sm text-gray-600">
+                    Has rechazado esta solicitud. El cliente ha sido notificado.
+                  </p>
                 </div>
               </div>
             </div>
 
           </div>
-
         </ng-container>
-
       </div>
     </main>
   </div>
 </div>
 
-<!-- Confirm Modal -->
-<div *ngIf="showConfirmModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6">
+<!-- Modal Confirmar acción -->
+<div *ngIf="showConfirmModal"
+     class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6">
   <div class="bg-white rounded-2xl p-6 max-w-md w-full">
     <h3 class="font-semibold text-lg mb-4">
       {{ actionType === 'ACEPTAR' ? 'Aceptar solicitud' : 'Rechazar solicitud' }}
@@ -263,8 +409,8 @@
       <button
         (click)="closeModal()"
         [disabled]="actionLoading"
-        class="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
-      >
+        class="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-700
+               hover:bg-gray-50 transition-colors font-medium disabled:opacity-50">
         Cancelar
       </button>
       <button
@@ -272,11 +418,12 @@
         [disabled]="actionLoading"
         [ngClass]="{
           'bg-teal-600 hover:bg-teal-700 text-white': actionType === 'ACEPTAR',
-          'bg-red-600 hover:bg-red-700 text-white': actionType === 'RECHAZAR'
+          'bg-red-600 hover:bg-red-700 text-white':   actionType === 'RECHAZAR'
         }"
-        class="flex-1 px-4 py-3 rounded-xl transition-colors font-medium disabled:opacity-50"
-      >
-        {{ actionLoading ? 'Procesando...' : (actionType === 'ACEPTAR' ? 'Aceptar' : 'Rechazar') }}
+        class="flex-1 px-4 py-3 rounded-xl transition-colors font-medium disabled:opacity-50">
+        {{ actionLoading
+           ? 'Procesando...'
+           : (actionType === 'ACEPTAR' ? 'Aceptar' : 'Rechazar') }}
       </button>
     </div>
   </div>

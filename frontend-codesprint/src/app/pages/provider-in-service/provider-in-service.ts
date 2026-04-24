@@ -284,7 +284,6 @@ export class ProviderInService implements OnInit, OnDestroy {
       icon: this.createDestinationIcon(),
     }).addTo(this.map).bindPopup('Destino');
 
-    // Ruta OSRM completa (estática, punteada)
     this.fullRoutePolyline = L.polyline([], {
       color: '#0d9488',
       weight: 5,
@@ -293,7 +292,6 @@ export class ProviderInService implements OnInit, OnDestroy {
       dashArray: '10, 6',
     }).addTo(this.map);
 
-    // Ruta recorrida (sólida, progresiva)
     this.routePolyline = L.polyline([], {
       color: '#0d9488',
       weight: 5,
@@ -316,10 +314,9 @@ export class ProviderInService implements OnInit, OnDestroy {
 
     const latlng: [number, number] = [lat, lng];
 
-    // Agregar a la ruta recorrida (sólida)
+    // Solo en tracking real: agrega al routePolyline
     this.routePolyline.addLatLng(latlng);
 
-    // Calcular ángulo de rotación
     if (this.previousLatLng) {
       this.currentAngle = this.calculateBearing(
         this.previousLatLng[0], this.previousLatLng[1],
@@ -337,7 +334,41 @@ export class ProviderInService implements OnInit, OnDestroy {
       this.currentMarker.setIcon(this.createCarIcon(this.currentAngle));
     }
 
-    // Animar movimiento suave hacia el nuevo punto
+    this.targetLatLng = latlng;
+    if (!this.animationFrameId) {
+      this.animateCarMovement();
+    }
+
+    this.previousLatLng = latlng;
+    this.pointCount++;
+    this.saveState();
+
+    this.ngZone.run(() => this.cdr.markForCheck());
+  }
+
+  // ── NUEVO: solo mueve el carro, sin tocar routePolyline ──
+  private moveCarOnly(lat: number, lng: number): void {
+    if (!this.map) return;
+
+    const latlng: [number, number] = [lat, lng];
+
+    if (this.previousLatLng) {
+      this.currentAngle = this.calculateBearing(
+        this.previousLatLng[0], this.previousLatLng[1],
+        lat, lng
+      );
+    }
+
+    if (!this.currentMarker) {
+      this.currentMarker = L.marker(latlng, {
+        icon: this.createCarIcon(this.currentAngle),
+        zIndexOffset: 1000,
+      }).addTo(this.map);
+      this.currentAnimatedLatLng = latlng;
+    } else {
+      this.currentMarker.setIcon(this.createCarIcon(this.currentAngle));
+    }
+
     this.targetLatLng = latlng;
     if (!this.animationFrameId) {
       this.animateCarMovement();
@@ -368,7 +399,6 @@ export class ProviderInService implements OnInit, OnDestroy {
 
     const distance = Math.abs(tgtLat - newLat) + Math.abs(tgtLng - newLng);
 
-    // Solo mover el mapa si el carro sale del viewport
     if (this.map && distance > 0.0001) {
       const bounds = this.map.getBounds();
       const latLng = L.latLng(newLat, newLng);
@@ -581,10 +611,16 @@ export class ProviderInService implements OnInit, OnDestroy {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // WEBSOCKET
+  // WEBSOCKET — CAMBIO 1: cerrar cliente anterior + CAMBIO 2: moveCarOnly
   // ═══════════════════════════════════════════════════════════════
 
   private connectToWebSocket(onConnected: () => void): void {
+    // Cerrar cliente anterior antes de crear uno nuevo
+    if (this.stompClient) {
+      try { this.stompClient.deactivate(); } catch (e) {}
+      this.stompClient = null;
+    }
+
     this.ngZone.runOutsideAngular(() => {
       this.stompClient = new Client({
         brokerURL: 'ws://localhost:8081/api/v1/ws',
@@ -596,7 +632,16 @@ export class ProviderInService implements OnInit, OnDestroy {
           `/topic/tracking/${this.trackingSessionId}`,
           (message: IMessage) => {
             const point = JSON.parse(message.body);
-            this.addPointToMap(Number(point.latitude), Number(point.longitude));
+            const lat   = Number(point.latitude);
+            const lng   = Number(point.longitude);
+
+            if (this.isSimulation) {
+              // Simulación: solo mover el carro, NO dibujar en routePolyline
+              this.moveCarOnly(lat, lng);
+            } else {
+              // Tracking GPS real: dibujar ruta normalmente
+              this.addPointToMap(lat, lng);
+            }
           }
         );
 
@@ -608,7 +653,7 @@ export class ProviderInService implements OnInit, OnDestroy {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // SIMULATION
+  // SIMULATION — CAMBIO 3: cerrar WebSocket anterior en runSimulation
   // ═══════════════════════════════════════════════════════════════
 
   simulateTrip(): void {
@@ -631,52 +676,57 @@ export class ProviderInService implements OnInit, OnDestroy {
     }
   }
 
-private runSimulation(): void {
-  if (!this.booking || !this.trackingSessionId) return;
+  private runSimulation(): void {
+    if (!this.booking || !this.trackingSessionId) return;
 
-  // Limpiar estado anterior
-  this.routePolyline?.setLatLngs([]);
-  this.fullRoutePolyline?.setLatLngs([]);
-  this.pointCount = 0;
-  this.previousLatLng = null;
-  this.cancelAnimation();
-  this.currentAnimatedLatLng = null;
-  this.isSimulation = true;
+    // Cerrar WebSocket anterior
+    if (this.stompClient) {
+      try { this.stompClient.deactivate(); } catch (e) {}
+      this.stompClient = null;
+    }
 
-  if (this.currentMarker) {
-    this.map.removeLayer(this.currentMarker);
-    this.currentMarker = null;
-  }
+    this.routePolyline?.setLatLngs([]);
+    this.fullRoutePolyline?.setLatLngs([]);
+    this.pointCount = 0;
+    this.previousLatLng = null;
+    this.cancelAnimation();
+    this.currentAnimatedLatLng = null;
+    this.isSimulation = true;
 
-  const waypoints = [
-    [this.booking!.originLatitude, this.booking!.originLongitude],
-    [this.booking!.destinationLatitude, this.booking!.destinationLongitude],
-  ];
+    if (this.currentMarker) {
+      this.map.removeLayer(this.currentMarker);
+      this.currentMarker = null;
+    }
 
-  // 1. Conectar WebSocket PRIMERO
-  this.connectToWebSocket(() => {
-    // 2. Una vez conectado, lanzar la simulación
-    this.trackingService.simulateRoute(
-      this.trackingSessionId!,
-      this.providerProfileId,
-      waypoints,
-      40,
-      800
-    ).subscribe({
-      next: (response: any) => {
-        // Dibujar ruta OSRM completa como línea punteada
-        if (response.points && response.points.length > 0) {
-          const fullRoute: [number, number][] = response.points.map(
-            (p: any) => [Number(p.latitude), Number(p.longitude)]
-          );
-          this.fullRoutePolyline.setLatLngs(fullRoute);
-          this.map.fitBounds(this.fullRoutePolyline.getBounds(), { padding: [50, 50] });
-        }
-      },
-      error: (err: any) => console.error('Error simulando:', err),
+    const waypoints = [
+      [this.booking!.originLatitude, this.booking!.originLongitude],
+      [this.booking!.destinationLatitude, this.booking!.destinationLongitude],
+    ];
+
+    this.connectToWebSocket(() => {
+      this.trackingService.simulateRoute(
+        this.trackingSessionId!,
+        this.providerProfileId,
+        waypoints,
+        40,
+        800
+      ).subscribe({
+        next: (response: any) => {
+          if (response.points && response.points.length > 0) {
+            const fullRoute: [number, number][] = response.points.map(
+              (p: any) => [Number(p.latitude), Number(p.longitude)]
+            );
+            this.fullRoutePolyline.setLatLngs(fullRoute);
+            this.map.fitBounds(
+              this.fullRoutePolyline.getBounds(),
+              { padding: [50, 50] }
+            );
+          }
+        },
+        error: (err: any) => console.error('Error simulando:', err),
+      });
     });
-  });
-}
+  }
 
   // ═══════════════════════════════════════════════════════════════
   // MAP ICONS

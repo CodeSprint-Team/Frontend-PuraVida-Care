@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
   ServiceBookingResponse,
+  ServiceBookingResponseNullable,
   BookingActionRequest,
   BookingActionResponse,
 } from '../interfaces/booking-model';
@@ -16,6 +17,10 @@ export class ProviderBookingService {
 
   constructor(private http: HttpClient) {}
 
+  /**
+   * Para provider-in-service — coordenadas como number puro.
+   * Usar solo para servicios presenciales con mapa activo.
+   */
   getBookingsByProvider(
     providerProfileId: number,
     status?: string
@@ -25,6 +30,24 @@ export class ProviderBookingService {
       params = params.set('status', status.toUpperCase());
     }
     return this.http.get<ServiceBookingResponse[]>(
+      `${this.bookingsUrl}/provider/${providerProfileId}`,
+      { params }
+    );
+  }
+
+  /**
+   * Para provider-booking-detail — coordenadas nullable.
+   * Soporta tanto servicios presenciales como telemedicina.
+   */
+  getBookingsByProviderNullable(
+    providerProfileId: number,
+    status?: string
+  ): Observable<ServiceBookingResponseNullable[]> {
+    let params = new HttpParams();
+    if (status && status !== 'all') {
+      params = params.set('status', status.toUpperCase());
+    }
+    return this.http.get<ServiceBookingResponseNullable[]>(
       `${this.bookingsUrl}/provider/${providerProfileId}`,
       { params }
     );
@@ -67,18 +90,16 @@ export class ProviderBookingService {
     );
   }
 
- cancelBooking(
-  bookingId: number,
-  providerProfileId: number,
-  dto: { cancellationReason: string }
-) {
-  const params = new HttpParams().set('providerProfileId', providerProfileId);
-
-  return this.http.patch<BookingActionResponse>(
-    `${this.bookingsUrl}/${bookingId}/cancel`,
-    dto,
-    { params }
-  );
-}
-  
+  cancelBooking(
+    bookingId: number,
+    providerProfileId: number,
+    dto: { cancellationReason: string }
+  ): Observable<BookingActionResponse> {
+    const params = new HttpParams().set('providerProfileId', providerProfileId);
+    return this.http.patch<BookingActionResponse>(
+      `${this.bookingsUrl}/${bookingId}/cancel`,
+      dto,
+      { params }
+    );
+  }
 }

@@ -73,7 +73,6 @@ export class NavbarComponent implements OnInit, OnChanges {
         this.navItems = [
           { label: 'Dashboard', path: '/provider-dashboard',       icon: 'heroClipboardDocumentList' },
           { label: 'Mensajes',  path: '/mensajes',                 icon: 'heroChatBubbleLeftRight'   },
-          { label: 'Agenda',    path: '/provider-agenda',          icon: 'heroCalendarDays'          },
           { label: 'Marketplace',  path: '/support-products',       icon: 'heroShoppingBag'          },
           { label: 'Perfil',    path: `/provider-profile/${userId}`, icon: 'heroUser'                },
 
@@ -85,7 +84,6 @@ export class NavbarComponent implements OnInit, OnChanges {
         this.navItems = [
           { label: 'Inicio',   path: '/home',     icon: 'heroHome'                },
           { label: 'Explorar', path: '/explorar', icon: 'heroMagnifyingGlass'     },
-          { label: 'Agenda',   path: '/agenda',   icon: 'heroCalendarDays'        },
           { label: 'Mensajes', path: '/mensajes', icon: 'heroChatBubbleLeftRight' },
           { label: 'Marketplace',  path: '/support-products',       icon: 'heroShoppingBag'              },
           { label: 'Perfil',   path: `/profile/${userId}`, icon: 'heroUser'       },
