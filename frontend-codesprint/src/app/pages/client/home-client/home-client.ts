@@ -5,7 +5,7 @@ import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   heroTruck, heroUserPlus, heroHeart, heroVideoCamera,
   heroShoppingBag, heroClock, heroSparkles, heroBolt,
-  heroCheckCircle, heroXCircle
+  heroCheckCircle, heroXCircle, heroMapPin,
 } from '@ng-icons/heroicons/outline';
 import { NavbarComponent } from '../../../components/navbar/navbar';
 
@@ -18,6 +18,8 @@ interface Category {
   iconColor: string;
   path: string;
   featured?: boolean;
+  /** Si true, la navegación pasa por navigateToMap() en vez de navigateTo() */
+  isMap?: boolean;
 }
 
 @Component({
@@ -27,7 +29,7 @@ interface Category {
   viewProviders: [provideIcons({
     heroTruck, heroUserPlus, heroHeart, heroVideoCamera,
     heroShoppingBag, heroClock, heroSparkles, heroBolt,
-    heroCheckCircle, heroXCircle
+    heroCheckCircle, heroXCircle, heroMapPin,
   })],
   templateUrl: './home-client.html',
 })
@@ -36,7 +38,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   notificationMessage = '';
   private notifTimer: any;
 
-  // Rol leído del localStorage para pasárselo al navbar
   userRole: 'client' | 'admin' | 'provider' | 'senior' | null = null;
   userName = '';
 
@@ -67,7 +68,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       description: 'Atención profesional en casa',
       color: 'bg-pink-50',
       iconColor: 'text-pink-600',
-      path: '/explorar',
+      path: '/home-filter',
+      isMap: true,
     },
     {
       id: 'telemedicina',
@@ -102,7 +104,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(private router: Router) {}
 
   ngOnInit(): void {
-    // Lee el rol guardado por el AuthService al hacer login
     const raw = localStorage.getItem('user_role')?.toLowerCase();
     if (raw === 'client' || raw === 'senior' || raw === 'provider' || raw === 'admin') {
       this.userRole = raw;
@@ -110,10 +111,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.userRole = 'client';
     }
 
-    const fullName = localStorage.getItem('user_name') ?? '';
-    this.userName = fullName;
+    this.userName = localStorage.getItem('user_name') ?? '';
 
-    const nav = this.router.getCurrentNavigation();
+    const nav   = this.router.getCurrentNavigation();
     const state = nav?.extras?.state as { message?: string } | undefined;
     if (state?.message) {
       this.triggerNotification(state.message);
@@ -126,7 +126,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private triggerNotification(msg: string): void {
     this.notificationMessage = msg;
-    this.showNotification = true;
+    this.showNotification    = true;
     this.notifTimer = setTimeout(() => (this.showNotification = false), 5000);
   }
 
@@ -134,8 +134,32 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.showNotification = false;
   }
 
+  /**
+   * Navegación genérica para la mayoría de categorías.
+   */
   navigateTo(path: string): void {
     this.router.navigate([path]);
+  }
+
+  /**
+   * Navegación al mapa del hogar.
+   * Pasa el bookingId activo si existe en localStorage,
+   * para que HomeMapPageComponent precargue los marcadores correctos.
+   */
+  navigateToMap(): void {
+    this.router.navigate(['/home-filter']);
+  }
+
+  /**
+   * Despacha la navegación correcta según el tipo de categoría.
+   * Usada por el template para no duplicar lógica en el HTML.
+   */
+  onCategoryClick(category: Category): void {
+    if (category.isMap) {
+      this.navigateToMap();
+    } else {
+      this.navigateTo(category.path);
+    }
   }
 
   navigateToAI(): void {

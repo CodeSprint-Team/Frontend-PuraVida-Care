@@ -72,7 +72,7 @@
       <!-- ══════════════════════════════════════════════════════════ -->
       <ng-container *ngIf="profile">
 
-        <!-- Header principal -->
+        <!-- ── Header principal ──────────────────────────────────── -->
         <div class="bg-white rounded-3xl shadow-sm p-6 md:p-8 mb-6 border border-gray-100">
           <div class="flex flex-col lg:flex-row lg:items-center gap-6">
 
@@ -117,7 +117,7 @@
               </div>
             </div>
 
-            <div class="w-full lg:w-auto">
+            <div class="w-full lg:w-auto flex flex-col gap-2">
               <button type="button" (click)="editProfile()"
                 class="w-full lg:w-auto inline-flex items-center justify-center gap-2
                        px-5 py-3 bg-teal-600 text-white rounded-2xl font-semibold
@@ -136,7 +136,7 @@
           </div>
         </div>
 
-        <!-- Información principal -->
+        <!-- ── Información principal ─────────────────────────────── -->
         <section class="bg-white rounded-3xl shadow-sm p-6 md:p-8 border border-gray-100 mb-6">
           <div class="flex items-center gap-3 mb-6">
             <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
@@ -167,7 +167,7 @@
           </div>
         </section>
 
-        <!-- Contacto de emergencia -->
+        <!-- ── Contacto de emergencia ─────────────────────────────── -->
         <section class="bg-white rounded-3xl shadow-sm p-6 md:p-8 border border-gray-100 mb-6">
           <div class="flex items-center gap-3 mb-6">
             <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
@@ -194,76 +194,169 @@
             </div>
           </div>
         </section>
-          <section class="bg-white rounded-3xl shadow-sm p-6 md:p-8 border border-gray-100 mt-6">
-            <div class="flex items-center justify-between mb-6">
+
+        <!-- ── Proveedores favoritos ──────────────────────────────── -->
+        <section class="bg-white rounded-3xl shadow-sm p-6 md:p-8 border border-gray-100 mb-6">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
+                <ng-icon name="heroHeart" class="text-red-500 text-xl"></ng-icon>
+              </div>
+              <div>
+                <h2 class="text-lg font-bold text-gray-900">Proveedores favoritos</h2>
+                <p class="text-sm text-gray-500">Proveedores que has guardado</p>
+              </div>
+            </div>
+            <span class="text-sm text-gray-400 font-medium">
+              {{ favorites.length }} guardados
+            </span>
+          </div>
+
+          <!-- Sin favoritos -->
+          <div *ngIf="favorites.length === 0"
+               class="text-center py-10 text-gray-400">
+            <ng-icon name="heroHeart" class="text-5xl mb-3 text-gray-300"></ng-icon>
+            <p class="text-sm">Aún no tienes proveedores favoritos.</p>
+            <button (click)="goToMyServices()"
+                    class="mt-3 text-sm text-teal-600 hover:underline">
+              Explorar proveedores
+            </button>
+          </div>
+
+          <!-- Lista de favoritos -->
+          <div *ngIf="favorites.length > 0" class="space-y-3">
+            <div *ngFor="let fav of favorites"
+                 class="flex items-center justify-between bg-gray-50
+                         rounded-2xl p-4 border border-gray-100
+                         hover:border-teal-200 transition cursor-pointer"
+                 (click)="goToProvider(fav.providerProfileId)">
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
-                  <ng-icon name="heroHeart" class="text-red-500 text-xl"></ng-icon>
+                <div class="w-11 h-11 rounded-full bg-teal-100 flex items-center
+                            justify-center flex-shrink-0">
+                  <ng-icon name="heroUser" class="text-teal-700 text-lg"></ng-icon>
                 </div>
                 <div>
-                  <h2 class="text-lg font-bold text-gray-900">Proveedores favoritos</h2>
-                  <p class="text-sm text-gray-500">Proveedores que has guardado</p>
+                  <p class="font-semibold text-gray-900 text-sm">{{ fav.fullName }}</p>
+                  <p class="text-xs text-gray-500">{{ fav.providerType ?? 'Proveedor' }}</p>
+                  <div class="flex items-center gap-0.5 mt-1">
+                    <ng-icon *ngFor="let star of getStars(fav.averageRating)"
+                             name="heroStar"
+                             [ngClass]="star <= fav.averageRating ? 'text-yellow-400' : 'text-gray-200'"
+                             class="text-xs">
+                    </ng-icon>
+                    <span class="text-xs text-gray-500 ml-1">
+                      {{ fav.averageRating | number:'1.1-1' }}
+                    </span>
+                  </div>
                 </div>
               </div>
-              <span class="text-sm text-gray-400 font-medium">
-                {{ favorites.length }} guardados
-              </span>
-            </div>
-
-            <!-- Sin favoritos -->
-            <div *ngIf="favorites.length === 0"
-                class="text-center py-10 text-gray-400">
-              <ng-icon name="heroHeart" class="text-5xl mb-3 text-gray-300"></ng-icon>
-              <p class="text-sm">Aún no tienes proveedores favoritos.</p>
-              <button (click)="goToMyServices()"
-                      class="mt-3 text-sm text-teal-600 hover:underline">
-                Explorar proveedores
+              <button (click)="$event.stopPropagation(); removeFavorite(fav.providerProfileId)"
+                      class="text-red-400 hover:text-red-600 transition p-2
+                             rounded-xl hover:bg-red-50 flex-shrink-0"
+                      title="Eliminar de favoritos">
+                <ng-icon name="heroTrash" class="text-lg"></ng-icon>
               </button>
             </div>
+          </div>
+        </section>
 
-            <!-- Lista de favoritos -->
-            <div *ngIf="favorites.length > 0" class="space-y-3">
-              <div *ngFor="let fav of favorites"
-                  class="flex items-center justify-between bg-gray-50
-                          rounded-2xl p-4 border border-gray-100
-                          hover:border-teal-200 transition cursor-pointer"
-                  (click)="goToProvider(fav.providerProfileId)">
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- MAPA DEL HOGAR                                            -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <section class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-6">
 
-                <div class="flex items-center gap-3">
-                  <div class="w-11 h-11 rounded-full bg-teal-100 flex items-center
-                              justify-center flex-shrink-0">
-                    <ng-icon name="heroUser" class="text-teal-700 text-lg"></ng-icon>
-                  </div>
-                  <div>
-                    <p class="font-semibold text-gray-900 text-sm">{{ fav.fullName }}</p>
-                    <p class="text-xs text-gray-500">{{ fav.providerType ?? 'Proveedor' }}</p>
-                    <div class="flex items-center gap-0.5 mt-1">
-                      <ng-icon *ngFor="let star of getStars(fav.averageRating)"
-                              name="heroStar"
-                              [ngClass]="star <= fav.averageRating
-                                ? 'text-yellow-400' : 'text-gray-200'"
-                              class="text-xs">
-                      </ng-icon>
-                      <span class="text-xs text-gray-500 ml-1">
-                        {{ fav.averageRating | number:'1.1-1' }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <button (click)="$event.stopPropagation(); removeFavorite(fav.providerProfileId)"
-                        class="text-red-400 hover:text-red-600 transition p-2
-                              rounded-xl hover:bg-red-50 flex-shrink-0"
-                        title="Eliminar de favoritos">
-                  <ng-icon name="heroTrash" class="text-lg"></ng-icon>
-                </button>
-
+          <!-- Header -->
+          <div class="px-6 md:px-8 py-5 border-b border-gray-50
+                      flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-pink-50 flex items-center justify-center">
+                <ng-icon name="heroMapPin" class="text-pink-600 text-xl"></ng-icon>
+              </div>
+              <div>
+                <h2 class="text-lg font-bold text-gray-900">Mapa del hogar</h2>
+                <p class="text-sm text-gray-500">
+                  Configurá la información para los cuidadores
+                </p>
               </div>
             </div>
-          </section>
-        <!-- Notas importantes -->
+            <span class="text-xs px-3 py-1 rounded-full font-semibold
+                         bg-teal-50 text-teal-700 border border-teal-100">
+              Editable
+            </span>
+          </div>
+
+          <!-- Cuerpo -->
+          <div class="px-6 md:px-8 py-6">
+
+            <p class="text-sm text-gray-600 leading-relaxed mb-5">
+              Subí una foto del lugar y posicioná marcadores de seguridad, medicamentos,
+              llaves y más. Esta información solo es visible para los cuidadores con
+              reservas confirmadas.
+            </p>
+
+            <!-- Chips de categorías -->
+            <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-5">
+              <div class="flex flex-col items-center gap-1 p-3 bg-gray-50
+                          rounded-2xl border border-gray-100">
+                <span class="text-xl">🛡️</span>
+                <span class="text-xs text-gray-500 text-center leading-tight">Seguridad</span>
+              </div>
+              <div class="flex flex-col items-center gap-1 p-3 bg-gray-50
+                          rounded-2xl border border-gray-100">
+                <span class="text-xl">💊</span>
+                <span class="text-xs text-gray-500 text-center leading-tight">Medicamentos</span>
+              </div>
+              <div class="flex flex-col items-center gap-1 p-3 bg-gray-50
+                          rounded-2xl border border-gray-100">
+                <span class="text-xl">🗝️</span>
+                <span class="text-xs text-gray-500 text-center leading-tight">Llaves</span>
+              </div>
+              <div class="flex flex-col items-center gap-1 p-3 bg-gray-50
+                          rounded-2xl border border-gray-100">
+                <span class="text-xl">📋</span>
+                <span class="text-xs text-gray-500 text-center leading-tight">Rutinas</span>
+              </div>
+              <div class="flex flex-col items-center gap-1 p-3 bg-gray-50
+                          rounded-2xl border border-gray-100">
+                <span class="text-xl">🚨</span>
+                <span class="text-xs text-gray-500 text-center leading-tight">Emergencias</span>
+              </div>
+              <div class="flex flex-col items-center gap-1 p-3 bg-gray-50
+                          rounded-2xl border border-gray-100">
+                <span class="text-xl">♿</span>
+                <span class="text-xs text-gray-500 text-center leading-tight">Accesibilidad</span>
+              </div>
+            </div>
+
+            <!-- Aviso privacidad -->
+            <div class="flex gap-3 items-start bg-blue-50 border border-blue-100
+                        rounded-2xl p-4 mb-5">
+              <ng-icon name="heroShieldCheck"
+                       class="text-blue-600 text-lg mt-0.5 flex-shrink-0"></ng-icon>
+              <p class="text-sm text-blue-700 leading-relaxed">
+                <strong class="font-semibold">Privado y seguro.</strong>
+                Solo los cuidadores con reservas activas pueden ver esta información.
+                Vos controlás qué categorías compartir.
+              </p>
+            </div>
+
+            <!-- Botón -->
+            <button
+              (click)="goToMapaHogar()"
+              class="w-full inline-flex items-center justify-center gap-2.5
+                     px-5 py-3.5 bg-teal-600 hover:bg-teal-700 active:bg-teal-800
+                     text-white text-sm font-semibold rounded-2xl transition-colors
+                     shadow-sm">
+              <ng-icon name="heroMapPin" class="text-lg"></ng-icon>
+              Configurar mapa del hogar
+            </button>
+
+          </div>
+        </section>
+
+        <!-- ── Notas importantes ──────────────────────────────────── -->
         <section *ngIf="profile.importantNotes"
-                 class="bg-white rounded-3xl shadow-sm p-6 md:p-8 border border-gray-100">
+                 class="bg-white rounded-3xl shadow-sm p-6 md:p-8 border border-gray-100 mb-6">
           <div class="flex items-center gap-3 mb-6">
             <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
               <ng-icon name="heroDocumentText" class="text-blue-600 text-xl"></ng-icon>
@@ -278,9 +371,10 @@
           </div>
         </section>
 
-         <!-- Mis teleconsultas -->
+        <!-- ── Mis teleconsultas ──────────────────────────────────── -->
         <app-telemed-history [seniorProfileId]="seniorProfileId"></app-telemed-history>
-        <!-- ── Mis servicios completados ─────────────────────────────── -->
+
+        <!-- ── Mis servicios completados ─────────────────────────── -->
         <section class="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-3xl
                         shadow-sm p-6 md:p-8 border border-amber-100 mt-6">
           <div class="flex items-center gap-3 mb-3">
@@ -294,31 +388,28 @@
           </div>
           <button (click)="goToMyServices()"
             class="w-full mt-4 py-3.5 bg-amber-500 text-white rounded-2xl font-semibold
-                  hover:bg-amber-600 transition flex items-center justify-center gap-2">
+                   hover:bg-amber-600 transition flex items-center justify-center gap-2">
             <ng-icon name="heroStar" class="text-lg"></ng-icon>
             Ver mis servicios y dejar reseñas
           </button>
         </section>
 
+        <!-- ── Ofertas ────────────────────────────────────────────── -->
+        <div class="flex flex-col sm:flex-row gap-3 mt-6 mb-6">
+          <button (click)="verOfertasRecibidas()"
+            class="flex-1 px-8 py-3.5 bg-teal-700 text-teal-50 rounded-xl
+                   font-medium text-base hover:opacity-85 transition-opacity text-center">
+            Ofertas Recibidas
+          </button>
+          <button (click)="verOfertasRealizadas()"
+            class="flex-1 px-8 py-3.5 bg-teal-700 text-teal-50 rounded-xl
+                   font-medium text-base hover:opacity-85 transition-opacity text-center">
+            Mis Ofertas Realizadas
+          </button>
+        </div>
 
-      <!-- DESPUÉS — mismo estilo que Contratar -->
-      <div class="flex flex-col sm:flex-row gap-3 mt-6 mb-6">
-        <button (click)="verOfertasRecibidas()"
-          class="flex-1 px-8 py-3.5 bg-teal-700 text-teal-50 rounded-xl
-                font-medium text-base hover:opacity-85 transition-opacity
-                text-center">
-          Ofertas Recibidas
-        </button>
-        <button (click)="verOfertasRealizadas()"
-          class="flex-1 px-8 py-3.5 bg-teal-700 text-teal-50 rounded-xl
-                font-medium text-base hover:opacity-85 transition-opacity
-                text-center">
-          Mis Ofertas Realizadas
-        </button>
-      </div>
-      
       </ng-container>
-      
+
     </div>
   </main>
 </div>

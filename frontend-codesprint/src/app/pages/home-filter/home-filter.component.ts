@@ -1,150 +1,138 @@
-import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { NavbarComponent } from '../../components/navbar/navbar';
+import { MapViewerComponent } from '../../components/mapviewer/map-viewer.component';
+import { MapService } from '../../services/map.services';
+import { MapMarker, MapLayer, MarkerPositionUpdate } from '../../interfaces/filtered-home/map-marker';
 
-interface Marker {
-  id: string;
-  type: string;
-  title: string;
-  description: string;
-  contact?: string;
-  status: 'activo' | 'inactivo';
-  layer: 'seguridad' | 'medico' | 'enfermeria' | 'farmacia' | 'recepcion' | 'transporte';
-  x: number;
-  y: number;
-  icon: string;
-  isDragging?: boolean;
-}
-
-interface Layer {
-  id: string;
-  name: string;
-  icon: string;
-  color: string;
-  textColor: string;
-  borderColor: string;
-  description: string;
-}
+const POSITIONS_STORAGE_KEY = 'home_filter_marker_positions';
+const IMAGE_STORAGE_KEY      = 'home_filter_background_image';
 
 @Component({
   selector: 'app-home-filter',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavbarComponent],
+  imports: [CommonModule, RouterModule, NavbarComponent, MapViewerComponent],
   templateUrl: './home-filter.component.html',
-  styleUrls: ['./home-filter.component.css']
+  styleUrls: ['./home-filter.component.css'],
 })
-export class HomeFilterComponent implements AfterViewInit {
-  @ViewChild('mapContainer') mapContainer!: ElementRef;
+export class HomeFilterComponent implements OnInit {
 
+  private readonly router     = inject(Router);
+  private readonly mapService = inject(MapService);
+
+  // ── Estado UI ────────────────────────────────────────────────────────────
   backgroundImage: string | null = null;
-  selectedMarker: Marker | null = null;
-  activeLayers: string[] = ['seguridad', 'medico'];
+  selectedMarker: MapMarker | null = null;
+  activeLayers: string[] = ['seguridad', 'medico', 'enfermeria', 'farmacia', 'recepcion', 'transporte'];
   isLayersPanelOpen = false;
   isEditMode = false;
-  draggingMarker: Marker | null = null;
-  dragStartX = 0;
-  dragStartY = 0;
+  isSaving = false;
 
-  markers: Marker[] = [
-  {
-    id: '1',
-    type: 'seguridad',
-    title: 'Seguridad Principal',
-    description: 'Punto de control 24/7. Registro de visitantes y monitoreo de cámaras.',
-    contact: '+506 2222-3333',
-    status: 'activo',
-    layer: 'seguridad',
-    x: 15,
-    y: 20,
-    icon: '🛡️'
-  },
-  {
-    id: '2',
-    type: 'medico',
-    title: 'Consultorio Médico',
-    description: 'Dr. Carlos Méndez - Medicina General. Horario: L-V 8am-4pm.',
-    contact: 'Ext. 101',
-    status: 'activo',
-    layer: 'medico',
-    x: 35,
-    y: 30,
-    icon: '🩺'
-  },
-  {
-    id: '3',
-    type: 'enfermeria',
-    title: 'Estación de Enfermería',
-    description: 'Atención de enfermería 24/7. Control de signos vitales y medicamentos.',
-    contact: 'Ext. 102',
-    status: 'activo',
-    layer: 'enfermeria',
-    x: 60,
-    y: 25,
-    icon: '💉'
-  },
-  {
-    id: '4',
-    type: 'farmacia',
-    title: 'Farmacia Interna',
-    description: 'Dispensación de medicamentos. Horario: L-S 7am-7pm.',
-    contact: 'Ext. 105',
-    status: 'activo',
-    layer: 'farmacia',
-    x: 70,
-    y: 50,
-    icon: '💊'
-  },
-  {
-    id: '5',
-    type: 'recepcion',
-    title: 'Recepción Principal',
-    description: 'Información, registro de visitas y asistencia general.',
-    contact: '+506 2222-3344',
-    status: 'activo',
-    layer: 'recepcion',
-    x: 25,
-    y: 60,
-    icon: '📋'
-  },
-  {
-    id: '6',
-    type: 'transporte',
-    title: 'Zona de Transporte',
-    description: 'Parada de buses y taxis. Servicio de transporte especial disponible.',
-    contact: 'Ext. 110',
-    status: 'activo',
-    layer: 'transporte',
-    x: 80,
-    y: 75,
-    icon: '🚐'
-  },
-  {
-    id: '7',
-    type: 'seguridad',
-    title: 'Salida de Emergencia',
-    description: 'Salida secundaria. Mantener despejada. Alarma conectada.',
-    status: 'activo',
-    layer: 'seguridad',
-    x: 85,
-    y: 35,
-    icon: '🚨'
-  },
-  {
-    id: '8',
-    type: 'medico',
-    title: 'Sala de Terapia Física',
-    description: 'Rehabilitación y fisioterapia. Cita previa requerida.',
-    contact: 'Ext. 103',
-    status: 'activo',
-    layer: 'medico',
-    x: 45,
-    y: 65,
-    icon: '🏥'
-  }
-];
+  // ── Datos ─────────────────────────────────────────────────────────────────
+  markers: MapMarker[] = [
+    {
+      id: '1',
+      type: 'seguridad',
+      title: 'Seguridad Principal',
+      description: 'Punto de control 24/7. Registro de visitantes y monitoreo de cámaras.',
+      contact: '+506 2222-3333',
+      status: 'activo',
+      layer: 'seguridad',
+      x: 15,
+      y: 20,
+      icon: '🛡️',
+    },
+    {
+      id: '2',
+      type: 'medico',
+      title: 'Consultorio Médico',
+      description: 'Dr. Carlos Méndez - Medicina General. Horario: L-V 8am-4pm.',
+      contact: 'Ext. 101',
+      status: 'activo',
+      layer: 'medico',
+      x: 35,
+      y: 30,
+      icon: '🩺',
+    },
+    {
+      id: '3',
+      type: 'enfermeria',
+      title: 'Estación de Enfermería',
+      description: 'Atención de enfermería 24/7. Control de signos vitales y medicamentos.',
+      contact: 'Ext. 102',
+      status: 'activo',
+      layer: 'enfermeria',
+      x: 60,
+      y: 25,
+      icon: '💉',
+    },
+    {
+      id: '4',
+      type: 'farmacia',
+      title: 'Farmacia Interna',
+      description: 'Dispensación de medicamentos. Horario: L-S 7am-7pm.',
+      contact: 'Ext. 105',
+      status: 'activo',
+      layer: 'farmacia',
+      x: 70,
+      y: 50,
+      icon: '💊',
+    },
+    {
+      id: '5',
+      type: 'recepcion',
+      title: 'Recepción Principal',
+      description: 'Información, registro de visitas y asistencia general.',
+      contact: '+506 2222-3344',
+      status: 'activo',
+      layer: 'recepcion',
+      x: 25,
+      y: 60,
+      icon: '📋',
+    },
+    {
+      id: '6',
+      type: 'transporte',
+      title: 'Zona de Transporte',
+      description: 'Parada de buses y taxis. Servicio de transporte especial disponible.',
+      contact: 'Ext. 110',
+      status: 'activo',
+      layer: 'transporte',
+      x: 80,
+      y: 75,
+      icon: '🚐',
+    },
+    {
+      id: '7',
+      type: 'seguridad',
+      title: 'Salida de Emergencia',
+      description: 'Salida secundaria. Mantener despejada. Alarma conectada.',
+      status: 'activo',
+      layer: 'seguridad',
+      x: 85,
+      y: 35,
+      icon: '🚨',
+    },
+    {
+      id: '8',
+      type: 'medico',
+      title: 'Sala de Terapia Física',
+      description: 'Rehabilitación y fisioterapia. Cita previa requerida.',
+      contact: 'Ext. 103',
+      status: 'activo',
+      layer: 'medico',
+      x: 45,
+      y: 65,
+      icon: '🏥',
+    },
+  ];
 
-  layers: Layer[] = [
+  layers: MapLayer[] = [
     {
       id: 'seguridad',
       name: 'Seguridad',
@@ -152,7 +140,7 @@ export class HomeFilterComponent implements AfterViewInit {
       color: 'bg-red-600',
       textColor: 'text-red-600',
       borderColor: 'border-red-600',
-      description: 'Puntos de control y emergencia'
+      description: 'Puntos de control y emergencia',
     },
     {
       id: 'medico',
@@ -161,7 +149,7 @@ export class HomeFilterComponent implements AfterViewInit {
       color: 'bg-blue-600',
       textColor: 'text-blue-600',
       borderColor: 'border-blue-600',
-      description: 'Consultorios y atención médica'
+      description: 'Consultorios y atención médica',
     },
     {
       id: 'enfermeria',
@@ -170,7 +158,7 @@ export class HomeFilterComponent implements AfterViewInit {
       color: 'bg-purple-600',
       textColor: 'text-purple-600',
       borderColor: 'border-purple-600',
-      description: 'Estaciones de enfermería'
+      description: 'Estaciones de enfermería',
     },
     {
       id: 'farmacia',
@@ -179,7 +167,7 @@ export class HomeFilterComponent implements AfterViewInit {
       color: 'bg-green-600',
       textColor: 'text-green-600',
       borderColor: 'border-green-600',
-      description: 'Dispensación de medicamentos'
+      description: 'Dispensación de medicamentos',
     },
     {
       id: 'recepcion',
@@ -188,7 +176,7 @@ export class HomeFilterComponent implements AfterViewInit {
       color: 'bg-teal-600',
       textColor: 'text-teal-600',
       borderColor: 'border-teal-600',
-      description: 'Información y registro'
+      description: 'Información y registro',
     },
     {
       id: 'transporte',
@@ -197,119 +185,195 @@ export class HomeFilterComponent implements AfterViewInit {
       color: 'bg-orange-600',
       textColor: 'text-orange-600',
       borderColor: 'border-orange-600',
-      description: 'Zonas de transporte'
-    }
+      description: 'Zonas de transporte',
+    },
   ];
 
-  constructor(private router: Router) {}
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
 
-  ngAfterViewInit(): void {
-    this.initDraggableMarkers();
+  ngOnInit(): void {
+    this.loadLocalImage();
+    this.loadPositions();
   }
+
+  // ── Imagen ────────────────────────────────────────────────────────────────
+
+  private loadLocalImage(): void {
+    const saved = sessionStorage.getItem(IMAGE_STORAGE_KEY);
+    if (saved) this.backgroundImage = saved;
+  }
+
+  // ── Posiciones ────────────────────────────────────────────────────────────
+
+  /**
+   * Estrategia dual:
+   * 1. Intenta cargar del backend si hay bookingId válido.
+   * 2. Si falla o devuelve vacío → carga de localStorage.
+   * 3. Si tampoco hay en localStorage → usa posiciones default del array.
+   */
+  private loadPositions(): void {
+    const bookingId = this.resolveBookingId();
+
+    if (bookingId) {
+      this.mapService.getPositions(bookingId).subscribe({
+        next: (positions) => {
+          if (positions.length) {
+            this.applyPositions(positions);
+          } else {
+            this.loadLocalPositions();
+          }
+        },
+      });
+    } else {
+      this.loadLocalPositions();
+    }
+  }
+
+  private loadLocalPositions(): void {
+    try {
+      const raw = localStorage.getItem(POSITIONS_STORAGE_KEY);
+      if (!raw) return;
+      const positions: MarkerPositionUpdate[] = JSON.parse(raw);
+      this.applyPositions(positions);
+    } catch {
+      // JSON corrupto — ignorar
+    }
+  }
+
+  private applyPositions(positions: MarkerPositionUpdate[]): void {
+    positions.forEach((pos) => {
+      const marker = this.markers.find((m) => m.id === pos.markerId);
+      if (marker) {
+        marker.x = pos.x;
+        marker.y = pos.y;
+      }
+    });
+  }
+
+  /**
+   * Guarda posiciones:
+   * 1. Siempre guarda en localStorage (funciona sin backend).
+   * 2. Si hay bookingId, también intenta guardar en backend.
+   *    Si el backend falla (403/404/sin endpoint) no rompe la app.
+   */
+  savePositions(): void {
+    this.isSaving = true;
+
+    const positions: MarkerPositionUpdate[] = this.markers.map((m) => ({
+      markerId: m.id,
+      x: Math.round(m.x * 10) / 10,
+      y: Math.round(m.y * 10) / 10,
+    }));
+
+    // Guarda localmente siempre
+    localStorage.setItem(POSITIONS_STORAGE_KEY, JSON.stringify(positions));
+
+    const bookingId = this.resolveBookingId();
+
+    if (bookingId) {
+      this.mapService.savePositions(bookingId, positions).subscribe({
+        next: () => this.finishSave(),
+        error: () => this.finishSave(), // local ya guardó, no es error crítico
+      });
+    } else {
+      this.finishSave();
+    }
+  }
+
+  private finishSave(): void {
+    this.isSaving   = false;
+    this.isEditMode = false;
+  }
+
+private resolveBookingId(): number | null {
+  return null;
+}
+
+  // ── Handlers de MapViewerComponent ───────────────────────────────────────
+
+  onMarkerSelected(marker: MapMarker | null): void {
+    this.selectedMarker = marker;
+  }
+
+  onMarkerMoved(event: { id: string | number; x: number; y: number }): void {
+    const marker = this.markers.find((m) => m.id === event.id);
+    if (marker) {
+      marker.x = event.x;
+      marker.y = event.y;
+    }
+  }
+
+  onImageChanged(objectUrl: string): void {
+    this.backgroundImage = objectUrl;
+    sessionStorage.setItem(IMAGE_STORAGE_KEY, objectUrl);
+  }
+
+  onImageRemoved(): void {
+    this.backgroundImage = null;
+    sessionStorage.removeItem(IMAGE_STORAGE_KEY);
+  }
+
+  // ── Marcadores ────────────────────────────────────────────────────────────
+
+  clearSelectedMarker(): void {
+    this.selectedMarker = null;
+  }
+
+  getVisibleMarkers(): MapMarker[] {
+    return this.markers.filter((m) => this.activeLayers.includes(m.layer));
+  }
+
+  getLayerCount(layerId: string): number {
+    return this.markers.filter((m) => m.layer === layerId).length;
+  }
+
+  getMarkerColor(layerId: string): string {
+    return this.layers.find((l) => l.id === layerId)?.color ?? 'bg-gray-500';
+  }
+
+  // ── Capas ─────────────────────────────────────────────────────────────────
+
+  toggleLayer(layerId: string): void {
+    const idx = this.activeLayers.indexOf(layerId);
+    if (idx === -1) {
+      this.activeLayers.push(layerId);
+    } else {
+      this.activeLayers.splice(idx, 1);
+    }
+    if (this.selectedMarker && !this.activeLayers.includes(this.selectedMarker.layer)) {
+      this.selectedMarker = null;
+    }
+  }
+
+  toggleLayersPanel(): void {
+    this.isLayersPanelOpen = !this.isLayersPanelOpen;
+  }
+
+  closeLayersPanel(): void {
+    this.isLayersPanelOpen = false;
+  }
+
+  // ── Modo edición ──────────────────────────────────────────────────────────
 
   toggleEditMode(): void {
     this.isEditMode = !this.isEditMode;
     if (!this.isEditMode) {
-      this.saveMarkerPositions();
+      this.loadPositions();
     }
   }
 
-  startDrag(event: MouseEvent | TouchEvent, marker: Marker): void {
-    if (!this.isEditMode) return;
-    
-    event.preventDefault();
-    this.draggingMarker = marker;
-    marker.isDragging = true;
-    
-    const clientX = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
-    const clientY = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
-    
-    this.dragStartX = clientX - (marker.x * (this.mapContainer?.nativeElement.offsetWidth || 0) / 100);
-    this.dragStartY = clientY - (marker.y * (this.mapContainer?.nativeElement.offsetHeight || 0) / 100);
-    
-    document.addEventListener('mousemove', this.onDrag);
-    document.addEventListener('mouseup', this.stopDrag);
-    document.addEventListener('touchmove', this.onDrag);
-    document.addEventListener('touchend', this.stopDrag);
+  // ── Navegación ────────────────────────────────────────────────────────────
+
+  goBack(): void {
+    const userId = localStorage.getItem('user_id') ?? '';
+    this.router.navigate(['/family-profile', userId]);
   }
 
-  onDrag = (event: MouseEvent | TouchEvent): void => {
-    if (!this.draggingMarker || !this.mapContainer) return;
-    
-    const clientX = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
-    const clientY = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
-    
-    const containerRect = this.mapContainer.nativeElement.getBoundingClientRect();
-    let newX = ((clientX - this.dragStartX) / containerRect.width) * 100;
-    let newY = ((clientY - this.dragStartY) / containerRect.height) * 100;
-    
-    newX = Math.min(100, Math.max(0, newX));
-    newY = Math.min(100, Math.max(0, newY));
-    
-    this.draggingMarker.x = newX;
-    this.draggingMarker.y = newY;
+  goToChecklist(): void {
+    this.router.navigate(['/checklist-hogar']);
   }
 
-  stopDrag = (): void => {
-    if (this.draggingMarker) {
-      this.draggingMarker.isDragging = false;
-      this.draggingMarker = null;
-    }
-    
-    document.removeEventListener('mousemove', this.onDrag);
-    document.removeEventListener('mouseup', this.stopDrag);
-    document.removeEventListener('touchmove', this.onDrag);
-    document.removeEventListener('touchend', this.stopDrag);
+  goToEditMarkers(): void {
+    this.router.navigate(['/editar-hogar-marcadores']);
   }
-
-  saveMarkerPositions(): void {
-    console.log('Posiciones guardadas:', this.markers.map(m => ({ id: m.id, x: m.x, y: m.y })));
-  }
-
-  initDraggableMarkers(): void {}
-
-  goBack(): void { this.router.navigate(['/']); }
-  goToChecklist(): void { this.router.navigate(['/checklist-hogar']); }
-  goToEditMarkers(): void { this.router.navigate(['/editar-hogar-marcadores']); }
-  
-  onFileChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (file) {
-      const maxSize = 10 * 1024 * 1024;
-      if (file.size > maxSize) {
-        alert('La imagen es demasiado grande. El tamaño máximo es 10MB.');
-        return;
-      }
-      const objectUrl = URL.createObjectURL(file);
-      this.backgroundImage = objectUrl;
-    }
-  }
-
-  removeImage(): void { this.backgroundImage = null; }
-  
-  toggleLayer(layerId: string): void {
-    const index = this.activeLayers.indexOf(layerId);
-    if (index === -1) {
-      this.activeLayers.push(layerId);
-    } else {
-      this.activeLayers.splice(index, 1);
-    }
-    this.selectedMarker = null;
-  }
-
-  selectMarker(marker: Marker): void { this.selectedMarker = marker; }
-  clearSelectedMarker(): void { this.selectedMarker = null; }
-  
-  getVisibleMarkers(): Marker[] {
-    return this.markers.filter(m => this.activeLayers.includes(m.layer));
-  }
-
-  getMarkerColor(layer: string): string {
-    const layerData = this.layers.find(l => l.id === layer);
-    return layerData?.color || 'bg-gray-600';
-  }
-
-  toggleLayersPanel(): void { this.isLayersPanelOpen = !this.isLayersPanelOpen; }
-  closeLayersPanel(): void { this.isLayersPanelOpen = false; }
 }

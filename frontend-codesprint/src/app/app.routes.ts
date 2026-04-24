@@ -75,6 +75,7 @@ import { ChatComponent } from './pages/chatMessage/chat.component/chat.component
 import { ConversationListComponent } from './pages/chatMessage/conversation-list.component/conversation-list.component';
 import { DoctorViewComponent } from './pages/telemedicina/doctor_view/doctorViewComponent';
 import {PatientViewComponent} from './pages/telemedicina/patient_view/patient_view_component';
+import { MapViewerComponent } from './components/mapviewer/map-viewer.component';
 
 
 export const routes: Routes = [
@@ -185,16 +186,14 @@ export const routes: Routes = [
     component: MyServicesComponent
   },
 
-  {
-    path: 'home-filter',
-    component: HomeFilterComponent
-
-  },  
-
-  {
-    path: 'checklist-hogar', 
-    component: ChecklistHogarComponent
-  },
+  { path: 'home-filter', component: HomeFilterComponent },
+ 
+  { path: 'mapa-hogar', component: MapViewerComponent },
+ 
+  { path: 'filtered-home', component: FilteredHome },
+ 
+  { path: 'checklist-hogar', component: ChecklistHogarComponent },
+ 
   
   {
 
