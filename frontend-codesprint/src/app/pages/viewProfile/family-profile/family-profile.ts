@@ -19,7 +19,7 @@ import { catchError } from 'rxjs/operators';
 import {
   heroPencilSquare, heroUser, heroPhone, heroEnvelope, heroUsers,
   heroExclamationTriangle, heroShieldCheck, heroDocumentText, heroPhoto,
-  heroArrowRightOnRectangle, heroStar, heroHeart, heroTrash
+  heroArrowRightOnRectangle, heroStar, heroHeart, heroTrash, heroMapPin,
 } from '@ng-icons/heroicons/outline';
 import { TelemedHistoryComponent } from '../../../components/telemedicina/telemed-history.component';
 
@@ -39,7 +39,7 @@ interface FavoriteProviderItem {
   viewProviders: [provideIcons({
     heroPencilSquare, heroUser, heroPhone, heroEnvelope, heroUsers,
     heroExclamationTriangle, heroShieldCheck, heroDocumentText, heroPhoto,
-    heroArrowRightOnRectangle, heroStar, heroHeart, heroTrash
+    heroArrowRightOnRectangle, heroStar, heroHeart, heroTrash, heroMapPin,
   })],
   templateUrl: './family-profile.html',
   styleUrl: './family-profile.css',
@@ -101,7 +101,6 @@ export class FamilyProfileComponent implements OnInit {
     });
   }
 
-  // ── OPTIMIZADO: una sola actualización de UI en vez de N ──
   private loadFavorites(): void {
     this.loadingFavorites = true;
     this.cdr.markForCheck();
@@ -117,14 +116,10 @@ export class FamilyProfileComponent implements OnInit {
           return;
         }
 
-        // Cargar TODOS los proveedores en paralelo con forkJoin
-        // En vez de forEach + detectChanges por cada uno
         const requests = ids.map(providerId =>
           this.http.get<any>(
             `${environment.apiUrl}/profiles/provider/${providerId}`
-          ).pipe(
-            catchError(() => of(null)) // Si uno falla, no rompe los demás
-          )
+          ).pipe(catchError(() => of(null)))
         );
 
         forkJoin(requests).subscribe({
@@ -140,7 +135,6 @@ export class FamilyProfileComponent implements OnInit {
                 providerState:     provider.providerState ?? '',
               }));
             this.loadingFavorites = false;
-            // UN solo markForCheck para todos los favoritos
             this.cdr.markForCheck();
           },
           error: () => {
@@ -169,9 +163,17 @@ export class FamilyProfileComponent implements OnInit {
     });
   }
 
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
   getStars(rating: number): number[] {
     return Array.from({ length: 5 }, (_, i) => i + 1);
   }
+
+  hasProfileImage(): boolean {
+    return !!this.profile?.profileImage;
+  }
+
+  // ── Navegación ────────────────────────────────────────────────────────────
 
   goToProvider(id: number): void {
     this.router.navigate(['/proveedor', id]);
@@ -185,10 +187,6 @@ export class FamilyProfileComponent implements OnInit {
     this.router.navigate(['/family-profile-edit', this.profileId]);
   }
 
-  hasProfileImage(): boolean {
-    return !!this.profile?.profileImage;
-  }
-
   goToMyServices(): void {
     this.router.navigate(['/my-completed-services']);
   }
@@ -199,5 +197,15 @@ export class FamilyProfileComponent implements OnInit {
 
   verOfertasRealizadas(): void {
     this.router.navigate(['/support-products/made-offers']);
+  }
+
+  goToMapaHogar(): void {
+    localStorage.setItem('current_booking_id', this.profileId);
+    this.router.navigate(['/home-filter']);
+  }
+
+  goToMapaHogarConReserva(bookingId: number): void {
+    localStorage.setItem('current_booking_id', String(bookingId));
+    this.router.navigate(['/home-filter']);
   }
 }

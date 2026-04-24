@@ -17,11 +17,40 @@
       [role]="role"
       [providerTotalCount]="totalCount"
       [providerPendingCount]="pendingCount"
-      [providerAcceptedCount]="acceptedCount"
-    ></app-stats-cards>
+      [providerAcceptedCount]="acceptedCount">
+    </app-stats-cards>
 
     <div class="mt-8">
       <app-quick-actions [role]="role"></app-quick-actions>
     </div>
+
+
+    <div class="mt-8 bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h2 class="text-sm font-semibold text-gray-900 mb-0.5">Mapa del hogar del cliente</h2>
+          <p class="text-xs text-gray-400">
+            Disponible cuando tenés una reserva activa o aceptada.
+            Solo podés ver la información que el cliente autorizó.
+          </p>
+        </div>
+        <span class="inline-flex items-center gap-1.5 text-xs bg-blue-50 text-blue-700 border border-blue-100 px-2.5 py-1 rounded-full font-medium flex-shrink-0">
+          Solo lectura
+        </span>
+      </div>
+
+      <button
+        (click)="goToFilteredHome(0)"
+        class="mt-4 w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-xl transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        Ver mapa del hogar
+      </button>
+    </div>
+
   </div>
 </div>
