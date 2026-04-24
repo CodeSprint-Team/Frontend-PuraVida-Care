@@ -5,9 +5,8 @@ import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   heroHome, heroMagnifyingGlass, heroCalendarDays,
   heroCpuChip, heroChatBubbleLeftRight, heroUser,
-  heroCog6Tooth, heroClipboardDocumentList
+  heroCog6Tooth, heroClipboardDocumentList, heroShoppingBag
 } from '@ng-icons/heroicons/outline';
-
 interface NavItem {
   label: string;
   path: string;
@@ -21,7 +20,7 @@ interface NavItem {
   viewProviders: [provideIcons({
     heroHome, heroMagnifyingGlass, heroCalendarDays,
     heroCpuChip, heroChatBubbleLeftRight, heroUser,
-    heroCog6Tooth, heroClipboardDocumentList
+    heroCog6Tooth, heroClipboardDocumentList, heroShoppingBag
   })],
   templateUrl: './navbar.html',
 })
@@ -37,6 +36,8 @@ export class NavbarComponent implements OnInit, OnChanges {
     { label: 'Agenda',   path: '/agenda-cliente',   icon: 'heroCalendarDays' },
     { label: 'Chat IA',  path: '/chat-ia',  icon: 'heroCpuChip' },
     { label: 'Mensajes', path: '/mensajes', icon: 'heroChatBubbleLeftRight' },
+    { label: 'Marketplace',  path: '/support-products',       icon: 'heroShoppingBag'              },
+
   ];
 
   ngOnInit(): void {
@@ -72,8 +73,9 @@ export class NavbarComponent implements OnInit, OnChanges {
         this.navItems = [
           { label: 'Dashboard', path: '/provider-dashboard',       icon: 'heroClipboardDocumentList' },
           { label: 'Mensajes',  path: '/mensajes',                 icon: 'heroChatBubbleLeftRight'   },
-          { label: 'Agenda',    path: '/provider-agenda',          icon: 'heroCalendarDays'          },
+          { label: 'Marketplace',  path: '/support-products',       icon: 'heroShoppingBag'          },
           { label: 'Perfil',    path: `/provider-profile/${userId}`, icon: 'heroUser'                },
+
         ];
         this.panelLabel = 'Panel Proveedor';
         break;
@@ -82,9 +84,10 @@ export class NavbarComponent implements OnInit, OnChanges {
         this.navItems = [
           { label: 'Inicio',   path: '/home',     icon: 'heroHome'                },
           { label: 'Explorar', path: '/explorar', icon: 'heroMagnifyingGlass'     },
-          { label: 'Agenda',   path: '/agenda',   icon: 'heroCalendarDays'        },
           { label: 'Mensajes', path: '/mensajes', icon: 'heroChatBubbleLeftRight' },
+          { label: 'Marketplace',  path: '/support-products',       icon: 'heroShoppingBag'              },
           { label: 'Perfil',   path: `/profile/${userId}`, icon: 'heroUser'       },
+
         ];
         this.panelLabel = '';
         break;

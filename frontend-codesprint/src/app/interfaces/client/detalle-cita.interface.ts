@@ -26,4 +26,7 @@ export interface DetalleCita {
   status: 'Programado' | 'Hoy' | 'Completado' | 'Cancelado';
   rawStatus: string;
   providerProfileId: number;
+
+  appointmentType?: string;
+  telemedSessionId?: number | null;
 }

@@ -3,6 +3,8 @@ import { Landing } from './pages/landing/landing';
 import { LoginComponent } from './pages/login/login.component';
 import { HomeComponent } from './pages/client/home-client/home-client';
 import { MyServicesComponent } from './pages/myservices/myservices.component';
+import { HomeFilterComponent } from './pages/home-filter/home-filter.component';
+import { ChecklistHogarComponent } from './pages/checklist-hogar/checklist-hogar.component';
 
 // Auth / Registro
 import { Register } from './pages/auth/register/register';
@@ -177,11 +179,28 @@ export const routes: Routes = [
     path: 'admin/service-categories',
     component: AdminServiceCategory
   },
+
+  {
+    path: 'my-services',
+    component: MyServicesComponent
+  },
+
+  {
+    path: 'home-filter',
+    component: HomeFilterComponent
+
+  },  
+
+  {
+    path: 'checklist-hogar', 
+    component: ChecklistHogarComponent
+  },
+  
   {
 
     path: 'chat-ia',
     component: ChatIAComponent
-  },
+},
   {
     path: 'resultados-recomendados',
     component: ResultadosRecomendadosComponent
@@ -194,7 +213,7 @@ export const routes: Routes = [
     path: 'chat/:id',
     component: ChatComponent
   },
-
+ {
     path: 'telemedicina/doctor-view/:sessionId',
     component: DoctorViewComponent
   },
@@ -208,5 +227,7 @@ export const routes: Routes = [
 
   { path: '**', redirectTo: 'landing' }
 
+
 ];
+
 

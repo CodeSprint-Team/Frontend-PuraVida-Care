@@ -48,7 +48,7 @@ export interface ProviderProfileUpdateDTO {
   bio?: string;
   zone?: string;
   phone?: string;
-  profileImage?: string;
+  profileImage?: string | null;
   verified?: boolean;
   insuranceActive?: boolean;
 }
