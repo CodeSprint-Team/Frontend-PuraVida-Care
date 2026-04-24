@@ -12,7 +12,7 @@ import { ProfileService } from '../viewProfile/services/profile.services';
   standalone: true,
   imports: [CommonModule, NavbarComponent, StatsCards, QuickActions],
   templateUrl: './provider-dashboard.html',
-  styleUrl: './provider-dashboard.css'
+  styleUrl: './provider-dashboard.css',
 })
 export class ProviderDashboard implements OnInit {
   private bookingService = inject(ProviderBookingService);
@@ -28,14 +28,12 @@ export class ProviderDashboard implements OnInit {
   loaded            = false;
 
   ngOnInit(): void {
-    // Primero intentar con profile_id
     const storedProfileId = Number(localStorage.getItem('profile_id') ?? 0);
 
     if (storedProfileId > 0) {
       this.providerProfileId = storedProfileId;
       this.loadStats();
     } else {
-      // Fallback: buscar con user_id
       const userId = localStorage.getItem('user_id') ?? '0';
       if (Number(userId) > 0) {
         this.profileService.getProviderProfileByUserId(userId).subscribe({
@@ -47,7 +45,7 @@ export class ProviderDashboard implements OnInit {
           error: () => {
             this.loaded = true;
             this.cdr.detectChanges();
-          }
+          },
         });
       } else {
         this.loaded = true;
@@ -67,9 +65,11 @@ export class ProviderDashboard implements OnInit {
       error: () => {
         this.loaded = true;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
+
+  // ── Navegación ────────────────────────────────────────────────────────────
 
   goToSolicitudes(): void {
     this.router.navigate(['/provider-requests-service', this.providerProfileId]);
@@ -78,5 +78,11 @@ export class ProviderDashboard implements OnInit {
   goToProfile(): void {
     const userId = localStorage.getItem('user_id') ?? '0';
     this.router.navigate(['/provider-profile', userId]);
+  }
+
+  goToFilteredHome(bookingId: number): void {
+    this.router.navigate(['/filtered-home'], {
+      queryParams: { bookingId },
+    });
   }
 }
